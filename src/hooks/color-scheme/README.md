@@ -1,7 +1,15 @@
 # color-scheme
 
-A drop-in React provider + hook for resolving and applying a `light`/`dark`
-color scheme. No npm package, no build step — copy the files into your app.
+A drop-in React hook for resolving and applying a `light`/`dark` color
+scheme. Works without a provider; ships a `ColorSchemeProvider` for advanced
+cases. No npm package, no build step — copy the files into your app.
+
+> **You don't need this hook for purely-styled components.** If a component
+> only changes appearance via CSS (Tailwind's `dark:` variants, `:root[data-theme="dark"]`
+> rules), the FOUC blocker script + the right attribute on `<html>` is all
+> you need — no React state. Reach for the hook when JS itself needs to
+> branch on the scheme: a theme toggle's controlled value, an SVG icon swap,
+> a chart that picks colors at runtime, etc.
 
 ## What to copy
 
@@ -22,7 +30,7 @@ Peer requirements: React 18+ (works in 18 and 19).
 ## Quick start
 
 ```tsx
-import { ColorSchemeProvider, useColorScheme } from "./hooks/color-scheme/color-scheme";
+import { useColorScheme } from "./hooks/color-scheme/color-scheme";
 
 function ThemeToggle() {
   const { colorScheme, userSpecifiedColorScheme, setColorScheme } = useColorScheme();
@@ -37,18 +45,36 @@ function ThemeToggle() {
     </select>
   );
 }
-
-function App() {
-  return (
-    <ColorSchemeProvider>
-      <ThemeToggle />
-      {/* your app */}
-    </ColorSchemeProvider>
-  );
-}
 ```
 
-By default the provider sets `<html data-theme="light|dark">`. Style your app with:
+That's it — no provider needed. On first call, the hook lazily initializes a
+module-scoped store that reads the OS preference, loads the persisted choice
+from `localStorage`, and applies `<html data-theme="light|dark">`. All hook
+consumers share that store, so updates in one component re-render the others.
+
+If you want to override the defaults (storage key, target element, DOM
+strategy, custom resolver), call `configureColorScheme()` once at app startup,
+*before* any component calls `useColorScheme()`:
+
+```tsx
+import { configureColorScheme, LocalStorageColorSchemeResolver } from "./hooks/color-scheme/color-scheme";
+
+configureColorScheme({
+  resolver: new LocalStorageColorSchemeResolver({ storageKey: "my-app:theme" }),
+  strategy: "class", // or "data-attribute" (default), "both", or a function
+});
+```
+
+For scoped configuration (e.g. tests, multiple isolated subtrees, mounting
+different schemes in different parts of the app), wrap with the provider:
+
+```tsx
+<ColorSchemeProvider strategy="class">
+  <App />
+</ColorSchemeProvider>
+```
+
+By default the resolved scheme is written to `<html data-theme="light|dark">`. Style your app with:
 
 ```css
 :root[data-theme="dark"] { --bg: #111; --fg: #eee; }
@@ -57,14 +83,21 @@ By default the provider sets `<html data-theme="light|dark">`. Style your app wi
 
 ## API
 
-### `ColorSchemeProvider`
+### `configureColorScheme(options)` and `ColorSchemeProvider`
 
-| Prop | Type | Default | Notes |
+Both accept the same options:
+
+| Option | Type | Default | Notes |
 |---|---|---|---|
-| `colorSchemeResolver` | `ColorSchemeResolver` | `new LocalStorageColorSchemeResolver()` (browser only) | Persistence backend. Pass your own to use cookies, IndexedDB, server state, etc. |
+| `resolver` (provider: `colorSchemeResolver`) | `ColorSchemeResolver` | `new LocalStorageColorSchemeResolver()` (browser only) | Persistence backend. Pass your own to use cookies, IndexedDB, server state, etc. |
 | `strategy` | `"data-attribute" \| "class" \| "both" \| (scheme) => void` | `"data-attribute"` | How the resolved scheme is applied to the DOM. |
 | `target` | `HTMLElement` | `document.documentElement` | Target element for `data-attribute`/`class`/`both`. Ignored for the function form. |
 | `attributeName` | `string` | `"data-theme"` | Attribute used by `data-attribute` and `both`. |
+
+`configureColorScheme` mutates the module-scoped default store and only takes
+effect if called *before* any `useColorScheme()` invocation. Subsequent calls
+warn and are ignored. Use the provider when you need scoped or multiple
+configurations.
 
 #### `strategy` choices
 
@@ -99,7 +132,9 @@ flicker. `colorScheme` is non-null from first render via the system-preference
 query as a fallback, so you don't need to gate UI on `isLoading` at all unless
 you specifically want to delay paint until persisted state is loaded.
 
-`useColorScheme` throws if used outside a `ColorSchemeProvider`.
+When called outside a `ColorSchemeProvider`, the hook reads from the module-
+scoped default store (lazy-initialized on first call). Inside a provider, it
+reads from that provider's scoped store instead.
 
 ### `getBrowserPreferredColorScheme()`
 
@@ -173,17 +208,23 @@ npx tsc --noEmit
 npm test -- --coverage
 ```
 
-Coverage on `color-scheme.tsx` is ~91% line. The uncovered lines are the
+Coverage on `color-scheme.tsx` is ~93% line. The uncovered lines are the
 SSR-typeof-window guards and a couple of error-path branches that would need
 a Node-environment test pass to exercise; this is documented and not worth
 the setup cost for a drop-in.
 
 ## Decisions made (where the spec left a choice)
 
-- **`isLoading` semantics** — kept `isLoading: true` on first render and
-  documented it. The alternative (initial `colorScheme: null` until resolver
-  settles) forces every consumer to either gate UI or accept a `null` flash;
-  fallback-to-system is the friendlier default.
+- **Provider-optional via singleton store** — the hook works without a
+  provider by lazily initializing a module-scoped store. All hook consumers
+  (with no provider) share state; configuration is global via
+  `configureColorScheme()`. The provider stays as an opt-in for scoped
+  configuration, tests, or multiple isolated subtrees. Tradeoff: only one
+  global config, set once before first use.
+- **`isLoading` semantics** — `isLoading: true` only on first render until
+  the resolver settles; subsequent `setColorScheme` calls do not flip it.
+  `colorScheme` is non-null from first render via the system-preference
+  query as a fallback, so consumers don't need to gate UI on `isLoading`.
 - **Naming** — setter is `setColorScheme`. The reference's SWR-flavored
   `mutate` was dropped to avoid a misleading name (no key, no cache).
 - **DOM env** — verification harness uses jsdom (happy-dom 12/15/20 all had

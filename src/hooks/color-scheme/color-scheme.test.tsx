@@ -5,8 +5,10 @@ import {
   ColorSchemeProvider,
   type ColorSchemeResolver,
   LocalStorageColorSchemeResolver,
+  configureColorScheme,
   useColorScheme,
   type UserSpecifiedColorScheme,
+  _resetDefaultColorSchemeStore,
 } from "./color-scheme";
 import { getColorSchemeFoucScript } from "./fouc-blocker";
 
@@ -19,6 +21,7 @@ beforeEach(() => {
 afterEach(() => {
   document.documentElement.removeAttribute("data-theme");
   document.documentElement.className = "";
+  _resetDefaultColorSchemeStore();
 });
 
 describe("LocalStorageColorSchemeResolver", () => {
@@ -142,13 +145,102 @@ describe("LocalStorageColorSchemeResolver", () => {
   });
 });
 
-describe("useColorScheme", () => {
-  test("throws when used outside a ColorSchemeProvider", () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(() => renderHook(() => useColorScheme())).toThrow(
-      /useColorScheme must be used within a ColorSchemeProvider/,
+describe("useColorScheme — standalone (no provider, default singleton)", () => {
+  test("works without a provider; mirrors the OS preference initially", async () => {
+    mql.matches = true;
+    const { result } = renderHook(() => useColorScheme());
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(result.current.userSpecifiedColorScheme).toBe("system");
+    expect(result.current.colorScheme).toBe("dark");
+    expect(result.current.systemColorScheme).toBe("dark");
+  });
+
+  test("setColorScheme persists and updates the resolved scheme", async () => {
+    const { result } = renderHook(() => useColorScheme());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await result.current.setColorScheme("dark");
+    });
+    expect(result.current.userSpecifiedColorScheme).toBe("dark");
+    expect(result.current.colorScheme).toBe("dark");
+    expect(localStorage.getItem("color-scheme")).toBe("dark");
+  });
+
+  test("two hook consumers share state", async () => {
+    const renderA = renderHook(() => useColorScheme());
+    const renderB = renderHook(() => useColorScheme());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await renderA.result.current.setColorScheme("dark");
+    });
+    expect(renderA.result.current.colorScheme).toBe("dark");
+    expect(renderB.result.current.colorScheme).toBe("dark");
+  });
+
+  test("default DOM application updates <html data-theme>", async () => {
+    mql.matches = true;
+    renderHook(() => useColorScheme());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  test("configureColorScheme overrides defaults if called before first hook use", async () => {
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "dark" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    configureColorScheme({ resolver: stub, attributeName: "data-mode" });
+    const { result } = renderHook(() => useColorScheme());
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(stub.getCustomizedColorScheme).toHaveBeenCalled();
+    expect(result.current.colorScheme).toBe("dark");
+    expect(document.documentElement.getAttribute("data-mode")).toBe("dark");
+  });
+
+  test("configureColorScheme called after the store was used warns and is ignored", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    renderHook(() => useColorScheme());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "dark" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    configureColorScheme({ resolver: stub });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(stub.getCustomizedColorScheme).not.toHaveBeenCalled();
+  });
+
+  test("provider takes precedence over the singleton when present", async () => {
+    const providerStub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "dark" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    function Probed() {
+      const { colorScheme } = useColorScheme();
+      return <span data-testid="cs">{colorScheme ?? "null"}</span>;
+    }
+    render(
+      <ColorSchemeProvider colorSchemeResolver={providerStub}>
+        <Probed />
+      </ColorSchemeProvider>,
     );
-    consoleError.mockRestore();
+    await flush();
+    expect(screen.getByTestId("cs")).toHaveTextContent("dark");
+    expect(providerStub.getCustomizedColorScheme).toHaveBeenCalled();
   });
 });
 
