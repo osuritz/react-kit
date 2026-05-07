@@ -112,10 +112,15 @@ Returns the OS-preferred scheme synchronously (`"light"` if SSR or
 interface ColorSchemeResolver {
   getCustomizedColorScheme(): Promise<UserSpecifiedColorScheme | null>;
   setCustomizedColorScheme(value: UserSpecifiedColorScheme | null): Promise<void>;
+  subscribe?(callback: () => void): () => void;
 }
 ```
 
 Implement this for any custom backend (cookies, server, IndexedDB, etc.).
+The optional `subscribe` lets the resolver notify the provider when the
+persisted value may have changed externally — `LocalStorageColorSchemeResolver`
+uses this to pick up cross-tab writes via the `storage` event. If you skip
+`subscribe`, the provider just reads once at mount.
 
 ### `LocalStorageColorSchemeResolver`
 
@@ -128,7 +133,9 @@ new LocalStorageColorSchemeResolver({
 
 Reads are case-insensitive and unrecognized stored values fall back to
 `"system"`. Setting `"system"` or `null` *removes* the key (it does not write
-the literal `"system"`).
+the literal `"system"`). Implements `subscribe` via the `window`
+`storage` event, so a theme change in one tab propagates to other tabs of
+the same origin without a page reload.
 
 ## SSR / FOUC mitigation
 

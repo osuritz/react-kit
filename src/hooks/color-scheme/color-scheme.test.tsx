@@ -101,6 +101,45 @@ describe("LocalStorageColorSchemeResolver", () => {
     expect(localStorage.getItem("color-scheme")).toBeNull();
     expect(await resolver.getCustomizedColorScheme()).toBe("dark");
   });
+
+  test("subscribe fires the callback on a 'storage' event for the matching key", () => {
+    const resolver = new LocalStorageColorSchemeResolver();
+    const cb = vi.fn();
+    const unsubscribe = resolver.subscribe!(cb);
+
+    window.dispatchEvent(new StorageEvent("storage", { key: "color-scheme" }));
+    expect(cb).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+    window.dispatchEvent(new StorageEvent("storage", { key: "color-scheme" }));
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  test("subscribe ignores 'storage' events for other keys", () => {
+    const resolver = new LocalStorageColorSchemeResolver();
+    const cb = vi.fn();
+    resolver.subscribe!(cb);
+    window.dispatchEvent(new StorageEvent("storage", { key: "other-key" }));
+    expect(cb).not.toHaveBeenCalled();
+  });
+
+  test("subscribe fires when the storage event has key=null (clear())", () => {
+    const resolver = new LocalStorageColorSchemeResolver();
+    const cb = vi.fn();
+    resolver.subscribe!(cb);
+    window.dispatchEvent(new StorageEvent("storage", { key: null }));
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  test("subscribe respects a custom storageKey", () => {
+    const resolver = new LocalStorageColorSchemeResolver({ storageKey: "my-key" });
+    const cb = vi.fn();
+    resolver.subscribe!(cb);
+    window.dispatchEvent(new StorageEvent("storage", { key: "color-scheme" }));
+    expect(cb).not.toHaveBeenCalled();
+    window.dispatchEvent(new StorageEvent("storage", { key: "my-key" }));
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("useColorScheme", () => {
@@ -281,6 +320,71 @@ describe("ColorSchemeProvider — OS theme changes", () => {
     await flush();
     expect(screen.getByTestId("system")).toHaveTextContent("dark");
     expect(screen.getByTestId("color-scheme")).toHaveTextContent("light");
+  });
+});
+
+describe("ColorSchemeProvider — resolver subscribe (cross-tab sync)", () => {
+  test("re-reads user choice when the resolver notifies", async () => {
+    let notify: (() => void) | null = null;
+    let stored: UserSpecifiedColorScheme = "system";
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => stored),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+      subscribe: (cb: () => void) => {
+        notify = cb;
+        return () => {
+          notify = null;
+        };
+      },
+    };
+
+    render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("system");
+
+    stored = "dark";
+    await act(async () => {
+      notify!();
+    });
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("dark");
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("dark");
+  });
+
+  test("calls subscribe's unsubscribe on unmount", async () => {
+    const unsubscribe = vi.fn();
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "system" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+      subscribe: vi.fn(() => unsubscribe),
+    };
+    const { unmount } = render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(stub.subscribe).toHaveBeenCalledTimes(1);
+    unmount();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  test("works when the resolver does not implement subscribe", async () => {
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "system" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("system");
   });
 });
 

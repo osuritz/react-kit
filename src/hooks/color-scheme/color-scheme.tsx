@@ -31,6 +31,14 @@ export interface ColorSchemeResolver {
   setCustomizedColorScheme(
     colorScheme: UserSpecifiedColorScheme | null,
   ): Promise<void>;
+  /**
+   * Optional. Notify the provider when the persisted value may have changed
+   * outside of `setCustomizedColorScheme` — e.g. another tab writing to the
+   * same `localStorage` key. The callback takes no argument; the provider
+   * re-reads the value via `getCustomizedColorScheme()`. Returns an
+   * unsubscribe function the provider calls on unmount.
+   */
+  subscribe?(callback: () => void): () => void;
 }
 
 export interface LocalStorageColorSchemeResolverOptions {
@@ -68,6 +76,19 @@ export class LocalStorageColorSchemeResolver implements ColorSchemeResolver {
     } else {
       this.storage.setItem(this.storageKey, colorScheme);
     }
+  }
+
+  subscribe(callback: () => void): () => void {
+    if (typeof window === "undefined") return () => {};
+    const handler = (event: StorageEvent) => {
+      if (event.key === this.storageKey || event.key === null) {
+        callback();
+      }
+    };
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener("storage", handler);
+    };
   }
 }
 
@@ -175,8 +196,12 @@ export function ColorSchemeProvider({
       }
     };
     void load();
+    const unsubscribe = resolver?.subscribe?.(() => {
+      void load();
+    });
     return () => {
       cancelled = true;
+      unsubscribe?.();
     };
   }, [resolver]);
 
