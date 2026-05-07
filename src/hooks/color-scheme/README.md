@@ -71,7 +71,10 @@ By default the provider sets `<html data-theme="light|dark">`. Style your app wi
 - `"data-attribute"` (default): sets `<html data-theme="dark">`. Works with any
   CSS that targets `[data-theme="dark"]`.
 - `"class"`: adds `light`/`dark` as a class on the target. Works out of the
-  box with Tailwind's `darkMode: 'class'` (or `darkMode: 'selector'`).
+  box with Tailwind's `darkMode: 'class'` (or `darkMode: 'selector'`). Note:
+  this strategy unconditionally removes both `light` and `dark` from the
+  target before adding the resolved one — don't use those class names on the
+  same element for unrelated purposes.
 - `"both"`: sets both, useful while migrating between conventions.
 - function: called with `"light" | "dark"` on every change. Use this to write
   CSS variables, sync multiple targets, integrate with another framework, etc.
