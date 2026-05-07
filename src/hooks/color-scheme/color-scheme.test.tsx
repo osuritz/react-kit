@@ -1,0 +1,422 @@
+import { act, render, renderHook, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { mockMatchMedia, type MockMediaQueryList } from "./vitest.setup";
+import {
+  ColorSchemeProvider,
+  type ColorSchemeResolver,
+  LocalStorageColorSchemeResolver,
+  useColorScheme,
+  type UserSpecifiedColorScheme,
+} from "./color-scheme";
+import { getColorSchemeFoucScript } from "./fouc-blocker";
+
+let mql: MockMediaQueryList;
+
+beforeEach(() => {
+  mql = mockMatchMedia(false);
+});
+
+afterEach(() => {
+  document.documentElement.removeAttribute("data-theme");
+  document.documentElement.className = "";
+});
+
+describe("LocalStorageColorSchemeResolver", () => {
+  test("returns 'system' when storage is empty", async () => {
+    const resolver = new LocalStorageColorSchemeResolver();
+    expect(await resolver.getCustomizedColorScheme()).toBe("system");
+  });
+
+  test("returns 'light' when 'light' is stored", async () => {
+    localStorage.setItem("color-scheme", "light");
+    const resolver = new LocalStorageColorSchemeResolver();
+    expect(await resolver.getCustomizedColorScheme()).toBe("light");
+  });
+
+  test("returns 'dark' when 'dark' is stored", async () => {
+    localStorage.setItem("color-scheme", "dark");
+    const resolver = new LocalStorageColorSchemeResolver();
+    expect(await resolver.getCustomizedColorScheme()).toBe("dark");
+  });
+
+  test("returns 'system' for unrecognized stored value", async () => {
+    localStorage.setItem("color-scheme", "purple");
+    const resolver = new LocalStorageColorSchemeResolver();
+    expect(await resolver.getCustomizedColorScheme()).toBe("system");
+  });
+
+  test("reads stored value case-insensitively", async () => {
+    localStorage.setItem("color-scheme", "DARK");
+    const resolver = new LocalStorageColorSchemeResolver();
+    expect(await resolver.getCustomizedColorScheme()).toBe("dark");
+  });
+
+  test("setCustomizedColorScheme('dark') writes the key", async () => {
+    const resolver = new LocalStorageColorSchemeResolver();
+    await resolver.setCustomizedColorScheme("dark");
+    expect(localStorage.getItem("color-scheme")).toBe("dark");
+  });
+
+  test("setCustomizedColorScheme('system') removes the key (does not store 'system')", async () => {
+    localStorage.setItem("color-scheme", "dark");
+    const resolver = new LocalStorageColorSchemeResolver();
+    await resolver.setCustomizedColorScheme("system");
+    expect(localStorage.getItem("color-scheme")).toBeNull();
+  });
+
+  test("setCustomizedColorScheme(null) removes the key", async () => {
+    localStorage.setItem("color-scheme", "dark");
+    const resolver = new LocalStorageColorSchemeResolver();
+    await resolver.setCustomizedColorScheme(null);
+    expect(localStorage.getItem("color-scheme")).toBeNull();
+  });
+
+  test("honors a custom storageKey option", async () => {
+    const resolver = new LocalStorageColorSchemeResolver({ storageKey: "my-app:theme" });
+    await resolver.setCustomizedColorScheme("dark");
+    expect(localStorage.getItem("my-app:theme")).toBe("dark");
+    expect(localStorage.getItem("color-scheme")).toBeNull();
+    expect(await resolver.getCustomizedColorScheme()).toBe("dark");
+  });
+
+  test("honors a custom Storage option", async () => {
+    const data = new Map<string, string>();
+    const customStorage: Storage = {
+      get length() {
+        return data.size;
+      },
+      clear: () => data.clear(),
+      getItem: (k) => data.get(k) ?? null,
+      key: (i) => Array.from(data.keys())[i] ?? null,
+      removeItem: (k) => {
+        data.delete(k);
+      },
+      setItem: (k, v) => {
+        data.set(k, v);
+      },
+    };
+    const resolver = new LocalStorageColorSchemeResolver({ storage: customStorage });
+    await resolver.setCustomizedColorScheme("dark");
+    expect(data.get("color-scheme")).toBe("dark");
+    expect(localStorage.getItem("color-scheme")).toBeNull();
+    expect(await resolver.getCustomizedColorScheme()).toBe("dark");
+  });
+});
+
+describe("useColorScheme", () => {
+  test("throws when used outside a ColorSchemeProvider", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => renderHook(() => useColorScheme())).toThrow(
+      /useColorScheme must be used within a ColorSchemeProvider/,
+    );
+    consoleError.mockRestore();
+  });
+});
+
+function Probe() {
+  const { colorScheme, isLoading, userSpecifiedColorScheme, systemColorScheme } =
+    useColorScheme();
+  return (
+    <div>
+      <span data-testid="color-scheme">{colorScheme ?? "null"}</span>
+      <span data-testid="is-loading">{String(isLoading)}</span>
+      <span data-testid="user-choice">{userSpecifiedColorScheme}</span>
+      <span data-testid="system">{systemColorScheme ?? "null"}</span>
+    </div>
+  );
+}
+
+async function flush() {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
+describe("ColorSchemeProvider — defaults", () => {
+  test("default mount: user='system', colorScheme matches OS, isLoading clears after resolver", async () => {
+    mql.matches = false;
+    render(
+      <ColorSchemeProvider>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("system");
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("light");
+    expect(screen.getByTestId("system")).toHaveTextContent("light");
+    expect(screen.getByTestId("is-loading")).toHaveTextContent("false");
+  });
+
+  test("caller-supplied resolver is actually used (regression: bug #1)", async () => {
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "dark" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(stub.getCustomizedColorScheme).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("dark");
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("dark");
+  });
+});
+
+describe("ColorSchemeProvider — setColorScheme", () => {
+  test("setColorScheme('dark') updates user choice and persists via resolver", async () => {
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "system" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    function Setter() {
+      const { setColorScheme, userSpecifiedColorScheme, colorScheme } = useColorScheme();
+      return (
+        <>
+          <button onClick={() => void setColorScheme("dark")}>set-dark</button>
+          <span data-testid="user-choice">{userSpecifiedColorScheme}</span>
+          <span data-testid="color-scheme">{colorScheme ?? "null"}</span>
+        </>
+      );
+    }
+    render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Setter />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    await act(async () => {
+      screen.getByText("set-dark").click();
+    });
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("dark");
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("dark");
+    expect(stub.setCustomizedColorScheme).toHaveBeenCalledWith("dark");
+  });
+
+  test("setColorScheme('system') removes from storage", async () => {
+    localStorage.setItem("color-scheme", "dark");
+    function Setter() {
+      const { setColorScheme, userSpecifiedColorScheme } = useColorScheme();
+      return (
+        <>
+          <button onClick={() => void setColorScheme("system")}>set-system</button>
+          <span data-testid="user-choice">{userSpecifiedColorScheme}</span>
+        </>
+      );
+    }
+    render(
+      <ColorSchemeProvider>
+        <Setter />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    await act(async () => {
+      screen.getByText("set-system").click();
+    });
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("system");
+    expect(localStorage.getItem("color-scheme")).toBeNull();
+  });
+
+  test("setColorScheme(null) is treated as 'system'", async () => {
+    function Setter() {
+      const { setColorScheme, userSpecifiedColorScheme } = useColorScheme();
+      return (
+        <>
+          <button onClick={() => void setColorScheme(null)}>set-null</button>
+          <span data-testid="user-choice">{userSpecifiedColorScheme}</span>
+        </>
+      );
+    }
+    render(
+      <ColorSchemeProvider>
+        <Setter />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    await act(async () => {
+      screen.getByText("set-null").click();
+    });
+    await flush();
+    expect(screen.getByTestId("user-choice")).toHaveTextContent("system");
+  });
+});
+
+describe("ColorSchemeProvider — OS theme changes", () => {
+  test("OS change with user='system' updates colorScheme", async () => {
+    mql.matches = false;
+    render(
+      <ColorSchemeProvider>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("light");
+
+    await act(async () => {
+      mql.dispatchEvent({ matches: true });
+    });
+    await flush();
+    expect(screen.getByTestId("system")).toHaveTextContent("dark");
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("dark");
+  });
+
+  test("OS change with explicit user choice does not change resolved scheme", async () => {
+    localStorage.setItem("color-scheme", "light");
+    mql.matches = false;
+    render(
+      <ColorSchemeProvider>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("light");
+
+    await act(async () => {
+      mql.dispatchEvent({ matches: true });
+    });
+    await flush();
+    expect(screen.getByTestId("system")).toHaveTextContent("dark");
+    expect(screen.getByTestId("color-scheme")).toHaveTextContent("light");
+  });
+});
+
+describe("ColorSchemeProvider — DOM application strategies", () => {
+  test("data-attribute strategy sets dataset.theme", async () => {
+    mql.matches = true;
+    render(
+      <ColorSchemeProvider>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  test("class strategy adds correct class and removes the wrong one", async () => {
+    document.documentElement.classList.add("light");
+    mql.matches = true;
+    render(
+      <ColorSchemeProvider strategy="class">
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains("light")).toBe(false);
+
+    await act(async () => {
+      mql.dispatchEvent({ matches: false });
+    });
+    await flush();
+    expect(document.documentElement.classList.contains("light")).toBe(true);
+    expect(document.documentElement.classList.contains("dark")).toBe(false);
+  });
+
+  test("function strategy is called with the resolved scheme on each change", async () => {
+    const apply = vi.fn();
+    mql.matches = false;
+    render(
+      <ColorSchemeProvider strategy={apply}>
+        <Probe />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    expect(apply).toHaveBeenCalledWith("light");
+
+    await act(async () => {
+      mql.dispatchEvent({ matches: true });
+    });
+    await flush();
+    expect(apply).toHaveBeenCalledWith("dark");
+  });
+});
+
+describe("ColorSchemeProvider — async setColorScheme (regression: bug #4)", () => {
+  test("setColorScheme is awaitable and toggles isLoading around resolver", async () => {
+    let resolveSet: (() => void) | null = null;
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "system" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(
+        () =>
+          new Promise<void>((r) => {
+            resolveSet = r;
+          }),
+      ),
+    };
+
+    let setFn: ((v: UserSpecifiedColorScheme | null) => Promise<void>) | null = null;
+    let loadingValues: boolean[] = [];
+    function Capture() {
+      const { setColorScheme, isLoading } = useColorScheme();
+      setFn = setColorScheme;
+      loadingValues.push(isLoading);
+      return null;
+    }
+    render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Capture />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+    loadingValues = [];
+
+    let settlePromise: Promise<void> | null = null;
+    await act(async () => {
+      settlePromise = setFn!("dark");
+      await Promise.resolve();
+    });
+    expect(loadingValues.some((v) => v === true)).toBe(true);
+
+    await act(async () => {
+      resolveSet!();
+      await settlePromise;
+    });
+    expect(loadingValues[loadingValues.length - 1]).toBe(false);
+  });
+});
+
+describe("getColorSchemeFoucScript", () => {
+  test("returns a string referencing matchMedia, localStorage, and the default storage key", () => {
+    const script = getColorSchemeFoucScript();
+    expect(script).toContain("prefers-color-scheme: dark");
+    expect(script).toContain("localStorage");
+    expect(script).toContain("color-scheme");
+    expect(script).toContain("data-theme");
+  });
+
+  test("script applies the stored scheme to <html> when eval'd", () => {
+    localStorage.setItem("color-scheme", "dark");
+    const script = getColorSchemeFoucScript();
+    eval(script);
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  test("script falls back to matchMedia when storage is empty", () => {
+    mql.matches = true;
+    const script = getColorSchemeFoucScript();
+    eval(script);
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  test("respects custom options", () => {
+    localStorage.setItem("my-key", "light");
+    const script = getColorSchemeFoucScript({
+      storageKey: "my-key",
+      attributeName: "data-color-mode",
+    });
+    eval(script);
+    expect(document.documentElement.getAttribute("data-color-mode")).toBe("light");
+  });
+
+  test("class strategy applies correct class", () => {
+    localStorage.setItem("color-scheme", "dark");
+    const script = getColorSchemeFoucScript({ strategy: "class" });
+    eval(script);
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains("light")).toBe(false);
+  });
+});
