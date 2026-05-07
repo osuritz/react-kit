@@ -187,12 +187,12 @@ export function ColorSchemeProvider({
       return;
     }
     const mql = window.matchMedia(DARK_SCHEME_MEDIA_QUERY);
-    const handle = (event: MediaQueryListEvent | { matches: boolean }) => {
+    const handle = (event: MediaQueryListEvent) => {
       setSystemColorScheme(event.matches ? "dark" : "light");
     };
-    mql.addEventListener("change", handle as (e: MediaQueryListEvent) => void);
+    mql.addEventListener("change", handle);
     return () => {
-      mql.removeEventListener("change", handle as (e: MediaQueryListEvent) => void);
+      mql.removeEventListener("change", handle);
     };
   }, []);
 

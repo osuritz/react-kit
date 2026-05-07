@@ -17,7 +17,7 @@ The other files in this directory (`package.json`, `tsconfig.json`,
 **throwaway verification harness** — they exist only to run the test suite.
 Don't ship them to your app.
 
-Peer requirements: React 18+ (uses `useId`-era hooks; works in 18 and 19).
+Peer requirements: React 18+ (works in 18 and 19).
 
 ## Quick start
 
