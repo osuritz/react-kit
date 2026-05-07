@@ -336,20 +336,60 @@ describe("ColorSchemeProvider — DOM application strategies", () => {
 });
 
 describe("ColorSchemeProvider — async setColorScheme (regression: bug #4)", () => {
-  test("setColorScheme is awaitable and toggles isLoading around resolver", async () => {
+  test("setColorScheme returns a Promise that resolves only after the resolver settles", async () => {
     let resolveSet: (() => void) | null = null;
+    let resolverSettled = false;
     const stub: ColorSchemeResolver = {
       getCustomizedColorScheme: vi.fn(async () => "system" as UserSpecifiedColorScheme),
       setCustomizedColorScheme: vi.fn(
         () =>
           new Promise<void>((r) => {
-            resolveSet = r;
+            resolveSet = () => {
+              resolverSettled = true;
+              r();
+            };
           }),
       ),
     };
 
     let setFn: ((v: UserSpecifiedColorScheme | null) => Promise<void>) | null = null;
-    let loadingValues: boolean[] = [];
+    function Capture() {
+      const { setColorScheme } = useColorScheme();
+      setFn = setColorScheme;
+      return null;
+    }
+    render(
+      <ColorSchemeProvider colorSchemeResolver={stub}>
+        <Capture />
+      </ColorSchemeProvider>,
+    );
+    await flush();
+
+    let settled = false;
+    let settlePromise!: Promise<void>;
+    await act(async () => {
+      settlePromise = setFn!("dark").then(() => {
+        settled = true;
+      });
+      await Promise.resolve();
+    });
+    expect(settled).toBe(false);
+    expect(resolverSettled).toBe(false);
+
+    await act(async () => {
+      resolveSet!();
+      await settlePromise;
+    });
+    expect(settled).toBe(true);
+  });
+
+  test("isLoading does not flip on setColorScheme calls (no spinner flicker)", async () => {
+    const stub: ColorSchemeResolver = {
+      getCustomizedColorScheme: vi.fn(async () => "system" as UserSpecifiedColorScheme),
+      setCustomizedColorScheme: vi.fn(async () => {}),
+    };
+    let setFn: ((v: UserSpecifiedColorScheme | null) => Promise<void>) | null = null;
+    const loadingValues: boolean[] = [];
     function Capture() {
       const { setColorScheme, isLoading } = useColorScheme();
       setFn = setColorScheme;
@@ -362,20 +402,15 @@ describe("ColorSchemeProvider — async setColorScheme (regression: bug #4)", ()
       </ColorSchemeProvider>,
     );
     await flush();
-    loadingValues = [];
-
-    let settlePromise: Promise<void> | null = null;
-    await act(async () => {
-      settlePromise = setFn!("dark");
-      await Promise.resolve();
-    });
-    expect(loadingValues.some((v) => v === true)).toBe(true);
+    const sinceInitialLoad = loadingValues.length;
 
     await act(async () => {
-      resolveSet!();
-      await settlePromise;
+      await setFn!("dark");
     });
-    expect(loadingValues[loadingValues.length - 1]).toBe(false);
+    await flush();
+
+    const afterSet = loadingValues.slice(sinceInitialLoad);
+    expect(afterSet.every((v) => v === false)).toBe(true);
   });
 });
 

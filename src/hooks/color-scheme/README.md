@@ -81,7 +81,7 @@ By default the provider sets `<html data-theme="light|dark">`. Style your app wi
 ```ts
 const {
   colorScheme,                 // "light" | "dark" | null  (resolved value)
-  isLoading,                   // true while the persisted choice is being read/written
+  isLoading,                   // true only on first render until the persisted choice resolves
   userSpecifiedColorScheme,    // "light" | "dark" | "system"
   systemColorScheme,           // "light" | "dark" | null  (OS-level)
   setColorScheme,              // (value) => Promise<void>; null is treated as "system"
@@ -89,10 +89,13 @@ const {
 } = useColorScheme();
 ```
 
-`isLoading` semantics: it is `true` on first render until the resolver settles
-the persisted choice, and toggles `true → false` around each `setColorScheme`
-call. `colorScheme` is non-null from first render via the system-preference
-query as a fallback (so you don't need to gate UI on `isLoading`).
+`isLoading` semantics: it is `true` on first render and flips to `false` once
+the resolver settles the persisted choice. It does **not** flip back to `true`
+on subsequent `setColorScheme` calls — those update synchronously and persist
+in the background, so wrapping a toggle in a spinner would just produce
+flicker. `colorScheme` is non-null from first render via the system-preference
+query as a fallback, so you don't need to gate UI on `isLoading` at all unless
+you specifically want to delay paint until persisted state is loaded.
 
 `useColorScheme` throws if used outside a `ColorSchemeProvider`.
 

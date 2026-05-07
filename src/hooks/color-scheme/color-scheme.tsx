@@ -80,7 +80,7 @@ export type ColorSchemeStrategy =
 export interface ColorSchemeContextValue {
   /** Resolved color scheme. Non-null from first render via the system query. */
   colorScheme: ColorScheme | null;
-  /** True while the persisted user choice is being resolved or written. */
+  /** True only on first render, until the persisted user choice is resolved. */
   isLoading: boolean;
   /** The user's choice: 'light', 'dark', or 'system'. */
   userSpecifiedColorScheme: UserSpecifiedColorScheme;
@@ -213,14 +213,11 @@ export function ColorSchemeProvider({
   const setColorScheme = useCallback(
     async (value: UserSpecifiedColorScheme | null) => {
       const next = value ?? "system";
-      setIsLoading(true);
       setUserSpecifiedColorScheme(next);
       try {
         await resolver?.setCustomizedColorScheme(value);
       } catch (error) {
         console.error("Failed to persist color scheme", error);
-      } finally {
-        setIsLoading(false);
       }
     },
     [resolver],
