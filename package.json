@@ -1,0 +1,49 @@
+{
+  "name": "@osuritz/react-kit",
+  "version": "1.0.0",
+  "description": "Lightweight, copy-paste React hooks and utilities for common frontend patterns.",
+  "keywords": [
+    "react",
+    "hooks",
+    "enterprise"
+  ],
+  "homepage": "https://github.com/osuritz/react-kit#readme",
+  "bugs": {
+    "url": "https://github.com/osuritz/react-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osuritz/react-kit.git"
+  },
+  "license": "MIT",
+  "author": "Olivier Suritz",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.4",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.58.2",
+    "vite": "^8.0.10"
+  }
+}
