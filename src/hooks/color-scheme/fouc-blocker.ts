@@ -13,7 +13,7 @@ export interface FoucScriptOptions {
 export function getColorSchemeFoucScript(options: FoucScriptOptions = {}): string {
   const storageKey = options.storageKey ?? "color-scheme";
   const attributeName = options.attributeName ?? "data-theme";
-  const strategy = options.strategy ?? "data-attribute";
+  const strategy = options.strategy ?? "class";
 
   const k = JSON.stringify(storageKey);
   const a = JSON.stringify(attributeName);

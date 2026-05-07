@@ -5,11 +5,11 @@ scheme. Works without a provider; ships a `ColorSchemeProvider` for advanced
 cases. No npm package, no build step — copy the files into your app.
 
 > **You don't need this hook for purely-styled components.** If a component
-> only changes appearance via CSS (Tailwind's `dark:` variants, `:root[data-theme="dark"]`
-> rules), the FOUC blocker script + the right attribute on `<html>` is all
-> you need — no React state. Reach for the hook when JS itself needs to
-> branch on the scheme: a theme toggle's controlled value, an SVG icon swap,
-> a chart that picks colors at runtime, etc.
+> only changes appearance via CSS (Tailwind's `dark:` variants, `.dark` class
+> rules), the FOUC blocker script + the right class on `<html>` is all you
+> need — no React state. Reach for the hook when JS itself needs to branch
+> on the scheme: a theme toggle's controlled value, an SVG icon swap, a
+> chart that picks colors at runtime, etc.
 
 ## What to copy
 
@@ -27,59 +27,143 @@ works here, but they're not part of what you copy into your app.
 
 Peer requirements: React 18+ (works in 18 and 19).
 
-## Quick start
+## Client-only setup
 
-```tsx
-import { useColorScheme } from "./hooks/color-scheme/color-scheme";
+For Vite, CRA, or any non-SSR React app.
 
-function ThemeToggle() {
-  const { colorScheme, userSpecifiedColorScheme, setColorScheme } = useColorScheme();
-  return (
-    <select
-      value={userSpecifiedColorScheme}
-      onChange={(e) => void setColorScheme(e.target.value as "light" | "dark" | "system")}
-    >
-      <option value="system">System ({colorScheme})</option>
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
-    </select>
-  );
-}
+1. **Copy the files** ([what to copy](#what-to-copy)) into your project, e.g.
+   `src/hooks/color-scheme/`.
+
+2. **(Optional) Configure** at app startup if you need a non-default storage
+   key, target, attribute, or strategy. The default strategy is `"class"`,
+   so shadcn / Tailwind class-mode users skip this entirely:
+
+   ```tsx
+   // main.tsx — runs once, before any component renders
+   import { configureColorScheme, LocalStorageColorSchemeResolver } from "./hooks/color-scheme/color-scheme";
+
+   configureColorScheme({
+     resolver: new LocalStorageColorSchemeResolver({ storageKey: "my-app:theme" }),
+     // strategy: "data-attribute", // opt out of class-based theming
+   });
+   ```
+
+3. **Drop in a `ModeToggle`.** Below is a 3-state segmented control (light /
+   dark / system) — the canonical pattern. A 2-state icon button is also
+   common; see the demo page for that variant.
+
+   ```tsx
+   import { Monitor, Moon, Sun } from "lucide-react";
+   import { ToggleGroup, ToggleGroupItem } from "#components/ui/toggle-group.tsx";
+   import {
+     useColorScheme,
+     type UserSpecifiedColorScheme,
+   } from "./hooks/color-scheme/color-scheme";
+
+   export function ModeToggle() {
+     const { userSpecifiedColorScheme, colorScheme, setColorScheme } = useColorScheme();
+     return (
+       <div className="flex flex-col gap-2">
+         <ToggleGroup<UserSpecifiedColorScheme>
+           value={[userSpecifiedColorScheme]}
+           onValueChange={([next]) => next && void setColorScheme(next)}
+         >
+           <ToggleGroupItem value="light" aria-label="Light"><Sun /></ToggleGroupItem>
+           <ToggleGroupItem value="dark" aria-label="Dark"><Moon /></ToggleGroupItem>
+           <ToggleGroupItem value="system" aria-label="System"><Monitor /></ToggleGroupItem>
+         </ToggleGroup>
+         {userSpecifiedColorScheme === "system" && (
+           <p className="text-muted-foreground text-xs">System resolves to: {colorScheme}</p>
+         )}
+       </div>
+     );
+   }
+   ```
+
+That's it — no provider needed. On first hook call, a module-scoped store
+reads the OS preference, loads the persisted choice from `localStorage`, and
+toggles `<html class="light|dark">`. All hook consumers share that store, so
+updates in one component re-render the others.
+
+Style your app to react to the class:
+
+```css
+:root  { --bg: #fff; --fg: #111; }
+.dark  { --bg: #111; --fg: #eee; }
 ```
 
-That's it — no provider needed. On first call, the hook lazily initializes a
-module-scoped store that reads the OS preference, loads the persisted choice
-from `localStorage`, and applies `<html data-theme="light|dark">`. All hook
-consumers share that store, so updates in one component re-render the others.
+Or with Tailwind v4, declare the dark variant once in your CSS:
 
-If you want to override the defaults (storage key, target element, DOM
-strategy, custom resolver), call `configureColorScheme()` once at app startup,
-*before* any component calls `useColorScheme()`:
-
-```tsx
-import { configureColorScheme, LocalStorageColorSchemeResolver } from "./hooks/color-scheme/color-scheme";
-
-configureColorScheme({
-  resolver: new LocalStorageColorSchemeResolver({ storageKey: "my-app:theme" }),
-  strategy: "class", // or "data-attribute" (default), "both", or a function
-});
+```css
+@custom-variant dark (&:is(.dark *));
 ```
 
-For scoped configuration (e.g. tests, multiple isolated subtrees, mounting
-different schemes in different parts of the app), wrap with the provider:
+For scoped configuration (tests, multiple isolated subtrees, mounting
+different schemes in different parts of the app), wrap with the provider
+instead of calling `configureColorScheme`:
 
 ```tsx
-<ColorSchemeProvider strategy="class">
+<ColorSchemeProvider strategy="data-attribute">
   <App />
 </ColorSchemeProvider>
 ```
 
-By default the resolved scheme is written to `<html data-theme="light|dark">`. Style your app with:
+## SSR setup
 
-```css
-:root[data-theme="dark"] { --bg: #111; --fg: #eee; }
-:root[data-theme="light"] { --bg: #fff; --fg: #111; }
-```
+For Next.js, Remix, Astro, or any framework that ships HTML before client JS
+runs. Same hook, plus a synchronous pre-paint script so the page doesn't
+flash the wrong theme.
+
+1. **Copy the files** ([what to copy](#what-to-copy)) into your project.
+
+2. **Inject the FOUC script** in `<head>`, synchronously, before React
+   mounts. The script reads `localStorage` (with `prefers-color-scheme` as
+   fallback) and applies the correct class to `<html>` before first paint.
+   No options are passed below — the script's defaults match the hook's
+   defaults. If you customize either side, see step 4:
+
+   ```tsx
+   // app/layout.tsx (Next.js app router)
+   import { getColorSchemeFoucScript } from "./hooks/color-scheme/fouc-blocker";
+
+   export default function RootLayout({ children }: { children: React.ReactNode }) {
+     return (
+       <html lang="en" suppressHydrationWarning>
+         <head>
+           <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript() }} />
+         </head>
+         <body>{children}</body>
+       </html>
+     );
+   }
+   ```
+
+   > **FOUC** = Flash of Unstyled Content — the brief flash where the page
+   > renders with the server's default theme before client JS swaps in the
+   > user's chosen theme.
+
+   `suppressHydrationWarning` on `<html>` is rarely needed with the `class`
+   strategy because the script writes the class before React hydrates, but
+   keep it in if you ever toggle `strategy: "data-attribute"` and the
+   server-rendered tree disagrees with what the script wrote.
+
+3. **Mark the toggle as a client component** (`"use client"` in Next.js).
+   Use the same `ModeToggle` component shown in the [Client-only setup](#client-only-setup)
+   above.
+
+4. **(Optional) Configure** any non-default options. If you customize
+   `storageKey`, `attributeName`, or `strategy`, pass the same options to
+   `getColorSchemeFoucScript()` *and* `configureColorScheme()` — the
+   pre-paint script and the React-side hook must agree, or hydration will
+   show a flash:
+
+   ```tsx
+   const opts = { storageKey: "my-app:theme" } as const;
+   // pre-paint
+   <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript(opts) }} />
+   // app boot
+   configureColorScheme({ resolver: new LocalStorageColorSchemeResolver(opts) });
+   ```
 
 ## API
 
@@ -90,7 +174,7 @@ Both accept the same options:
 | Option | Type | Default | Notes |
 |---|---|---|---|
 | `resolver` (provider: `colorSchemeResolver`) | `ColorSchemeResolver` | `new LocalStorageColorSchemeResolver()` (browser only) | Persistence backend. Pass your own to use cookies, IndexedDB, server state, etc. |
-| `strategy` | `"data-attribute" \| "class" \| "both" \| (scheme) => void` | `"data-attribute"` | How the resolved scheme is applied to the DOM. |
+| `strategy` | `"data-attribute" \| "class" \| "both" \| (scheme) => void` | `"class"` | How the resolved scheme is applied to the DOM. |
 | `target` | `HTMLElement` | `document.documentElement` | Target element for `data-attribute`/`class`/`both`. Ignored for the function form. |
 | `attributeName` | `string` | `"data-theme"` | Attribute used by `data-attribute` and `both`. |
 
@@ -101,13 +185,17 @@ configurations.
 
 #### `strategy` choices
 
-- `"data-attribute"` (default): sets `<html data-theme="dark">`. Works with any
-  CSS that targets `[data-theme="dark"]`.
-- `"class"`: adds `light`/`dark` as a class on the target. Works out of the
-  box with Tailwind's `darkMode: 'class'` (or `darkMode: 'selector'`). Note:
-  this strategy unconditionally removes both `light` and `dark` from the
-  target before adding the resolved one — don't use those class names on the
-  same element for unrelated purposes.
+- `"class"` (default): adds `light`/`dark` as a class on the target. Works
+  out of the box with shadcn / Tailwind v4 (`@custom-variant dark (&:is(.dark *))`)
+  and Tailwind v3's `darkMode: 'class'` / `darkMode: 'selector'`. Note: this
+  strategy unconditionally removes both `light` and `dark` from the target
+  before adding the resolved one — don't use those class names on the same
+  element for unrelated purposes. Most CSS that branches on `.dark`
+  (Tailwind's `dark:` variants included) targets *descendants* of the
+  element with the class, so make sure your `target` is an ancestor of
+  everything you want to react to it. Default (`<html>`) covers everything.
+- `"data-attribute"`: sets `<html data-theme="dark">`. Works with any CSS that
+  targets `[data-theme="dark"]`.
 - `"both"`: sets both, useful while migrating between conventions.
 - function: called with `"light" | "dark"` on every change. Use this to write
   CSS variables, sync multiple targets, integrate with another framework, etc.
@@ -172,30 +260,14 @@ the literal `"system"`). Implements `subscribe` via the `window`
 `storage` event, so a theme change in one tab propagates to other tabs of
 the same origin without a page reload.
 
-## SSR / FOUC mitigation
+### `getColorSchemeFoucScript(options)`
 
-If you render HTML on the server (Next.js, Remix, Astro, etc.), the user's
-chosen scheme isn't known at HTML generation time, so the page can flash the
-wrong theme before React hydrates. Inject a tiny synchronous script in
-`<head>` that reads `localStorage` (and falls back to `prefers-color-scheme`)
-before React boots:
-
-```tsx
-import { getColorSchemeFoucScript } from "./hooks/color-scheme/fouc-blocker";
-
-// Next.js app router — in app/layout.tsx
-<head>
-  <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript() }} />
-</head>
-```
-
-> **FOUC** = Flash of Unstyled Content — the brief flash where the page
-> renders with one theme (server's default) before client JS swaps in the
-> user's chosen theme.
-
-`getColorSchemeFoucScript({ storageKey, attributeName, strategy })` accepts
-the same options you pass to the provider. Make sure they match, or the
-synchronous pre-paint and the React-side application will disagree.
+Returns the IIFE-shaped JS string used by the [SSR setup](#ssr-setup)'s
+pre-paint script. Accepts `{ storageKey, attributeName, strategy }` —
+defaults match the hook (`"color-scheme"`, `"data-theme"`, `"class"`). If
+you pass any of those options to `configureColorScheme` / `ColorSchemeProvider`,
+pass the same options here, or the pre-paint and React-side application
+will disagree and you'll see a flash.
 
 ## Testing this drop-in
 
@@ -215,6 +287,12 @@ the setup cost for a drop-in.
 
 ## Decisions made (where the spec left a choice)
 
+- **Default DOM strategy is `"class"`** — to align with shadcn / Tailwind v4
+  (`@custom-variant dark (&:is(.dark *))`) and Tailwind v3's class-mode dark
+  variant. Most users get the right behavior with no configuration. If you
+  were depending on the previous `"data-attribute"` default, pass
+  `strategy: "data-attribute"` explicitly to `configureColorScheme()` /
+  `ColorSchemeProvider` and to `getColorSchemeFoucScript()`.
 - **Provider-optional via singleton store** — the hook works without a
   provider by lazily initializing a module-scoped store. All hook consumers
   (with no provider) share state; configuration is global via
