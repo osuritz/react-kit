@@ -20,7 +20,10 @@ beforeEach(() => {
 
 afterEach(() => {
   document.documentElement.removeAttribute("data-theme");
+  document.documentElement.removeAttribute("data-mode");
+  document.documentElement.removeAttribute("data-color-mode");
   document.documentElement.className = "";
+  localStorage.clear();
   _resetDefaultColorSchemeStore();
 });
 
@@ -184,13 +187,14 @@ describe("useColorScheme — standalone (no provider, default singleton)", () =>
     expect(renderB.result.current.colorScheme).toBe("dark");
   });
 
-  test("default DOM application updates <html data-theme>", async () => {
+  test("default DOM application adds the resolved class to <html>", async () => {
     mql.matches = true;
     renderHook(() => useColorScheme());
     await act(async () => {
       await Promise.resolve();
     });
-    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains("light")).toBe(false);
   });
 
   test("configureColorScheme overrides defaults if called before first hook use", async () => {
@@ -198,7 +202,11 @@ describe("useColorScheme — standalone (no provider, default singleton)", () =>
       getCustomizedColorScheme: vi.fn(async () => "dark" as UserSpecifiedColorScheme),
       setCustomizedColorScheme: vi.fn(async () => {}),
     };
-    configureColorScheme({ resolver: stub, attributeName: "data-mode" });
+    configureColorScheme({
+      resolver: stub,
+      strategy: "data-attribute",
+      attributeName: "data-mode",
+    });
     const { result } = renderHook(() => useColorScheme());
     await act(async () => {
       await Promise.resolve();
@@ -484,7 +492,7 @@ describe("ColorSchemeProvider — DOM application strategies", () => {
   test("data-attribute strategy sets dataset.theme", async () => {
     mql.matches = true;
     render(
-      <ColorSchemeProvider>
+      <ColorSchemeProvider strategy="data-attribute">
         <Probe />
       </ColorSchemeProvider>,
     );
@@ -616,31 +624,39 @@ describe("getColorSchemeFoucScript", () => {
     expect(script).toContain("prefers-color-scheme: dark");
     expect(script).toContain("localStorage");
     expect(script).toContain("color-scheme");
-    expect(script).toContain("data-theme");
   });
 
-  test("script applies the stored scheme to <html> when eval'd", () => {
+  test("script applies the stored scheme to <html> when eval'd (default class strategy)", () => {
     localStorage.setItem("color-scheme", "dark");
     const script = getColorSchemeFoucScript();
     eval(script);
-    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains("light")).toBe(false);
   });
 
   test("script falls back to matchMedia when storage is empty", () => {
     mql.matches = true;
     const script = getColorSchemeFoucScript();
     eval(script);
-    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 
   test("respects custom options", () => {
     localStorage.setItem("my-key", "light");
     const script = getColorSchemeFoucScript({
       storageKey: "my-key",
+      strategy: "data-attribute",
       attributeName: "data-color-mode",
     });
     eval(script);
     expect(document.documentElement.getAttribute("data-color-mode")).toBe("light");
+  });
+
+  test("data-attribute strategy sets the configured attribute", () => {
+    localStorage.setItem("color-scheme", "dark");
+    const script = getColorSchemeFoucScript({ strategy: "data-attribute" });
+    eval(script);
+    expect(document.documentElement.dataset.theme).toBe("dark");
   });
 
   test("class strategy applies correct class", () => {

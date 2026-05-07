@@ -162,7 +162,7 @@ class ColorSchemeStore {
     this.resolver =
       options.resolver ??
       (typeof window !== "undefined" ? new LocalStorageColorSchemeResolver() : null);
-    this.strategy = options.strategy ?? "data-attribute";
+    this.strategy = options.strategy ?? "class";
     this.target = options.target;
     this.attributeName = options.attributeName ?? DEFAULT_ATTRIBUTE_NAME;
 
@@ -313,7 +313,7 @@ ColorSchemeContext.displayName = "ColorSchemeContext";
 
 export interface ColorSchemeProviderProps {
   colorSchemeResolver?: ColorSchemeResolver;
-  /** How the resolved scheme is applied to the DOM. Default: "data-attribute". */
+  /** How the resolved scheme is applied to the DOM. Default: "class". */
   strategy?: ColorSchemeStrategy;
   /** DOM target for "data-attribute"/"class"/"both" strategies. Default: <html>. */
   target?: HTMLElement;
