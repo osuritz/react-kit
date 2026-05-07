@@ -88,7 +88,6 @@ const {
   userSpecifiedColorScheme,    // "light" | "dark" | "system"
   systemColorScheme,           // "light" | "dark" | null  (OS-level)
   setColorScheme,              // (value) => Promise<void>; null is treated as "system"
-  mutate,                      // alias of setColorScheme
 } = useColorScheme();
 ```
 
@@ -178,8 +177,8 @@ the setup cost for a drop-in.
   documented it. The alternative (initial `colorScheme: null` until resolver
   settles) forces every consumer to either gate UI or accept a `null` flash;
   fallback-to-system is the friendlier default.
-- **Naming** — primary setter is `setColorScheme`. `mutate` is exported as an
-  alias so existing SWR-style call sites keep working.
+- **Naming** — setter is `setColorScheme`. The reference's SWR-flavored
+  `mutate` was dropped to avoid a misleading name (no key, no cache).
 - **DOM env** — verification harness uses jsdom (happy-dom 12/15/20 all had
   a broken `localStorage` getter on this Node 22). `localStorage` is
   polyfilled in `vitest.setup.ts` to dodge jsdom's `about:blank` storage

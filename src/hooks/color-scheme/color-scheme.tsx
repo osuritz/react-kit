@@ -88,8 +88,6 @@ export interface ColorSchemeContextValue {
   systemColorScheme: ColorScheme | null;
   /** Persist a new user choice. Awaitable. Passing null is treated as 'system'. */
   setColorScheme: (value: UserSpecifiedColorScheme | null) => Promise<void>;
-  /** Alias of `setColorScheme` for SWR-style ergonomics. */
-  mutate: (value: UserSpecifiedColorScheme | null) => Promise<void>;
 }
 
 const ColorSchemeContext = createContext<ColorSchemeContextValue | undefined>(
@@ -230,7 +228,6 @@ export function ColorSchemeProvider({
       userSpecifiedColorScheme,
       systemColorScheme,
       setColorScheme,
-      mutate: setColorScheme,
     }),
     [
       resolvedColorScheme,
