@@ -14,8 +14,17 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
 
 ## What's in here
 
-- **hooks/** — React hooks for common patterns
-- **components/** — Reusable component patterns (coming soon)
+### Hooks
+
+- **[color-scheme](src/hooks/color-scheme/README.md)** — drop-in `light`/`dark`
+  color scheme hook. Provider-less by default, configurable storage and DOM
+  strategy, ships an SSR FOUC-blocker script. Reach for it when JS needs to
+  branch on the scheme (theme toggle, icon/chart swaps); pure CSS theming
+  doesn't need it.
+
+### Components
+
+Reusable component patterns — coming soon.
 
 ## License
 
