@@ -21,9 +21,9 @@ Copy these three files into your project (e.g. `src/hooks/color-scheme/`):
 - *(optional)* this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
-`vitest.config.ts`, `vitest.setup.ts`, `color-scheme.test.tsx`) are a
-**throwaway verification harness** — they exist only to run the test suite.
-Don't ship them to your app.
+`vitest.config.ts`, `vitest.setup.ts`, `color-scheme.test.tsx`) are the
+**verification harness** — they live alongside the drop-in so `npm test`
+works here, but they're not part of what you copy into your app.
 
 Peer requirements: React 18+ (works in 18 and 19).
 
@@ -227,7 +227,7 @@ the setup cost for a drop-in.
   query as a fallback, so consumers don't need to gate UI on `isLoading`.
 - **Naming** — setter is `setColorScheme`. The reference's SWR-flavored
   `mutate` was dropped to avoid a misleading name (no key, no cache).
-- **DOM env** — verification harness uses jsdom (happy-dom 12/15/20 all had
-  a broken `localStorage` getter on this Node 22). `localStorage` is
-  polyfilled in `vitest.setup.ts` to dodge jsdom's `about:blank` storage
-  block.
+- **DOM env** — verification harness uses jsdom with a `localStorage`
+  polyfill in `vitest.setup.ts` to dodge jsdom's `about:blank` storage
+  block. happy-dom 12/15/20 each had a broken `localStorage` getter on this
+  Node 22, so jsdom + polyfill was the simplest path.
