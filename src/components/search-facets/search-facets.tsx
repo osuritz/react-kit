@@ -1,4 +1,9 @@
-// Peer requirements: react >=18, react-dom >=18, @base-ui/react >=1.0.
+// Peer requirements: react >=18, react-dom >=18, @base-ui/react >=1.0,
+// clsx >=2, tailwind-merge >=2. Tailwind v4 + the standard shadcn theme
+// tokens (`bg-popover`, `text-popover-foreground`, `border-input`, ...) are
+// expected at the host-app level — see `index.css` in the demo or the
+// shadcn `tailwind.css` import.
+//
 // Optional peer: react-day-picker >=9.1 — required only if your schema
 // declares a `date` facet (transitively imported via builder-popover →
 // editors/date-editor).
@@ -7,19 +12,8 @@ import { Combobox } from "@base-ui/react/combobox";
 import { ChipStrip } from "./chip-strip";
 import { useSearchFacets } from "./use-search-facets";
 import { BuilderPopover } from "./builder-popover";
+import { cn } from "./lib/cn";
 import type { FacetSchema, Query } from "./grammar/types";
-
-export interface SearchFacetsClassNames {
-  root: string;
-  inputGroup: string;
-  chip: string;
-  chipNegated: string;
-  chipRemove: string;
-  input: string;
-  triggerButton: string;
-  suggestion: string;
-  popup: string;
-}
 
 export interface BuilderTriggerApi {
   schema: FacetSchema;
@@ -40,15 +34,11 @@ export interface SearchFacetsProps {
   value: Query;
   onChange: (next: Query) => void;
   placeholder?: string;
+  /** Caller classes for the root container. Merged with `tailwind-merge`. */
   className?: string;
-  classNames?: Partial<SearchFacetsClassNames>;
   onSubmit?: (q: Query) => void;
   /** Optional render-prop slot for the builder popover trigger area. */
   renderBuilderTrigger?: (api: BuilderTriggerApi) => React.ReactNode;
-}
-
-function cx(...parts: Array<string | false | null | undefined>): string {
-  return parts.filter(Boolean).join(" ");
 }
 
 /**
@@ -73,12 +63,9 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
     onChange,
     placeholder,
     className,
-    classNames,
     onSubmit,
     renderBuilderTrigger,
   } = props;
-
-  const cn = classNames ?? {};
 
   const api = useSearchFacets({ schema, value, onChange });
 
@@ -158,7 +145,6 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   const handleComboboxValueChange = React.useCallback(
     (nextIds: string[]) => {
       if (nextIds.length >= api.chipIds.length) return;
-      // Find the first id that disappeared and remove that clause.
       let removedIndex = -1;
       const nextSet = new Set(nextIds);
       for (let i = 0; i < api.chipIds.length; i++) {
@@ -196,7 +182,6 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
       const negated = trailing.startsWith("-");
       const prefix = negated ? "-" : "";
       api.setInputValue(`${before}${prefix}${facet}:`);
-      // Re-focus the input after selection.
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
@@ -215,23 +200,11 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   };
 
   return (
-    <div className={cx("search-facets", cn.root, className)}>
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        style={{
-          position: "absolute",
-          width: 1,
-          height: 1,
-          padding: 0,
-          margin: -1,
-          overflow: "hidden",
-          clip: "rect(0,0,0,0)",
-          whiteSpace: "nowrap",
-          border: 0,
-        }}
-      >
+    <div
+      data-slot="search-facets"
+      className={cn("flex w-full flex-wrap items-center gap-2", className)}
+    >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {liveMessage}
       </div>
       <Combobox.Root<string, true>
@@ -243,31 +216,29 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
         <ChipStrip
           api={api}
           placeholder={placeholder}
-          classNames={{
-            inputGroup: cn.inputGroup,
-            chip: cn.chip,
-            chipNegated: cn.chipNegated,
-            chipRemove: cn.chipRemove,
-            input: cn.input,
-          }}
           onChipClick={handleChipClick}
           onSubmitEmpty={onSubmit ? handleSubmitEmpty : undefined}
           inputRef={inputRef}
         />
         {showSuggestions ? (
           <Combobox.Portal>
-            <Combobox.Positioner>
+            <Combobox.Positioner sideOffset={4}>
               <Combobox.Popup
-                className={cx("search-facets__popup", cn.popup)}
+                data-slot="search-facets-suggestions"
+                className={cn(
+                  "z-50 max-h-72 min-w-48 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden",
+                  "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 transition-[opacity,scale] duration-150",
+                )}
               >
                 <Combobox.List>
                   {api.facetSuggestions.map((s) => (
                     <Combobox.Item
                       key={s.facet}
                       value={s.facet}
-                      className={cx(
-                        "search-facets__suggestion",
-                        cn.suggestion,
+                      data-slot="search-facets-suggestion"
+                      className={cn(
+                        "flex cursor-pointer flex-col gap-0.5 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none",
+                        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
                       )}
                       onClick={(event) => {
                         // Suppress Base UI's default select behavior — we
@@ -278,11 +249,9 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
                         handleSuggestionSelect(s.facet);
                       }}
                     >
-                      <span className="search-facets__suggestion-label">
-                        {s.label}
-                      </span>
+                      <span className="font-medium">{s.label}</span>
                       {s.description ? (
-                        <span className="search-facets__suggestion-description">
+                        <span className="text-xs text-muted-foreground">
                           {s.description}
                         </span>
                       ) : null}
@@ -301,7 +270,14 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
           <button
             ref={triggerRef}
             type="button"
-            className={cx("search-facets__trigger", cn.triggerButton)}
+            data-slot="search-facets-trigger"
+            className={cn(
+              "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium whitespace-nowrap shadow-xs transition-colors",
+              "hover:bg-muted hover:text-foreground",
+              "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+              "aria-expanded:bg-muted aria-expanded:text-foreground",
+              "dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+            )}
             onClick={() => openBuilder(null)}
             aria-haspopup="dialog"
             aria-expanded={isOpen}
@@ -316,7 +292,6 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
             open={isOpen}
             onOpenChange={(o) => (o ? openBuilder(editingIndex) : closeBuilder())}
             anchor={triggerRef.current}
-            classNames={{ popup: cn.popup }}
           />
         </>
       )}

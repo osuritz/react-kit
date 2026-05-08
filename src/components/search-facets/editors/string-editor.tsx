@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Checkbox } from "@base-ui/react/checkbox";
 import type { EditorProps, StringFacet, Value } from "../grammar/types";
+import { cn, editorStyles } from "../lib/cn";
 
 export interface StringEditorProps extends EditorProps {
   facet: StringFacet;
-  classNames?: { editor?: string };
 }
 
 /**
@@ -13,10 +13,9 @@ export interface StringEditorProps extends EditorProps {
  * about `*` is surfaced inline.
  */
 export function StringEditor(props: StringEditorProps) {
-  const { facet, value, negated, onCommit, classNames } = props;
+  const { facet, value, negated, onCommit } = props;
 
-  const initialRaw =
-    value && value.kind === "literal" ? value.raw : "";
+  const initialRaw = value && value.kind === "literal" ? value.raw : "";
   const [text, setText] = useState<string>(initialRaw);
   const [neg, setNeg] = useState<boolean>(negated);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -43,7 +42,7 @@ export function StringEditor(props: StringEditorProps) {
   }
 
   return (
-    <div className={classNames?.editor} data-facet-type="string">
+    <div data-facet-type="string" className={editorStyles.row}>
       <input
         ref={inputRef}
         type="text"
@@ -52,21 +51,41 @@ export function StringEditor(props: StringEditorProps) {
         onKeyDown={handleKeyDown}
         aria-label={facet.label ?? facet.name}
         placeholder={facet.label ?? facet.name}
+        className={editorStyles.input}
       />
       {facet.allowWildcard ? (
-        <span style={{ marginLeft: 8, opacity: 0.7, fontSize: "0.85em" }}>
-          (use <code>*</code> as wildcard)
+        <span className="text-xs text-muted-foreground">
+          (use <code className="font-mono">*</code> as wildcard)
         </span>
       ) : null}
       {negatable ? (
-        <label style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
-          <Checkbox.Root checked={neg} onCheckedChange={(c) => setNeg(Boolean(c))}>
-            <Checkbox.Indicator />
+        <label className={editorStyles.checkboxLabel}>
+          <Checkbox.Root
+            checked={neg}
+            onCheckedChange={(c) => setNeg(Boolean(c))}
+            className={editorStyles.checkbox}
+          >
+            <Checkbox.Indicator className="text-current">
+              <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
+                <path
+                  d="M3 8l3 3 7-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Checkbox.Indicator>
           </Checkbox.Root>
-          <span>Negate</span>
+          Negate
         </label>
       ) : null}
-      <button type="button" onClick={handleApply} style={{ marginLeft: 8 }}>
+      <button
+        type="button"
+        onClick={handleApply}
+        className={cn(editorStyles.primaryButton, "ml-auto")}
+      >
         Apply
       </button>
     </div>

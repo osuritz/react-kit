@@ -6,10 +6,10 @@ import type {
   NumberFacet,
   Value,
 } from "../grammar/types";
+import { cn, editorStyles } from "../lib/cn";
 
 export interface NumberEditorProps extends EditorProps {
   facet: NumberFacet;
-  classNames?: { editor?: string };
 }
 
 type Op = "eq" | "gte" | "lte" | "range";
@@ -31,7 +31,7 @@ const OP_LABEL: Record<Op, string> = {
  * canonical `field:value` is more idiomatic than `field:=value`).
  */
 export function NumberEditor(props: NumberEditorProps) {
-  const { facet, value, negated, onCommit, classNames } = props;
+  const { facet, value, negated, onCommit } = props;
 
   const ops: Op[] = useMemo(
     () => (facet.ops && facet.ops.length > 0 ? facet.ops : DEFAULT_OPS),
@@ -39,7 +39,6 @@ export function NumberEditor(props: NumberEditorProps) {
   );
   const eqOnly = ops.length === 1 && ops[0] === "eq";
 
-  // Derive initial state from the existing value, if any.
   const initial = useMemo(() => {
     if (!value) return { op: ops[0]!, raw: "", from: "", to: "" };
     if (value.kind === "literal") {
@@ -48,7 +47,6 @@ export function NumberEditor(props: NumberEditorProps) {
     if (value.kind === "compare") {
       return { op: value.op as Op, raw: value.raw, from: "", to: "" };
     }
-    // range
     return { op: "range" as Op, raw: "", from: value.from, to: value.to };
   }, [value, ops]);
 
@@ -76,9 +74,7 @@ export function NumberEditor(props: NumberEditorProps) {
       return { kind: "range", from, to };
     }
     if (raw.length === 0) return null;
-    if (eqOnly) {
-      return { kind: "literal", raw };
-    }
+    if (eqOnly) return { kind: "literal", raw };
     return { kind: "compare", op: op as CompareOp, raw };
   }
 
@@ -97,15 +93,16 @@ export function NumberEditor(props: NumberEditorProps) {
 
   return (
     <div
-      className={classNames?.editor}
       data-facet-type="number"
       onKeyDown={handleKeyDown}
+      className={editorStyles.row}
     >
       {!eqOnly ? (
         <select
           value={op}
           onChange={(e) => setOp(e.target.value as Op)}
           aria-label={`${facet.label ?? facet.name} operator`}
+          className={editorStyles.select}
         >
           {ops.map((o) => (
             <option key={o} value={o}>
@@ -124,15 +121,16 @@ export function NumberEditor(props: NumberEditorProps) {
             onChange={(e) => setFrom(e.target.value)}
             placeholder="from"
             aria-label="from"
-            style={{ marginLeft: 4 }}
+            className={cn(editorStyles.input, "w-24 flex-none")}
           />
-          <span style={{ marginLeft: 4, marginRight: 4 }}>–</span>
+          <span className="text-xs text-muted-foreground">–</span>
           <input
             type="number"
             value={to}
             onChange={(e) => setTo(e.target.value)}
             placeholder="to"
             aria-label="to"
+            className={cn(editorStyles.input, "w-24 flex-none")}
           />
         </>
       ) : (
@@ -143,24 +141,43 @@ export function NumberEditor(props: NumberEditorProps) {
           onChange={(e) => setRaw(e.target.value)}
           aria-label={facet.label ?? facet.name}
           placeholder={facet.unit ?? facet.label ?? facet.name}
-          style={{ marginLeft: 4 }}
+          className={cn(editorStyles.input, "w-32 flex-none")}
         />
       )}
 
       {facet.unit ? (
-        <span style={{ marginLeft: 4, opacity: 0.7 }}>{facet.unit}</span>
+        <span className="text-xs text-muted-foreground">{facet.unit}</span>
       ) : null}
 
       {negatable ? (
-        <label style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
-          <Checkbox.Root checked={neg} onCheckedChange={(c) => setNeg(Boolean(c))}>
-            <Checkbox.Indicator />
+        <label className={editorStyles.checkboxLabel}>
+          <Checkbox.Root
+            checked={neg}
+            onCheckedChange={(c) => setNeg(Boolean(c))}
+            className={editorStyles.checkbox}
+          >
+            <Checkbox.Indicator className="text-current">
+              <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
+                <path
+                  d="M3 8l3 3 7-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Checkbox.Indicator>
           </Checkbox.Root>
-          <span>Negate</span>
+          Negate
         </label>
       ) : null}
 
-      <button type="button" onClick={handleApply} style={{ marginLeft: 8 }}>
+      <button
+        type="button"
+        onClick={handleApply}
+        className={cn(editorStyles.primaryButton, "ml-auto")}
+      >
         Apply
       </button>
     </div>

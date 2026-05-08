@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "react-day-picker/style.css";
 import { SearchFacets } from "#components/search-facets/search-facets.tsx";
-import "#components/search-facets/search-facets.css";
 import type {
   FacetSchema,
   Query,

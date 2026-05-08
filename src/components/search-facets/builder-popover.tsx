@@ -14,6 +14,7 @@ import { EnumEditor } from "./editors/enum-editor";
 import { StringEditor } from "./editors/string-editor";
 import { NumberEditor } from "./editors/number-editor";
 import { DateEditor } from "./editors/date-editor";
+import { cn } from "./lib/cn";
 
 export interface BuilderPopoverProps {
   schema: FacetSchema;
@@ -25,12 +26,8 @@ export interface BuilderPopoverProps {
   onOpenChange: (next: boolean) => void;
   /** Element the popover is anchored to. */
   anchor: HTMLElement | null;
-  classNames?: {
-    popup?: string;
-    row?: string;
-    rowLabel?: string;
-    editor?: string;
-  };
+  /** Caller classes for the popover popup. Merged with `tailwind-merge`. */
+  className?: string;
 }
 
 /**
@@ -40,47 +37,17 @@ export interface BuilderPopoverProps {
  * facet from your schema and remove `editors/date-editor.tsx` to drop
  * the peer.
  */
-function renderEditor(
-  def: FacetDef,
-  editorProps: EditorProps,
-  classNames?: BuilderPopoverProps["classNames"],
-) {
-  if (def.renderEditor) {
-    return def.renderEditor(editorProps);
-  }
+function renderEditor(def: FacetDef, editorProps: EditorProps) {
+  if (def.renderEditor) return def.renderEditor(editorProps);
   switch (def.type) {
     case "boolean":
-      return (
-        <BooleanEditor
-          {...editorProps}
-          facet={def}
-          classNames={{ editor: classNames?.editor }}
-        />
-      );
+      return <BooleanEditor {...editorProps} facet={def} />;
     case "enum":
-      return (
-        <EnumEditor
-          {...editorProps}
-          facet={def}
-          classNames={{ editor: classNames?.editor }}
-        />
-      );
+      return <EnumEditor {...editorProps} facet={def} />;
     case "string":
-      return (
-        <StringEditor
-          {...editorProps}
-          facet={def}
-          classNames={{ editor: classNames?.editor }}
-        />
-      );
+      return <StringEditor {...editorProps} facet={def} />;
     case "number":
-      return (
-        <NumberEditor
-          {...editorProps}
-          facet={def}
-          classNames={{ editor: classNames?.editor }}
-        />
-      );
+      return <NumberEditor {...editorProps} facet={def} />;
     case "date":
       return <DateEditor {...editorProps} />;
   }
@@ -95,7 +62,6 @@ interface RowProps {
   onCommit: (next: { value: Value; negated: boolean }) => void;
   onCancel: () => void;
   onToggleRowNegate: (negated: boolean) => void;
-  classNames?: BuilderPopoverProps["classNames"];
 }
 
 function Row(props: RowProps) {
@@ -108,7 +74,6 @@ function Row(props: RowProps) {
     onCommit,
     onCancel,
     onToggleRowNegate,
-    classNames,
   } = props;
   const rowRef = useRef<HTMLDivElement | null>(null);
 
@@ -118,7 +83,6 @@ function Row(props: RowProps) {
     if (!open || !isEditingTarget) return;
     const node = rowRef.current;
     if (!node) return;
-    // jsdom (and some older browsers) don't implement scrollIntoView; guard.
     if (typeof node.scrollIntoView === "function") {
       node.scrollIntoView({ block: "nearest" });
     }
@@ -133,42 +97,55 @@ function Row(props: RowProps) {
   return (
     <div
       ref={rowRef}
-      className={classNames?.row}
+      data-slot="search-facets-builder-row"
       data-facet-name={def.name}
       data-editing={isEditingTarget ? "true" : undefined}
-      style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}
+      className="flex items-start gap-3 border-b border-border/50 py-2 last:border-b-0"
     >
       <div
-        className={classNames?.rowLabel}
-        style={{ minWidth: 96, fontWeight: 500 }}
+        data-slot="search-facets-builder-row-label"
+        className="min-w-24 pt-1.5 text-sm font-medium text-foreground"
       >
         {def.label ?? def.name}
       </div>
-      <div style={{ flex: 1 }}>
-        {renderEditor(
-          def,
-          {
-            facet: def,
-            value: initialValue,
-            negated: initialNegated,
-            onCommit,
-            onCancel,
-          },
-          classNames,
-        )}
+      <div className="flex-1 min-w-0">
+        {renderEditor(def, {
+          facet: def,
+          value: initialValue,
+          negated: initialNegated,
+          onCommit,
+          onCancel,
+        })}
       </div>
       {negatable ? (
         <label
-          style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+          className="inline-flex items-center gap-1.5 pt-1.5 text-xs text-muted-foreground"
           title="Negate this row"
         >
           <Checkbox.Root
             checked={initialNegated}
             onCheckedChange={(c) => onToggleRowNegate(Boolean(c))}
+            className={cn(
+              "peer flex size-4 shrink-0 items-center justify-center rounded-sm border border-input bg-background shadow-xs",
+              "hover:border-ring",
+              "data-[checked]:bg-primary data-[checked]:border-primary data-[checked]:text-primary-foreground",
+              "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+            )}
           >
-            <Checkbox.Indicator />
+            <Checkbox.Indicator className="text-current">
+              <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
+                <path
+                  d="M3 8l3 3 7-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Checkbox.Indicator>
           </Checkbox.Root>
-          <span style={{ fontSize: "0.85em" }}>not</span>
+          not
         </label>
       ) : null}
     </div>
@@ -179,9 +156,9 @@ function Row(props: RowProps) {
  * Anchored builder popover. Renders one row per `schema` entry; each row
  * uses the matching editor (or `def.renderEditor` if provided). When
  * `editingIndex` is non-null the matching row is scrolled and focused on
- * open. Editors emit a new `{value, negated}` via `onCommit`; the
- * popover translates that into either replacing the clause at
- * `editingIndex` or appending a new clause, then closes.
+ * open. Editors emit a new `{value, negated}` via `onCommit`; the popover
+ * translates that into either replacing the clause at `editingIndex` or
+ * appending a new clause, then closes.
  */
 export function BuilderPopover(props: BuilderPopoverProps) {
   const {
@@ -192,7 +169,7 @@ export function BuilderPopover(props: BuilderPopoverProps) {
     open,
     onOpenChange,
     anchor,
-    classNames,
+    className,
   } = props;
 
   // Resolve the clause currently being edited (if any) so each row can
@@ -243,7 +220,6 @@ export function BuilderPopover(props: BuilderPopoverProps) {
   }
 
   function toggleRowNegate(def: FacetDef, negated: boolean) {
-    // Only meaningful when editing an existing clause for this facet.
     if (editingIndex === null) return;
     const current = value.clauses[editingIndex];
     if (!current || current.facet !== def.name) return;
@@ -256,26 +232,18 @@ export function BuilderPopover(props: BuilderPopoverProps) {
   return (
     <Popover.Root open={open} onOpenChange={(o) => onOpenChange(o)}>
       <Popover.Portal>
-        <Popover.Positioner anchor={anchor} sideOffset={4}>
+        <Popover.Positioner anchor={anchor} sideOffset={6}>
           <Popover.Popup
             ref={popupRef}
-            className={classNames?.popup}
+            data-slot="search-facets-builder-popup"
             aria-labelledby={titleId}
+            className={cn(
+              "z-50 w-[min(calc(100vw-2rem),28rem)] rounded-md border bg-popover p-3 text-popover-foreground shadow-md outline-hidden",
+              "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 transition-[opacity,scale] duration-150",
+              className,
+            )}
           >
-            <h2
-              id={titleId}
-              style={{
-                position: "absolute",
-                width: 1,
-                height: 1,
-                padding: 0,
-                margin: -1,
-                overflow: "hidden",
-                clip: "rect(0,0,0,0)",
-                whiteSpace: "nowrap",
-                border: 0,
-              }}
-            >
+            <h2 id={titleId} className="sr-only">
               {editingIndex !== null ? "Edit filter" : "Add filter"}
             </h2>
             <div role="group" aria-labelledby={titleId}>
@@ -302,7 +270,6 @@ export function BuilderPopover(props: BuilderPopoverProps) {
                     onCommit={(next) => commitForFacet(def, next)}
                     onCancel={() => onOpenChange(false)}
                     onToggleRowNegate={(neg) => toggleRowNegate(def, neg)}
-                    classNames={classNames}
                   />
                 );
               })}
@@ -313,4 +280,3 @@ export function BuilderPopover(props: BuilderPopoverProps) {
     </Popover.Root>
   );
 }
-

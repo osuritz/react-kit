@@ -48,8 +48,20 @@ you do **not** copy the matching `*-demo.tsx` — write your own integration.
 
 shadcn/ui components installed via `components.json`. Treat this like any
 other vendored shadcn directory: edit freely, but don't import these from
-inside a drop-in folder. Drop-ins must stay self-contained so users can
-copy the folder without dragging shadcn along.
+inside a drop-in folder. Drop-ins stay file-self-contained so users can
+copy the folder as a unit.
+
+## Drop-in styling conventions
+
+- **`hooks/<name>/`** drop-ins ship pure logic (no JSX-level styling) and
+  declare only React as a peer.
+- **`components/<name>/`** drop-ins ship rendered UI and follow the shadcn
+  idiom: Tailwind v4 utilities inline, classes composed with a local
+  `cn()` (`clsx` + `tailwind-merge`), and the standard shadcn theme tokens
+  (`bg-popover`, `border-input`, `ring-ring`, ...). They do **not** import
+  from `components/ui/`, but they **do** assume the host app has Tailwind
+  v4 + the shadcn token set installed (`@import "shadcn/tailwind.css"`).
+  Each component's README spells out the exact peer set.
 
 ## Adding something new
 

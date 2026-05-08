@@ -10,11 +10,8 @@ import { DayPicker, type DateRange } from "react-day-picker";
 import { Select } from "@base-ui/react/select";
 import { Checkbox } from "@base-ui/react/checkbox";
 
-import type {
-  DateFacet,
-  EditorProps,
-  Value,
-} from "../grammar/types.js";
+import type { DateFacet, EditorProps, Value } from "../grammar/types";
+import { cn, editorStyles } from "../lib/cn";
 
 type Op = "eq" | "gte" | "lte" | "range";
 
@@ -51,7 +48,6 @@ function fromISO(raw: string): Date | undefined {
 export function DateEditor(props: EditorProps): React.ReactNode {
   const { facet, value, negated, onCommit, onCancel } = props;
 
-  // Narrow facet to DateFacet at runtime via the type tag from the schema.
   const dateFacet = facet as DateFacet;
   const ops: ReadonlyArray<Op> =
     dateFacet.ops && dateFacet.ops.length > 0 ? dateFacet.ops : DEFAULT_OPS;
@@ -80,7 +76,6 @@ export function DateEditor(props: EditorProps): React.ReactNode {
         range: undefined as DateRange | undefined,
       };
     }
-    // value.kind === "range"
     return {
       op: "range" as Op,
       single: undefined as Date | undefined,
@@ -89,7 +84,7 @@ export function DateEditor(props: EditorProps): React.ReactNode {
         to: fromISO(value.to),
       } as DateRange,
     };
-    // Initial state derives from props on mount only; subsequent updates are driven by user input.
+    // Initial state derives from props on mount only; user input drives subsequent updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -117,7 +112,6 @@ export function DateEditor(props: EditorProps): React.ReactNode {
         ? { kind: "literal", raw: iso }
         : { kind: "compare", op: "eq", raw: iso };
     } else {
-      // gte | lte
       if (!single) return;
       next = { kind: "compare", op, raw: toISO(single) };
     }
@@ -125,35 +119,111 @@ export function DateEditor(props: EditorProps): React.ReactNode {
   };
 
   return (
-    <div className="search-facets-date-editor">
-      <div className="search-facets-date-editor__row">
-        <Select.Root
-          value={op}
-          onValueChange={(nextValue) => {
-            if (nextValue == null) return;
-            setOp(nextValue as Op);
-          }}
-        >
-          <Select.Trigger className="search-facets-date-editor__op-trigger">
-            <Select.Value>{(v) => OP_LABELS[(v as Op) ?? op]}</Select.Value>
-            <Select.Icon />
-          </Select.Trigger>
-          <Select.Portal>
-            <Select.Positioner>
-              <Select.Popup className="search-facets-date-editor__op-popup">
-                {ops.map((candidate) => (
-                  <Select.Item key={candidate} value={candidate}>
-                    <Select.ItemIndicator />
-                    <Select.ItemText>{OP_LABELS[candidate]}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Popup>
-            </Select.Positioner>
-          </Select.Portal>
-        </Select.Root>
+    <div data-facet-type="date" className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {!soleOpIsEq ? (
+          <Select.Root
+            value={op}
+            onValueChange={(nextValue) => {
+              if (nextValue == null) return;
+              setOp(nextValue as Op);
+            }}
+          >
+            <Select.Trigger
+              className={cn(
+                "inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-sm shadow-xs transition-colors",
+                "hover:bg-muted hover:text-foreground",
+                "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                "dark:bg-input/30",
+              )}
+            >
+              <Select.Value>{(v) => OP_LABELS[(v as Op) ?? op]}</Select.Value>
+              <Select.Icon className="text-muted-foreground">
+                <svg
+                  viewBox="0 0 16 16"
+                  className="size-3"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 6l4 4 4-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Positioner sideOffset={4}>
+                <Select.Popup
+                  className={cn(
+                    "z-50 min-w-32 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden",
+                  )}
+                >
+                  {ops.map((candidate) => (
+                    <Select.Item
+                      key={candidate}
+                      value={candidate}
+                      className={cn(
+                        "flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none",
+                        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+                      )}
+                    >
+                      <Select.ItemIndicator className="size-3 text-current">
+                        <svg
+                          viewBox="0 0 16 16"
+                          className="size-3"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M3 8l3 3 7-7"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </Select.ItemIndicator>
+                      <Select.ItemText>
+                        {OP_LABELS[candidate]}
+                      </Select.ItemText>
+                    </Select.Item>
+                  ))}
+                </Select.Popup>
+              </Select.Positioner>
+            </Select.Portal>
+          </Select.Root>
+        ) : null}
+
+        {showNegate ? (
+          <label className={editorStyles.checkboxLabel}>
+            <Checkbox.Root
+              checked={localNegated}
+              onCheckedChange={(checked) => setLocalNegated(Boolean(checked))}
+              className={editorStyles.checkbox}
+            >
+              <Checkbox.Indicator className="text-current">
+                <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
+                  <path
+                    d="M3 8l3 3 7-7"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Checkbox.Indicator>
+            </Checkbox.Root>
+            Negate
+          </label>
+        ) : null}
       </div>
 
-      <div className="search-facets-date-editor__picker">
+      <div className="rounded-md border bg-background p-1 text-sm dark:bg-input/30">
         {op === "range" ? (
           <DayPicker
             mode="range"
@@ -169,23 +239,20 @@ export function DateEditor(props: EditorProps): React.ReactNode {
         )}
       </div>
 
-      {showNegate ? (
-        <label className="search-facets-date-editor__negate">
-          <Checkbox.Root
-            checked={localNegated}
-            onCheckedChange={(checked) => setLocalNegated(Boolean(checked))}
-          >
-            <Checkbox.Indicator />
-          </Checkbox.Root>
-          <span>Negate</span>
-        </label>
-      ) : null}
-
-      <div className="search-facets-date-editor__actions">
-        <button type="button" onClick={onCancel}>
+      <div className="flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={onCancel}
+          className={editorStyles.ghostButton}
+        >
           Cancel
         </button>
-        <button type="button" onClick={handleApply} disabled={!canApply}>
+        <button
+          type="button"
+          onClick={handleApply}
+          disabled={!canApply}
+          className={editorStyles.primaryButton}
+        >
           Apply
         </button>
       </div>

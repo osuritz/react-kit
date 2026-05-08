@@ -3,10 +3,10 @@ import { RadioGroup } from "@base-ui/react/radio-group";
 import { Radio } from "@base-ui/react/radio";
 import { Checkbox } from "@base-ui/react/checkbox";
 import type { BooleanFacet, EditorProps, Value } from "../grammar/types";
+import { cn, editorStyles } from "../lib/cn";
 
 export interface BooleanEditorProps extends EditorProps {
   facet: BooleanFacet;
-  classNames?: { editor?: string };
 }
 
 /**
@@ -14,7 +14,7 @@ export interface BooleanEditorProps extends EditorProps {
  * as radio buttons and a "Negate" toggle. Commits a `literal` Value.
  */
 export function BooleanEditor(props: BooleanEditorProps) {
-  const { facet, value, negated, onCommit, classNames } = props;
+  const { facet, value, negated, onCommit } = props;
 
   const initialRaw =
     value && value.kind === "literal" ? value.raw : (facet.values[0] ?? "");
@@ -22,7 +22,6 @@ export function BooleanEditor(props: BooleanEditorProps) {
   const [neg, setNeg] = useState<boolean>(negated);
   const firstRef = useRef<HTMLInputElement | null>(null);
 
-  // Keep local state in sync if the prop changes (e.g. switching edit target).
   useEffect(() => {
     setSelected(initialRaw);
     setNeg(negated);
@@ -46,39 +45,57 @@ export function BooleanEditor(props: BooleanEditorProps) {
 
   return (
     <div
-      className={classNames?.editor}
       data-facet-type="boolean"
       onKeyDown={handleKeyDown}
+      className={editorStyles.row}
     >
       <RadioGroup
         value={selected}
         onValueChange={(v) => setSelected(String(v))}
         aria-label={facet.label ?? facet.name}
+        className={editorStyles.radioGroup}
       >
         {facet.values.map((v, idx) => (
-          <label
-            key={v}
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, marginRight: 8 }}
-          >
+          <label key={v} className={editorStyles.radioLabel}>
             <Radio.Root
               value={v}
               inputRef={idx === 0 ? firstRef : undefined}
+              className={editorStyles.radio}
             >
-              <Radio.Indicator />
+              <Radio.Indicator className={editorStyles.radioIndicator} />
             </Radio.Root>
             <span>{v}</span>
           </label>
         ))}
       </RadioGroup>
       {negatable ? (
-        <label style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
-          <Checkbox.Root checked={neg} onCheckedChange={(c) => setNeg(Boolean(c))}>
-            <Checkbox.Indicator />
+        <label className={editorStyles.checkboxLabel}>
+          <Checkbox.Root
+            checked={neg}
+            onCheckedChange={(c) => setNeg(Boolean(c))}
+            className={editorStyles.checkbox}
+          >
+            <Checkbox.Indicator className="text-current">
+              <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
+                <path
+                  d="M3 8l3 3 7-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Checkbox.Indicator>
           </Checkbox.Root>
-          <span>Negate</span>
+          Negate
         </label>
       ) : null}
-      <button type="button" onClick={handleApply} style={{ marginLeft: 8 }}>
+      <button
+        type="button"
+        onClick={handleApply}
+        className={cn(editorStyles.primaryButton, "ml-auto")}
+      >
         Apply
       </button>
     </div>

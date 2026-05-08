@@ -24,7 +24,7 @@ Copy these files into your project (e.g. `src/components/search-facets/`):
 - `grammar/{types.ts,parse.ts,stringify.ts,partial.ts}` — pure grammar layer
 - `use-search-facets.ts` — internal state hook
 - `use-query-param-sync.ts` — *(optional)* URL persistence helper
-- `search-facets.css` — styling tokens; override via `classNames` or by editing
+- `lib/cn.ts` — local class-name composer (shadcn idiom)
 - *(optional)* this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
@@ -32,10 +32,21 @@ The other files in this directory (`package.json`, `tsconfig.json`,
 the **verification harness** — they live alongside the drop-in so `npm test`
 works here, but they're not part of what you copy into your app.
 
+There is no `search-facets.css`. Styling lives in Tailwind utilities applied
+via `cn()` inside the component files, using the standard shadcn theme
+tokens (`bg-popover`, `text-popover-foreground`, `border-input`, ...). To
+restyle, either pass a `className` to `<SearchFacets/>` (which merges via
+`tailwind-merge`) or edit the source — drop-ins are designed to be forked.
+
 Peer requirements:
 
 - React 18+ (works in 18 and 19)
 - `@base-ui/react` (≥ 1.4)
+- `clsx` (≥ 2) and `tailwind-merge` (≥ 2) for the local `cn()` helper
+- Tailwind CSS v4 + the shadcn theme tokens defined on `:root` — see
+  [`shadcn/tailwind.css`](https://ui.shadcn.com/docs/tailwind-v4) or run
+  `npx shadcn init` once. Without these tokens the component renders
+  unstyled (no background on the popups, no chip colors, etc.).
 - `react-day-picker` (≥ 9.1) — **only required if your schema declares any
   `date` facet.** Delete `editors/date-editor.tsx` if you don't use dates,
   and the peer drops away.
@@ -46,7 +57,6 @@ Peer requirements:
 import "react-day-picker/style.css"; // only if you use date facets
 import { useState } from "react";
 import { SearchFacets } from "./components/search-facets/search-facets";
-import "./components/search-facets/search-facets.css";
 import type { FacetSchema, Query } from "./components/search-facets/grammar/types";
 
 const schema: FacetSchema = [
@@ -109,20 +119,23 @@ What's **out** of v1 (and why):
 
 ### `<SearchFacets>` props
 
-| Prop                  | Type                                                  | Required | Default        |
-| --------------------- | ----------------------------------------------------- | -------- | -------------- |
-| `schema`              | `FacetSchema`                                         | yes      | —              |
-| `value`               | `Query`                                               | yes      | —              |
-| `onChange`            | `(next: Query) => void`                               | yes      | —              |
-| `placeholder`         | `string`                                              | no       | —              |
-| `className`           | `string`                                              | no       | —              |
-| `classNames`          | `Partial<SearchFacetsClassNames>`                     | no       | —              |
-| `onSubmit`            | `(q: Query) => void`                                  | no       | —              |
-| `renderBuilderTrigger`| `(api: BuilderTriggerApi) => ReactNode`               | no       | default button |
+| Prop                  | Type                                    | Required | Default        |
+| --------------------- | --------------------------------------- | -------- | -------------- |
+| `schema`              | `FacetSchema`                           | yes      | —              |
+| `value`               | `Query`                                 | yes      | —              |
+| `onChange`            | `(next: Query) => void`                 | yes      | —              |
+| `placeholder`         | `string`                                | no       | —              |
+| `className`           | `string`                                | no       | —              |
+| `onSubmit`            | `(q: Query) => void`                    | no       | —              |
+| `renderBuilderTrigger`| `(api: BuilderTriggerApi) => ReactNode` | no       | default button |
 
-`SearchFacetsClassNames` slots: `root`, `inputGroup`, `chip`, `chipNegated`,
-`chipRemove`, `input`, `triggerButton`, `suggestion`, `popup`. Pass any
-subset; defaults are merged underneath.
+`className` is merged with the component's defaults via `tailwind-merge`,
+so caller-provided classes win. For deeper restyling, the component
+files surface `data-slot` attributes (`search-facets`,
+`search-facets-input-group`, `search-facets-chip`, `search-facets-trigger`,
+`search-facets-builder-popup`, `search-facets-suggestions`, etc.) you can
+target from your own CSS — or just fork the file and edit, which is what
+shadcn-style drop-ins are designed for.
 
 ### Helpers
 
@@ -199,7 +212,14 @@ hook contract.
   the trailing space. Quoted runs (`from:"a `) are detected and don't
   prematurely commit.
 - **Negation is a first-class chip state** with a toggle affordance and a
-  distinct visual treatment (`.search-facets__chip--negated`). Schemas can
-  opt out per-facet with `negatable: false`.
+  distinct visual treatment (a `cva` variant on the chip swaps to
+  `bg-destructive/10 text-destructive`). Schemas can opt out per-facet
+  with `negatable: false`.
+- **Styling follows the shadcn idiom.** Tailwind utilities are applied
+  inline via a local `cn()` (`clsx` + `tailwind-merge`), and the component
+  reads from the standard shadcn theme tokens — no separate CSS file, no
+  prefixed `--search-facets-*` variables. To restyle: pass a `className`
+  to the root, edit the file, or override with descendant selectors via
+  the `data-slot` attributes.
 - **`react-day-picker` is an optional peer.** If your schema doesn't declare
   a `date` facet, delete `editors/date-editor.tsx` and the peer drops out.
