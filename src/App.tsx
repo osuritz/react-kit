@@ -1,7 +1,9 @@
-import buttonSrc from "#components/mode-toggle-button.tsx?raw";
-import segmentedSrc from "#components/mode-toggle-segmented.tsx?raw";
-import { ModeToggleButton } from "#components/mode-toggle-button.tsx";
-import { ModeToggleSegmented } from "#components/mode-toggle-segmented.tsx";
+import buttonSrc from "#components/mode-toggle-button-demo.tsx?raw";
+import segmentedSrc from "#components/mode-toggle-segmented-demo.tsx?raw";
+import searchFacetsSrc from "#components/search-facets-demo.tsx?raw";
+import { ModeToggleButton } from "#components/mode-toggle-button-demo.tsx";
+import { ModeToggleSegmented } from "#components/mode-toggle-segmented-demo.tsx";
+import { SearchFacetsDemo } from "#components/search-facets-demo.tsx";
 
 export default function App() {
   return (
@@ -42,6 +44,14 @@ export default function App() {
             source={segmentedSrc}
           >
             <ModeToggleSegmented />
+          </DemoCard>
+
+          <DemoCard
+            title="Faceted search bar"
+            description="Schema-driven faceted search with field:value chips, negation, and a builder popover. Type 'from:bob' + space to commit a chip; click a chip to edit; click '+ Add filter' for the form view."
+            source={searchFacetsSrc}
+          >
+            <SearchFacetsDemo />
           </DemoCard>
         </div>
       </div>
