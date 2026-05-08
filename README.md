@@ -24,7 +24,13 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
 
 ### Components
 
-Reusable component patterns — coming soon.
+- **[search-facets](src/components/search-facets/README.md)** — drop-in
+  faceted search bar. Schema-driven, controlled by an AST, composed over
+  Base UI's `Combobox` and `Popover`. Gmail-flavor grammar (`field:value`,
+  `-field:value`, quoted phrases, ranges, free text) with five facet
+  types — boolean, enum, string, number, and (optional peer)
+  `react-day-picker`-backed date. Reach for it when filtering has more
+  than two or three orthogonal axes and users will be mixing them.
 
 ## License
 
