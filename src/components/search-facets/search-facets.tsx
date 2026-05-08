@@ -1,8 +1,9 @@
-// Peer requirements: react >=18, react-dom >=18, @base-ui/react >=1.0,
-// clsx >=2, tailwind-merge >=2. Tailwind v4 + the standard shadcn theme
-// tokens (`bg-popover`, `text-popover-foreground`, `border-input`, ...) are
-// expected at the host-app level — see `index.css` in the demo or the
-// shadcn `tailwind.css` import.
+// Peer requirements: react >=18, react-dom >=18, @base-ui/react >=1.4,
+// clsx >=2, tailwind-merge >=2, class-variance-authority >=0.7. Tailwind
+// v4 + the standard shadcn theme tokens (`bg-popover`,
+// `text-popover-foreground`, `border-input`, ...) are expected at the
+// host-app level — see `index.css` in the demo or the shadcn
+// `tailwind.css` import.
 //
 // Optional peer: react-day-picker >=9.1 — required only if your schema
 // declares a `date` facet (transitively imported via builder-popover →

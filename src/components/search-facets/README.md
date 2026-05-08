@@ -42,7 +42,8 @@ Peer requirements:
 
 - React 18+ (works in 18 and 19)
 - `@base-ui/react` (≥ 1.4)
-- `clsx` (≥ 2) and `tailwind-merge` (≥ 2) for the local `cn()` helper
+- `clsx` (≥ 2), `tailwind-merge` (≥ 2), and `class-variance-authority`
+  (≥ 0.7) for the local `cn()` helper and the chip variants
 - Tailwind CSS v4 + the shadcn theme tokens defined on `:root` — see
   [`shadcn/tailwind.css`](https://ui.shadcn.com/docs/tailwind-v4) or run
   `npx shadcn init` once. Without these tokens the component renders
