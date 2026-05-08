@@ -82,9 +82,30 @@
   opacity: 1;
   background: color-mix(in oklab, currentColor 15%, transparent);
 }
+.search-facets__chip-negate:focus-visible,
+.search-facets__chip-remove:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+  opacity: 1;
+}
 
 .search-facets__chip-label {
   white-space: nowrap;
+  /* Reset button-defaults so the chip label still looks like a span. */
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.search-facets__chip-label:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }
 
 .search-facets__input {
@@ -96,6 +117,12 @@
   color: inherit;
   font: inherit;
   padding: 0.125rem;
+}
+/* Surface focus on the wrapping group when the inner input is focused, since
+ * the input itself intentionally hides its own outline to blend into chips. */
+.search-facets__input-group:focus-within {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
 }
 
 .search-facets__trigger {

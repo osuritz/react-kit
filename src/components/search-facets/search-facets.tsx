@@ -75,13 +75,49 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
 
   const api = useSearchFacets({ schema, value, onChange });
 
+  // Polite live announcements for chip add/remove. We track the previous
+  // clause count and announce a short status string when it changes.
+  const prevCountRef = React.useRef<number>(value.clauses.length);
+  const [liveMessage, setLiveMessage] = React.useState<string>("");
+  React.useEffect(() => {
+    const prev = prevCountRef.current;
+    const next = value.clauses.length;
+    if (next > prev) {
+      const added = value.clauses[next - 1];
+      if (added) {
+        setLiveMessage(
+          `Filter added: ${added.facet} ${added.negated ? "is NOT" : "is"} ${
+            added.value.kind === "literal"
+              ? added.value.raw
+              : added.value.kind === "compare"
+                ? `${added.value.op} ${added.value.raw}`
+                : `${added.value.from} to ${added.value.to}`
+          }`,
+        );
+      }
+    } else if (next < prev) {
+      setLiveMessage("Filter removed");
+    }
+    prevCountRef.current = next;
+  }, [value.clauses]);
+
   const [isOpen, setIsOpen] = React.useState(false);
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+  // Element that had focus when the builder opened — focus is restored here
+  // when the builder closes, so keyboard / screen-reader users land back where
+  // they invoked the popover (the chip's edit button or the "+ Add filter").
+  const lastTriggerRef = React.useRef<HTMLElement | null>(null);
 
   const openBuilder = React.useCallback((index?: number | null) => {
+    if (typeof document !== "undefined") {
+      const el = document.activeElement;
+      if (el instanceof HTMLElement) {
+        lastTriggerRef.current = el;
+      }
+    }
     setEditingIndex(index ?? null);
     setIsOpen(true);
   }, []);
@@ -89,6 +125,13 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   const closeBuilder = React.useCallback(() => {
     setIsOpen(false);
     setEditingIndex(null);
+    // Defer to next frame so Base UI's portal teardown runs first.
+    const target = lastTriggerRef.current ?? triggerRef.current;
+    if (target && typeof target.focus === "function") {
+      requestAnimationFrame(() => {
+        target.focus();
+      });
+    }
   }, []);
 
   const handleChipClick = React.useCallback(
@@ -166,6 +209,24 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
 
   return (
     <div className={cx("search-facets", cn.root, className)}>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: "hidden",
+          clip: "rect(0,0,0,0)",
+          whiteSpace: "nowrap",
+          border: 0,
+        }}
+      >
+        {liveMessage}
+      </div>
       <Combobox.Root<string, true>
         multiple
         value={api.chipIds}

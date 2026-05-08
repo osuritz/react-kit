@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { Checkbox } from "@base-ui/react/checkbox";
 import {
@@ -116,7 +116,10 @@ function Row(props: RowProps) {
     if (!open || !isEditingTarget) return;
     const node = rowRef.current;
     if (!node) return;
-    node.scrollIntoView({ block: "nearest" });
+    // jsdom (and some older browsers) don't implement scrollIntoView; guard.
+    if (typeof node.scrollIntoView === "function") {
+      node.scrollIntoView({ block: "nearest" });
+    }
     const focusable = node.querySelector<HTMLElement>(
       'input, select, textarea, button, [tabindex]:not([tabindex="-1"])',
     );
@@ -195,6 +198,28 @@ export function BuilderPopover(props: BuilderPopoverProps) {
   const editingClause: Clause | null =
     editingIndex !== null ? (value.clauses[editingIndex] ?? null) : null;
 
+  const titleId = useId();
+  const popupRef = useRef<HTMLDivElement | null>(null);
+
+  // When opening in "add new" mode (no editingIndex), Base UI's focus trap
+  // moves focus into the popup but to the popup container itself, which is
+  // unhelpful for screen-reader users. Move focus to the first focusable
+  // form control inside the popup so the user can immediately interact.
+  useEffect(() => {
+    if (!open) return;
+    if (editingIndex !== null) return; // edit-mode handles its own focus
+    const node = popupRef.current;
+    if (!node) return;
+    // Defer to next frame so Base UI's focus management runs first.
+    const id = requestAnimationFrame(() => {
+      const focusable = node.querySelector<HTMLElement>(
+        'input:not([type="hidden"]), select, textarea, [role="radio"], [role="checkbox"], button',
+      );
+      focusable?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open, editingIndex]);
+
   function commitForFacet(
     def: FacetDef,
     next: { value: Value; negated: boolean },
@@ -230,8 +255,28 @@ export function BuilderPopover(props: BuilderPopoverProps) {
     <Popover.Root open={open} onOpenChange={(o) => onOpenChange(o)}>
       <Popover.Portal>
         <Popover.Positioner anchor={anchor} sideOffset={4}>
-          <Popover.Popup className={classNames?.popup}>
-            <div role="group" aria-label="Add filter">
+          <Popover.Popup
+            ref={popupRef}
+            className={classNames?.popup}
+            aria-labelledby={titleId}
+          >
+            <h2
+              id={titleId}
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                padding: 0,
+                margin: -1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+                whiteSpace: "nowrap",
+                border: 0,
+              }}
+            >
+              {editingIndex !== null ? "Edit filter" : "Add filter"}
+            </h2>
+            <div role="group" aria-labelledby={titleId}>
               {schema.map((def) => {
                 const isEditingTarget =
                   editingIndex !== null &&

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Combobox } from "@base-ui/react/combobox";
 import { hasOpenQuote } from "./grammar/partial";
-import { clauseToString } from "./grammar/stringify";
+import { clauseToString, valueToString } from "./grammar/stringify";
 import type { UseSearchFacets } from "./use-search-facets";
 import type { ChipModel } from "./grammar/types";
 
@@ -30,6 +30,19 @@ function cx(...parts: Array<string | false | null | undefined>): string {
 
 function chipLabel(chip: ChipModel): string {
   return clauseToString(chip.clause);
+}
+
+/**
+ * Build a screen-reader friendly label for a chip, e.g.
+ *   "Filter: from is bob"  /  "Filter: from is NOT bob"
+ * The leading word "Filter" gives non-sighted users context, and "NOT" is
+ * spelled out so the negation state is unambiguous when read aloud.
+ */
+function chipAccessibleLabel(chip: ChipModel, kind: "edit" | "filter"): string {
+  const prefix = kind === "edit" ? "Edit filter" : "Filter";
+  const verb = chip.clause.negated ? "is NOT" : "is";
+  const value = valueToString(chip.clause.value);
+  return `${prefix}: ${chip.clause.facet} ${verb} ${value}`;
 }
 
 /**
@@ -90,6 +103,8 @@ export function ChipStrip(props: ChipStripProps): React.JSX.Element {
     >
       {api.chips.map((chip) => {
         const id = `${chip.index}::${clauseToString(chip.clause)}`;
+        const filterLabel = chipAccessibleLabel(chip, "filter");
+        const editLabel = chipAccessibleLabel(chip, "edit");
         return (
           <Combobox.Chip
             key={id}
@@ -99,12 +114,7 @@ export function ChipStrip(props: ChipStripProps): React.JSX.Element {
               chip.clause.negated && "search-facets__chip--negated",
               chip.clause.negated && cn.chipNegated,
             )}
-            onClick={(event) => {
-              // Prevent the chip click from bubbling into the input focus
-              // logic in a way that triggers Combobox selection.
-              event.stopPropagation();
-              if (onChipClick) onChipClick(chip.index);
-            }}
+            aria-label={filterLabel}
             data-facet={chip.clause.facet}
             data-negated={chip.clause.negated ? "" : undefined}
           >
@@ -114,6 +124,7 @@ export function ChipStrip(props: ChipStripProps): React.JSX.Element {
               aria-label={
                 chip.clause.negated ? "Remove negation" : "Negate filter"
               }
+              aria-pressed={chip.clause.negated}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -122,10 +133,20 @@ export function ChipStrip(props: ChipStripProps): React.JSX.Element {
             >
               {chip.clause.negated ? "+" : "−"}
             </button>
-            <span className="search-facets__chip-label">{chipLabel(chip)}</span>
+            <button
+              type="button"
+              className="search-facets__chip-label"
+              aria-label={editLabel}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (onChipClick) onChipClick(chip.index);
+              }}
+            >
+              {chipLabel(chip)}
+            </button>
             <Combobox.ChipRemove
               className={cx("search-facets__chip-remove", cn.chipRemove)}
-              aria-label={`Remove filter ${chip.clause.facet}`}
+              aria-label={`Remove ${filterLabel.replace(/^Filter: /, "filter ")}`}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
