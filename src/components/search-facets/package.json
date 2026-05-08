@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "@base-ui/react": ">=1.4.0",
+    "class-variance-authority": ">=0.7.0",
+    "clsx": ">=2.0.0",
+    "tailwind-merge": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-day-picker": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@base-ui/react": "^1.4.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitest/coverage-v8": "^2.1.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jsdom": "^29.1.1",
+    "react": "^18.3.1",
+    "react-day-picker": "^9.1.0",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.5.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.4"
+  }
+}
