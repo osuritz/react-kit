@@ -1,4 +1,7 @@
 // Peer requirements: react >=18, react-dom >=18, @base-ui/react >=1.0.
+// Optional peer: react-day-picker >=9.1 — required only if your schema
+// declares a `date` facet (transitively imported via builder-popover →
+// editors/date-editor).
 import * as React from "react";
 import { Combobox } from "@base-ui/react/combobox";
 import { ChipStrip } from "./chip-strip";
@@ -55,9 +58,13 @@ function cx(...parts: Array<string | false | null | undefined>): string {
  * inside a Base UI `Combobox.Root` configured for multi-select; the chip
  * strip and input live inside `chip-strip.tsx`. Adding chips happens through
  * `commitTrailingToken()` driven by space/Enter on the input — never through
- * Combobox's own value events. The builder popover (rendered by the
- * `renderBuilderTrigger` slot) is owned externally; this component only
- * tracks `editingIndex` and `isOpen` and threads them through `BuilderTriggerApi`.
+ * Combobox's own value events.
+ *
+ * The builder popover is rendered inline by default, anchored to a built-in
+ * "+ Add filter" trigger. Pass `renderBuilderTrigger` to take over the
+ * trigger area; you receive a `BuilderTriggerApi` object describing
+ * `editingIndex` / `isOpen` plus imperative `openBuilder` / `closeBuilder`
+ * actions, and you become responsible for rendering your own `<BuilderPopover>`.
  */
 export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   const {

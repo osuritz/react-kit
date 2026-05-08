@@ -35,8 +35,10 @@ export interface BuilderPopoverProps {
 
 /**
  * Pick the right editor for a given facet definition. `def.renderEditor`
- * always wins; otherwise we dispatch on `def.type`. Date editors are
- * intentionally not implemented here — Phase 2d wires those in.
+ * always wins; otherwise we dispatch on `def.type`. The `date` branch
+ * statically imports `react-day-picker` via `DateEditor`; drop a date
+ * facet from your schema and remove `editors/date-editor.tsx` to drop
+ * the peer.
  */
 function renderEditor(
   def: FacetDef,

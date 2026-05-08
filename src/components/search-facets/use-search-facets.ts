@@ -54,13 +54,16 @@ export interface UseSearchFacets {
 }
 
 /**
- * Render a clause to a stable string id. We intentionally use the canonical
- * stringification — two clauses that serialize identically would produce the
- * same id, but Base UI Combobox requires unique values, so callers
- * inspecting `chipIds` should prefer the index-based actions
- * (`removeClause(index)`, `replaceClause(index, ...)`) when handling
- * Combobox events. The id is stable for a given clause shape and survives
- * the controlled value being threaded through the parent.
+ * Render a clause to a stable string id of the form `<index>::<canonical>`.
+ * The index prefix guarantees uniqueness even when two clauses serialize
+ * identically (Base UI's multi-select Combobox requires unique values).
+ * The canonical stringification is included so the id changes when the
+ * clause's shape changes, which is what surfaces removals/edits to the
+ * underlying Combobox.
+ *
+ * Consumers handling Combobox events should reach for the index-based
+ * actions (`removeClause(index)`, `replaceClause(index, ...)`) rather than
+ * parsing the id back out.
  */
 function clauseId(clause: Clause, index: number): string {
   return `${index}::${clauseToString(clause)}`;
