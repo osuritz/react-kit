@@ -4,9 +4,15 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
+
+// useLayoutEffect emits a dev warning under SSR; fall back to useEffect on
+// the server. Both are no-ops there — only the warning differs.
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export type Action = {
   id: string;                    // stable, e.g. "nav.settings"
@@ -25,6 +31,8 @@ export interface ActionsContextValue {
   register: (action: Action) => () => void;
   /** Snapshot of all registered actions. Identity is stable until the next mutation. */
   getAll: () => Action[];
+  /** Look up a single action by id without scanning the snapshot. */
+  getById: (id: string) => Action | undefined;
   /** Subscribe to mutations. Returns an unsubscribe fn. */
   subscribe: (listener: () => void) => () => void;
 }
@@ -57,6 +65,8 @@ class ActionRegistry {
   };
 
   getAll = (): Action[] => this.snapshot;
+
+  getById = (id: string): Action | undefined => this.entries.get(id);
 
   subscribe = (listener: () => void): (() => void) => {
     this.subscribers.add(listener);
@@ -98,6 +108,7 @@ export function useActions(): ActionsContextValue {
     () => ({
       register: registry.register,
       getAll: registry.getAll,
+      getById: registry.getById,
       subscribe: registry.subscribe,
     }),
     [registry],
@@ -108,12 +119,20 @@ export function useActions(): ActionsContextValue {
  * Register an action for the lifetime of the calling component.
  * Identity is keyed by `action.id` — re-renders that change other fields
  * (run, label, etc.) do NOT re-register; the registered entry reads those
- * fields through a live ref so consumers always see the latest.
+ * fields through a live ref so consumers always see the latest *committed*
+ * value.
+ *
+ * The ref is updated in a layout effect (not during render) so concurrent
+ * renders that get discarded — e.g. a low-priority transition interrupted
+ * by a higher-priority update — do not leak uncommitted field values to
+ * consumers reading through the live wrapper.
  */
 export function useAction(action: Action): void {
   const { register } = useActions();
   const ref = useRef(action);
-  ref.current = action;
+  useIsomorphicLayoutEffect(() => {
+    ref.current = action;
+  });
 
   useEffect(() => {
     const live: Action = {

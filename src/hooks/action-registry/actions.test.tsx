@@ -113,6 +113,30 @@ describe("ActionRegistry — register / getAll / subscribe", () => {
     expect(result.current.getAll()).toEqual([second]);
   });
 
+  it("getById looks up an action without scanning getAll", () => {
+    const { result } = renderUseActions();
+    const a = makeAction({ id: "a", label: "A" });
+    const b = makeAction({ id: "b", label: "B" });
+    act(() => {
+      result.current.register(a);
+      result.current.register(b);
+    });
+    expect(result.current.getById("a")).toBe(a);
+    expect(result.current.getById("b")).toBe(b);
+    expect(result.current.getById("missing")).toBeUndefined();
+  });
+
+  it("getById reflects unregistration", () => {
+    const { result } = renderUseActions();
+    let unregister: () => void = () => {};
+    act(() => {
+      unregister = result.current.register(makeAction({ id: "a" }));
+    });
+    expect(result.current.getById("a")).toBeDefined();
+    act(() => unregister());
+    expect(result.current.getById("a")).toBeUndefined();
+  });
+
   it("getAll returns a stable identity until the next mutation", () => {
     const { result } = renderUseActions();
     act(() => {
@@ -363,7 +387,26 @@ describe("provider isolation", () => {
 });
 
 describe("SSR safety", () => {
+  // jsdom defines `window`, so the isomorphic-layout-effect guard picks
+  // useLayoutEffect; renderToString in the same process then warns about
+  // it. In real Node SSR, window is undefined, the guard picks useEffect,
+  // and there is no warning. Silence the test-environment-only noise.
+  function silenceLayoutEffectSsrWarning() {
+    const original = console.error;
+    vi.spyOn(console, "error").mockImplementation((...args) => {
+      const msg = args[0];
+      if (
+        typeof msg === "string" &&
+        msg.includes("useLayoutEffect does nothing on the server")
+      ) {
+        return;
+      }
+      original.apply(console, args);
+    });
+  }
+
   it("renderToString does not throw and produces output", () => {
+    silenceLayoutEffectSsrWarning();
     function RegisterSSR() {
       useAction(makeAction({ id: "ssr", label: "SSR" }));
       return null;
@@ -375,5 +418,26 @@ describe("SSR safety", () => {
       </ActionsProvider>,
     );
     expect(html).toContain("ok");
+  });
+
+  it("getAll returns empty during SSR — useEffect does not run on the server", () => {
+    silenceLayoutEffectSsrWarning();
+    let serverAll: Action[] | null = null;
+    function CaptureSSR() {
+      const { getAll } = useActions();
+      serverAll = getAll();
+      return null;
+    }
+    function RegisterSSR() {
+      useAction(makeAction({ id: "ssr", label: "SSR" }));
+      return null;
+    }
+    renderToString(
+      <ActionsProvider>
+        <RegisterSSR />
+        <CaptureSSR />
+      </ActionsProvider>,
+    );
+    expect(serverAll).toEqual([]);
   });
 });

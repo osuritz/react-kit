@@ -100,8 +100,9 @@ opaque metadata for consumers; the registry doesn't interpret it.
 
 ```ts
 interface ActionsContextValue {
-  register: (action: Action) => () => void; // returns an idempotent unregister
-  getAll: () => Action[];                    // stable identity until next mutation
+  register: (action: Action) => () => void;     // returns an idempotent unregister
+  getAll: () => Action[];                        // stable identity until next mutation
+  getById: (id: string) => Action | undefined;  // O(1) lookup
   subscribe: (listener: () => void) => () => void;
 }
 ```
@@ -112,8 +113,32 @@ interface ActionsContextValue {
   current entry is still the same instance).
 - `getAll()` returns the same array reference until the next mutation, so
   it's safe to feed straight into `useSyncExternalStore`.
+- `getById(id)` is an O(1) lookup against the registry's internal map.
+  Use it for "execute this action by id" paths (deep links, recents,
+  command-by-name) instead of scanning `getAll()`.
 - `subscribe(listener)` fires `listener` after every register/unregister.
   The returned fn detaches it.
+
+#### Subscriber semantics — read this before memoizing
+
+Subscribers fire when actions are added, removed, or change their `id`
+— i.e. on `register`, `unregister`, and `useAction` re-renders where
+`action.id` itself changed. **Field-level updates do *not* fire
+subscribers.** A re-render of `useAction(...)` with the same `id` but a
+new `label`, `keywords`, `enabled`, or `run` propagates through the
+live getters on the registered Action — the next read sees the new
+value, but no subscribe event is emitted.
+
+The implication for consumers (palettes, shortcut hooks, anything that
+caches across renders): **don't memoize derived state from action
+fields without an independent invalidation signal.** A command palette
+building a fuzzy-search index over `keywords`/`label` should rebuild
+the index when the search input changes, when `subscribe` fires, *and*
+on every render of the palette itself — not under the assumption that
+`subscribe` will catch every visible change. The cheapest correct
+pattern is to recompute on each render with a `useMemo` keyed by the
+input plus `useSyncExternalStore(subscribe, getAll, getAll)`'s array
+identity.
 
 ### `useAction(action: Action): void`
 
@@ -125,7 +150,9 @@ keyed by `action.id`:
 - Renders where `action.id` changes do unregister + register, firing two
   subscribe events.
 - The registered entry reads `run`/`label`/`enabled`/etc. through a live
-  ref, so consumers always invoke the latest closures.
+  ref that's updated in a layout effect, so consumers always invoke the
+  latest *committed* values. Concurrent renders that get discarded never
+  leak field values to consumers.
 
 ### `Action`
 
@@ -171,7 +198,13 @@ npm test -- --coverage
 - **`useAction` keys identity by `id`.** A live getter wrapper means
   callbacks and labels stay fresh between renders without churning
   subscribers — important when a command palette or shortcut hook is
-  reading the list on every keystroke.
+  reading the list on every keystroke. The wrapper's ref is updated in a
+  layout effect, not during render, so concurrent transitions that React
+  discards don't leak uncommitted field values to consumers.
+- **`getById` is on the API surface.** Palette deep-links and "execute
+  by id" paths happen often enough that an O(n) `getAll().find(...)`
+  would be a footgun. Since the registry already keys its internal map
+  by id, exposing `getById` is free.
 - **`id` collision warns + overwrites.** Two components claiming the same
   id is almost always a bug; the warn surfaces it without hard-crashing
   apps where two unrelated trees happen to mount the same id briefly. The
