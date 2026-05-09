@@ -16,6 +16,13 @@ export type Action = {
   shortcut?: string | string[];  // "mod+k", "g i", ["mod+s","ctrl+s"]
   scope?: string;                // "global" (default) | route/component scope id
   enabled?: () => boolean;
+  /**
+   * When true, the keyboard-shortcut hook fires this action even if the
+   * user is typing in an `<input>`, `<textarea>`, or `contenteditable`
+   * surface. Defaults to `false`. The registry itself doesn't read this
+   * flag — it's metadata for the shortcut consumer.
+   */
+  allowInInput?: boolean;
   run: (ctx: { event?: KeyboardEvent }) => void | Promise<void>;
   icon?: ReactNode;
 };
@@ -156,6 +163,9 @@ export function useAction(action: Action): void {
       },
       get enabled() {
         return ref.current.enabled;
+      },
+      get allowInInput() {
+        return ref.current.allowInInput;
       },
       run: (ctx) => ref.current.run(ctx),
     };

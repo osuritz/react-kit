@@ -2,10 +2,12 @@ import buttonSrc from "#components/mode-toggle-button-demo.tsx?raw";
 import segmentedSrc from "#components/mode-toggle-segmented-demo.tsx?raw";
 import searchFacetsSrc from "#components/search-facets-demo.tsx?raw";
 import actionRegistrySrc from "#components/action-registry-demo.tsx?raw";
+import keyboardShortcutsSrc from "#components/keyboard-shortcuts-demo.tsx?raw";
 import { ModeToggleButton } from "#components/mode-toggle-button-demo.tsx";
 import { ModeToggleSegmented } from "#components/mode-toggle-segmented-demo.tsx";
 import { SearchFacetsDemo } from "#components/search-facets-demo.tsx";
 import { ActionRegistryDemo } from "#components/action-registry-demo.tsx";
+import { KeyboardShortcutsDemo } from "#components/keyboard-shortcuts-demo.tsx";
 
 export default function App() {
   return (
@@ -82,6 +84,21 @@ export default function App() {
               source={actionRegistrySrc}
             >
               <ActionRegistryDemo />
+            </DemoCard>
+          </DropIn>
+
+          <DropIn
+            id="keyboard-shortcuts"
+            heading="KeyboardShortcuts"
+            description="A drop-in keybinding layer + cheatsheet that consume the action-registry. Bind any registered action by setting its `shortcut` field — single chords, alternates, or g-i-style sequences. The cheatsheet picks them up automatically."
+            href="https://github.com/osuritz/react-kit/tree/main/src/components/keyboard-shortcuts"
+          >
+            <DemoCard
+              title="Shortcut bindings + cheatsheet"
+              description="Try ⌘K, ⌘S, the g-i sequence, or / from anywhere on the page. Press ? to open the cheatsheet."
+              source={keyboardShortcutsSrc}
+            >
+              <KeyboardShortcutsDemo />
             </DemoCard>
           </DropIn>
         </div>
