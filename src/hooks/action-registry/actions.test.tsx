@@ -226,6 +226,29 @@ describe("useAction lifecycle", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it("propagates field updates to same-commit consumers reading the live wrapper", () => {
+    function ListLabel() {
+      const { getAll, subscribe } = useActions();
+      const all = useSyncExternalStore(subscribe, getAll, getAll);
+      return <span data-testid="label">{all[0]?.label ?? ""}</span>;
+    }
+    const initial = makeAction({ id: "x", label: "first" });
+    const { rerender } = render(
+      <ActionsProvider>
+        <RegisterAction action={initial} />
+        <ListLabel />
+      </ActionsProvider>,
+    );
+    expect(screen.getByTestId("label")).toHaveTextContent("first");
+    rerender(
+      <ActionsProvider>
+        <RegisterAction action={{ ...initial, label: "second" }} />
+        <ListLabel />
+      </ActionsProvider>,
+    );
+    expect(screen.getByTestId("label")).toHaveTextContent("second");
+  });
+
   it("invokes the latest run callback even though no re-register happened", async () => {
     const first = vi.fn();
     const second = vi.fn();
@@ -387,26 +410,7 @@ describe("provider isolation", () => {
 });
 
 describe("SSR safety", () => {
-  // jsdom defines `window`, so the isomorphic-layout-effect guard picks
-  // useLayoutEffect; renderToString in the same process then warns about
-  // it. In real Node SSR, window is undefined, the guard picks useEffect,
-  // and there is no warning. Silence the test-environment-only noise.
-  function silenceLayoutEffectSsrWarning() {
-    const original = console.error;
-    vi.spyOn(console, "error").mockImplementation((...args) => {
-      const msg = args[0];
-      if (
-        typeof msg === "string" &&
-        msg.includes("useLayoutEffect does nothing on the server")
-      ) {
-        return;
-      }
-      original.apply(console, args);
-    });
-  }
-
   it("renderToString does not throw and produces output", () => {
-    silenceLayoutEffectSsrWarning();
     function RegisterSSR() {
       useAction(makeAction({ id: "ssr", label: "SSR" }));
       return null;
@@ -421,7 +425,6 @@ describe("SSR safety", () => {
   });
 
   it("getAll returns empty during SSR — useEffect does not run on the server", () => {
-    silenceLayoutEffectSsrWarning();
     let serverAll: Action[] | null = null;
     function CaptureSSR() {
       const { getAll } = useActions();

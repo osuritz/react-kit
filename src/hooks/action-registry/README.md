@@ -150,9 +150,9 @@ keyed by `action.id`:
 - Renders where `action.id` changes do unregister + register, firing two
   subscribe events.
 - The registered entry reads `run`/`label`/`enabled`/etc. through a live
-  ref that's updated in a layout effect, so consumers always invoke the
-  latest *committed* values. Concurrent renders that get discarded never
-  leak field values to consumers.
+  ref written during render, so consumers reading the wrapper later in
+  the same render commit see the latest values without a follow-up
+  render.
 
 ### `Action`
 
@@ -198,9 +198,13 @@ npm test -- --coverage
 - **`useAction` keys identity by `id`.** A live getter wrapper means
   callbacks and labels stay fresh between renders without churning
   subscribers — important when a command palette or shortcut hook is
-  reading the list on every keystroke. The wrapper's ref is updated in a
-  layout effect, not during render, so concurrent transitions that React
-  discards don't leak uncommitted field values to consumers.
+  reading the list on every keystroke. The wrapper writes its ref
+  during render so consumers reading the registry later in the same
+  commit see the new values without a second render. (A render that
+  React discards still runs the ref write; React's normal re-render of
+  the registrar with the committed state restores the ref on the next
+  pass. If you need stronger concurrent-render guarantees, encode the
+  varying state in `id` instead of mutating fields in place.)
 - **`getById` is on the API surface.** Palette deep-links and "execute
   by id" paths happen often enough that an O(n) `getAll().find(...)`
   would be a footgun. Since the registry already keys its internal map

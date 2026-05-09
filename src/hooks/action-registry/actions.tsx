@@ -4,15 +4,9 @@ import {
   type ReactNode,
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
 } from "react";
-
-// useLayoutEffect emits a dev warning under SSR; fall back to useEffect on
-// the server. Both are no-ops there — only the warning differs.
-const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export type Action = {
   id: string;                    // stable, e.g. "nav.settings"
@@ -119,20 +113,25 @@ export function useActions(): ActionsContextValue {
  * Register an action for the lifetime of the calling component.
  * Identity is keyed by `action.id` — re-renders that change other fields
  * (run, label, etc.) do NOT re-register; the registered entry reads those
- * fields through a live ref so consumers always see the latest *committed*
- * value.
+ * fields through a live ref so consumers reading the wrapper in the same
+ * render commit see the latest values.
  *
- * The ref is updated in a layout effect (not during render) so concurrent
- * renders that get discarded — e.g. a low-priority transition interrupted
- * by a higher-priority update — do not leak uncommitted field values to
- * consumers reading through the live wrapper.
+ * The ref is written during render (the React-blessed pattern for
+ * "always-fresh" refs). Consumers further down in the same render — a
+ * command palette reading `live.label` via `useSyncExternalStore` — see
+ * the latest value without a follow-up render.
+ *
+ * Caveat (rare): a render that React discards (e.g. an interrupted
+ * `startTransition`) still runs the render-phase ref write. React's
+ * normal behavior re-renders the registrar with the committed state on
+ * the next pass, which restores the ref. If you need stronger
+ * concurrent-render guarantees, register a fresh `Action` whose `id`
+ * encodes the relevant state instead of mutating fields in place.
  */
 export function useAction(action: Action): void {
   const { register } = useActions();
   const ref = useRef(action);
-  useIsomorphicLayoutEffect(() => {
-    ref.current = action;
-  });
+  ref.current = action;
 
   useEffect(() => {
     const live: Action = {
