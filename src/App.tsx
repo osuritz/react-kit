@@ -1,9 +1,11 @@
 import buttonSrc from "#components/mode-toggle-button-demo.tsx?raw";
 import segmentedSrc from "#components/mode-toggle-segmented-demo.tsx?raw";
 import searchFacetsSrc from "#components/search-facets-demo.tsx?raw";
+import actionRegistrySrc from "#components/action-registry-demo.tsx?raw";
 import { ModeToggleButton } from "#components/mode-toggle-button-demo.tsx";
 import { ModeToggleSegmented } from "#components/mode-toggle-segmented-demo.tsx";
 import { SearchFacetsDemo } from "#components/search-facets-demo.tsx";
+import { ActionRegistryDemo } from "#components/action-registry-demo.tsx";
 
 export default function App() {
   return (
@@ -65,6 +67,21 @@ export default function App() {
               source={searchFacetsSrc}
             >
               <SearchFacetsDemo />
+            </DemoCard>
+          </DropIn>
+
+          <DropIn
+            id="action-registry"
+            heading="action-registry"
+            description="A drop-in shared registry for app actions — id, label, optional shortcut/group/keywords/icon. The primitive a keybinding hook and a command palette both subscribe to. Provider-scoped, isolated per provider, no DOM, no shortcut parsing — just register/getAll/subscribe."
+            href="https://github.com/osuritz/react-kit/tree/main/src/hooks/action-registry"
+          >
+            <DemoCard
+              title="Register and observe"
+              description="Three components register actions on mount; a sibling subscribes via useSyncExternalStore and renders the list. Toggle the checkbox to mount/unmount nav.search and watch the list react."
+              source={actionRegistrySrc}
+            >
+              <ActionRegistryDemo />
             </DemoCard>
           </DropIn>
         </div>

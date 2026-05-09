@@ -22,6 +22,12 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   branch on the scheme (theme toggle, icon/chart swaps); pure CSS theming
   doesn't need it.
 
+- **[action-registry](src/hooks/action-registry/README.md)** — drop-in shared
+  registry for app actions (id + label + optional
+  shortcut/group/keywords/icon). The primitive a keybinding hook and a
+  command palette both subscribe to. Provider-scoped, isolated per provider,
+  no DOM, no shortcut parsing — just `register` / `getAll` / `subscribe`.
+
 ### Components
 
 - **[search-facets](src/components/search-facets/README.md)** — drop-in
