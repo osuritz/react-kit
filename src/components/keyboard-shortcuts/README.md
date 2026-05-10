@@ -117,9 +117,9 @@ chord    := ( modifier "+" )* key     // e.g. "mod+shift+k"
 ```
 
 - **Modifiers**: `mod` (⌘ on macOS, `Ctrl` elsewhere), `ctrl` / `control`,
-  `meta` / `cmd` / `command`, `alt` / `option`, `shift`. Order doesn't
-  matter when authoring; the cheatsheet always renders them in
-  `ctrl-alt-shift-meta` order so the visual is stable.
+  `meta` / `cmd` / `command` / `super` / `win`, `alt` / `option` / `opt`,
+  `shift`. Order doesn't matter when authoring; the cheatsheet always
+  renders them in `ctrl-alt-shift-meta` order so the visual is stable.
 - **Keys**: any single character (`k`, `?`, `,`) or a named key
   (`Enter`, `Escape`, `ArrowUp`, `Space`, …). Aliases: `esc` →
   `Escape`, `up` → `ArrowUp`, `space` → ` `, etc.

@@ -6,8 +6,8 @@
  *
  *   shortcut := chord ( WS chord )*       // sequence (e.g. "g i")
  *   chord    := ( modifier "+" )* key     // e.g. "mod+shift+k"
- *   modifier := "mod" | "ctrl" | "control" | "meta" | "cmd" | "super"
- *             | "alt" | "option" | "shift"
+ *   modifier := "mod" | "ctrl" | "control" | "meta" | "cmd" | "command"
+ *             | "super" | "win" | "alt" | "option" | "opt" | "shift"
  *   key      := single character | named key (Escape, Enter, ArrowUp, ...)
  *
  * `mod` resolves to `meta` on macOS and `ctrl` elsewhere — the canonical
