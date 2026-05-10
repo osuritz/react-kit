@@ -228,7 +228,10 @@ function useSourceResults(
   // identity changes for unrelated reasons (a parent that rebuilds the
   // array on every render shouldn't tear down our debounce).
   const sourcesRef = React.useRef(sources);
-  sourcesRef.current = sources;
+
+  React.useEffect(() => {
+    sourcesRef.current = sources;
+  }, [sources]);
 
   React.useEffect(() => {
     if (sourcesRef.current.length === 0) return;
@@ -321,6 +324,7 @@ export function CommandPalette({
   const [internalOpen, setInternalOpen] = React.useState(false);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
+  const [query, setQuery] = React.useState("");
 
   const setOpen = React.useCallback(
     (next: boolean) => {
@@ -369,8 +373,6 @@ export function CommandPalette({
   const enabledActions = React.useMemo(() => {
     return allActions.filter((a) => !a.enabled || a.enabled());
   }, [allActions]);
-
-  const [query, setQuery] = React.useState("");
 
   // Recents are seeded from storage once and updated via `pushRecent`.
   // We rehydrate on mount only — subsequent reads come from React state
