@@ -54,8 +54,8 @@ const SEAMS: ReadonlyArray<string> = [
   "demo.disabled (cheatsheet) — uncheck the box and the row greys live, even with the cheatsheet already open (Body re-renders → cheatsheet rows re-evaluate enabled() per render)",
   "demo.disabled (palette) — uncheck the box and the row disappears, but only after closing and reopening the palette (its enabledActions is memoized on registry snapshot identity, not on enabled() value — registry doesn't fire subscribers on field changes)",
   "Mount child off → child.greet / child.ping disappear from palette and cheatsheet without stale entries",
-  "Focus the input: typing fires neither mod+n (no allowInInput) nor any other letter chord, while mod+s and mod+k still fire (allowInInput: true)",
-  "palette opens via `mod+k` (keyboard route through palette.open) AND via the “Open palette” button (click route through the same action) — log shows source=shortcut and source=click",
+  "Focus the input: typing fires neither mod+n (no allowInInput) nor any other letter chord, while mod+s still fires (allowInInput: true)",
+  "palette opens via the “Open palette” button — log shows palette.open fired (source=click) (in a real app, palette.open would also own mod+k; we omit the chord here to avoid colliding with the standalone command-palette demo on the same page)",
   'Open the palette and type "anything" — three "Docs:" rows appear after a brief debounce; selecting one logs source=palette',
 ];
 
@@ -133,17 +133,19 @@ function Body() {
   });
 
   // ------------------------------------------------------------------- System
-  // palette.open is the canonical chord-owner. We disable the palette's
-  // built-in hotkey below (`hotkey={false}`) so this action is the single
-  // source of truth — pressing mod+k OR clicking the page button OR firing
-  // the row inside the palette all run the same action with different
-  // ctx.source values.
+  // palette.open opens this demo's palette. The chord is intentionally
+  // unbound here (and the palette's built-in hotkey is disabled below
+  // with `hotkey={false}`) because this demo lives on the same index
+  // page as the standalone command-palette demo, whose built-in `mod+k`
+  // listener would otherwise fire alongside ours and stack two palettes.
+  // In a real app you'd give this `shortcut: "mod+k"` and rely on either
+  // the action OR the palette's built-in hotkey — not both. Here we just
+  // route through the "Open palette" button so the click→action seam is
+  // still demonstrated.
   useAction({
     id: "palette.open",
     label: "Open command palette",
     group: "System",
-    shortcut: "mod+k",
-    allowInInput: true,
     icon: <Send className="size-4" />,
     run: (ctx) => {
       append(`palette.open fired (source=${ctx.source ?? "unknown"})`);
@@ -349,7 +351,7 @@ function ControlsPanel({
         </span>
       </div>
       <label className="text-muted-foreground flex flex-col gap-1 text-xs">
-        Focused input — try mod+n (suppressed), mod+s, mod+k:
+        Focused input — try mod+n (suppressed), mod+s (allowInInput):
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
