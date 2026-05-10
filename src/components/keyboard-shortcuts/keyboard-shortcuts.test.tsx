@@ -620,6 +620,40 @@ describe("ShortcutCheatsheet", () => {
     expect(enabledRow.className).not.toContain("opacity-50");
   });
 
+  it("re-evaluates enabled() on parent re-render — disabled rows flip live", () => {
+    function Shell() {
+      const [allow, setAllow] = React.useState(true);
+      return (
+        <ActionsProvider>
+          <ShortcutsProvider mac={false}>
+            <Register
+              id="toggle.row"
+              shortcut="mod+t"
+              label="Toggle row"
+              group="Test"
+              enabled={() => allow}
+              onRun={() => {}}
+            />
+            <button onClick={() => setAllow((v) => !v)}>flip</button>
+            <ShortcutCheatsheet mac={false} open />
+          </ShortcutsProvider>
+        </ActionsProvider>
+      );
+    }
+    render(<Shell />);
+
+    const initialRow = screen.getByText("Toggle row").closest("li")!;
+    expect(initialRow.getAttribute("aria-disabled")).toBeNull();
+
+    act(() => {
+      fireEvent.click(screen.getByText("flip"));
+    });
+
+    const flippedRow = screen.getByText("Toggle row").closest("li")!;
+    expect(flippedRow.getAttribute("aria-disabled")).toBe("true");
+    expect(flippedRow.className).toContain("opacity-50");
+  });
+
   it("does not self-register a binding when shortcut={false}", () => {
     function Probe() {
       const { getById } = useActions();
