@@ -50,7 +50,7 @@ export function IntegrationDemo() {
 const SEAMS: ReadonlyArray<string> = [
   "shortcut fires nav.home (try `g h`) — log shows source=shortcut",
   "palette fires the same nav.home (open palette, click row) — log shows source=palette",
-  "cheatsheet (?) lists nav.home with `g h` rendered with the platform glyph",
+  "cheatsheet (Show cheatsheet button, or palette → Show keyboard shortcuts) lists nav.home with `g h` rendered with the platform glyph",
   "demo.disabled (cheatsheet) — uncheck the box and the row greys live, even with the cheatsheet already open (Body re-renders → cheatsheet rows re-evaluate enabled() per render)",
   "demo.disabled (palette) — uncheck the box and the row disappears, but only after closing and reopening the palette (its enabledActions is memoized on registry snapshot identity, not on enabled() value — registry doesn't fire subscribers on field changes)",
   "Mount child off → child.greet / child.ping disappear from palette and cheatsheet without stale entries",
@@ -61,6 +61,7 @@ const SEAMS: ReadonlyArray<string> = [
 
 function Body() {
   const [paletteOpen, setPaletteOpen] = React.useState(false);
+  const [cheatsheetOpen, setCheatsheetOpen] = React.useState(false);
   const [demoEnabled, setDemoEnabled] = React.useState(true);
   const [mountChild, setMountChild] = React.useState(true);
   const [log, setLog] = React.useState<string[]>([]);
@@ -177,6 +178,23 @@ function Body() {
     icon: <Info className="size-4" />,
     run: fired("help.about"),
   });
+  // The cheatsheet's built-in `?` binding is disabled below
+  // (`shortcut={false}`) because this demo lives on the same page as the
+  // standalone keyboard-shortcuts demo, and two ShortcutsProviders would
+  // each handle a global `?` keystroke independently and open both
+  // cheatsheets. In a real app you'd have one provider and rely on the
+  // default `?`. Here we route through a registered action so the seam
+  // ("a registered action toggles the cheatsheet") is still demonstrated.
+  useAction({
+    id: "help.cheatsheet",
+    label: "Show keyboard shortcuts",
+    group: "System",
+    icon: <Info className="size-4" />,
+    run: (ctx) => {
+      append(`help.cheatsheet fired (source=${ctx.source ?? "unknown"})`);
+      setCheatsheetOpen(true);
+    },
+  });
 
   // Two child actions are registered inside <ChildActions>, which mounts
   // when `mountChild` is true. Unmounting it must propagate to both
@@ -198,6 +216,7 @@ function Body() {
       <div className="grid gap-4 md:grid-cols-2">
         <ControlsPanel
           paletteOpenAction={getById("palette.open")}
+          cheatsheetAction={getById("help.cheatsheet")}
           demoEnabled={demoEnabled}
           setDemoEnabled={setDemoEnabled}
           mountChild={mountChild}
@@ -210,6 +229,9 @@ function Body() {
       <EventLog log={log} />
 
       <ShortcutCheatsheet
+        open={cheatsheetOpen}
+        onOpenChange={setCheatsheetOpen}
+        shortcut={false}
         description={
           <>
             Lists every registered action with a <code>shortcut</code>.
@@ -275,6 +297,7 @@ function SeamsChecklist() {
 
 function ControlsPanel({
   paletteOpenAction,
+  cheatsheetAction,
   demoEnabled,
   setDemoEnabled,
   mountChild,
@@ -282,6 +305,7 @@ function ControlsPanel({
   append,
 }: {
   paletteOpenAction: Action | undefined;
+  cheatsheetAction: Action | undefined;
   demoEnabled: boolean;
   setDemoEnabled: (v: boolean) => void;
   mountChild: boolean;
@@ -306,8 +330,21 @@ function ControlsPanel({
         >
           Open palette
         </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (!cheatsheetAction) {
+              append("help.cheatsheet not registered");
+              return;
+            }
+            void cheatsheetAction.run({ source: "click" });
+          }}
+        >
+          Show cheatsheet
+        </Button>
         <span className="text-muted-foreground text-xs">
-          fires <code className="font-mono">palette.open</code> with{" "}
+          buttons fire <code className="font-mono">palette.open</code> /{" "}
+          <code className="font-mono">help.cheatsheet</code> with{" "}
           <code className="font-mono">source: "click"</code>
         </span>
       </div>
