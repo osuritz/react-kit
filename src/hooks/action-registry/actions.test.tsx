@@ -280,6 +280,29 @@ describe("useAction lifecycle", () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
+  it("forwards the full ctx (including source) to the underlying run", async () => {
+    const run = vi.fn();
+    const captured: { current: Action | null } = { current: null };
+    function Capture() {
+      const { getAll, subscribe } = useActions();
+      const all = useSyncExternalStore(subscribe, getAll, getAll);
+      useEffect(() => {
+        if (all.length > 0) captured.current = all[0];
+      });
+      return null;
+    }
+    render(
+      <ActionsProvider>
+        <RegisterAction action={makeAction({ id: "x", run })} />
+        <Capture />
+      </ActionsProvider>,
+    );
+    await captured.current!.run({ source: "manual" });
+    expect(run).toHaveBeenCalledWith({ source: "manual" });
+    await captured.current!.run({ source: "click", event: undefined });
+    expect(run).toHaveBeenLastCalledWith({ source: "click", event: undefined });
+  });
+
   it("exposes all Action fields via the live wrapper, reading the latest values", () => {
     const enabled1 = () => true;
     const enabled2 = () => false;

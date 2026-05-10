@@ -8,6 +8,23 @@ import {
   useRef,
 } from "react";
 
+/**
+ * Identifies which surface invoked an action. The two values shipped by
+ * this kit's drop-ins are `"shortcut"` (keyboard-shortcuts) and
+ * `"palette"` (command-palette). Apps may pass any other string for their
+ * own surfaces (a button click, a context menu, a programmatic call); the
+ * `(string & {})` keeps autocomplete on the known values without locking
+ * the union.
+ */
+export type ActionSource = "shortcut" | "palette" | (string & {});
+
+export interface ActionRunContext {
+  /** Present only when invoked by keyboard-shortcuts. */
+  event?: KeyboardEvent;
+  /** Identifies the invoking surface. Optional for backwards compatibility. */
+  source?: ActionSource;
+}
+
 export type Action = {
   id: string;                    // stable, e.g. "nav.settings"
   label: string;                 // shown in palette
@@ -23,7 +40,7 @@ export type Action = {
    * flag — it's metadata for the shortcut consumer.
    */
   allowInInput?: boolean;
-  run: (ctx: { event?: KeyboardEvent }) => void | Promise<void>;
+  run: (ctx: ActionRunContext) => void | Promise<void>;
   icon?: ReactNode;
 };
 

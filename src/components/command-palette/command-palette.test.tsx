@@ -167,6 +167,34 @@ describe("CommandPalette", () => {
     });
   });
 
+  it("passes source: 'palette' (and no event) in the run ctx", async () => {
+    const captured: Array<{ source: string | undefined; event: unknown }> = [];
+    function Controlled() {
+      const [open, setOpen] = React.useState(true);
+      return (
+        <Harness
+          open={open}
+          onOpenChange={setOpen}
+          actions={[
+            {
+              id: "ctx.capture",
+              label: "Capture ctx",
+              group: "Test",
+              run: (ctx) => {
+                captured.push({ source: ctx.source, event: ctx.event });
+              },
+            },
+          ]}
+        />
+      );
+    }
+    render(<Controlled />);
+    fireEvent.click(await screen.findByText("Capture ctx"));
+    await waitFor(() => expect(captured).toHaveLength(1));
+    expect(captured[0].source).toBe("palette");
+    expect(captured[0].event).toBeUndefined();
+  });
+
   it("does not push a recent when Action.run throws", async () => {
     // The README documents that recents persist on success, not on
     // intent — a throwing action should leave the list untouched.

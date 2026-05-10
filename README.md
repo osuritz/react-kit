@@ -60,6 +60,19 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   per-source loading. Owns its own open hotkey only; per-action
   shortcuts stay with the keyboard-shortcuts drop-in.
 
+## Integration demo
+
+The three action drop-ins above are designed to compose. See
+[`src/components/integration-demo.tsx`](src/components/integration-demo.tsx)
+for a single page that wires
+[action-registry](src/hooks/action-registry/README.md),
+[keyboard-shortcuts](src/components/keyboard-shortcuts/README.md), and
+[command-palette](src/components/command-palette/README.md) together
+and exercises every seam between them: surface attribution via
+`ctx.source`, live `enabled()` toggling, mount/unmount cleanup,
+`allowInInput` suppression, async palette sources, and a registered
+`palette.open` action that owns the `mod+k` chord.
+
 ## License
 
 MIT
