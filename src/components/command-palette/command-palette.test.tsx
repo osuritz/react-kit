@@ -321,6 +321,43 @@ describe("CommandPalette", () => {
     expect(screen.getByText("Search docs")).toBeInTheDocument();
   });
 
+  it("shows source results even when cmdk would not match the row text", async () => {
+    const search = vi.fn(async () => {
+      return [
+        {
+          id: "doc:billing",
+          label: "Invoices and receipts",
+          run: () => {},
+        },
+      ] as Action[];
+    });
+    const source: CommandSource = {
+      id: "docs",
+      heading: "Search docs",
+      search,
+    };
+    render(
+      <Harness
+        open
+        sources={[source]}
+        actions={[
+          { id: "ignored", label: "Static row", group: "Static", run: () => {} },
+        ]}
+      />,
+    );
+
+    const input = await screen.findByPlaceholderText("Search…");
+    fireEvent.change(input, { target: { value: "billing" } });
+
+    await waitFor(() => {
+      expect(search).toHaveBeenCalledWith("billing", expect.any(AbortSignal));
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Invoices and receipts")).toBeVisible();
+    });
+    expect(screen.getByText("Search docs")).toBeVisible();
+  });
+
   it("aborts in-flight source requests when the query changes", async () => {
     const aborted: string[] = [];
     const source: CommandSource = {

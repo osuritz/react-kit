@@ -561,14 +561,14 @@ export function CommandPalette({
         {sourceList.map((source) => {
           const state = sourceState[source.id] ?? EMPTY_SOURCE_STATE;
           const heading = source.heading ?? source.id;
-          // Only render a group when there's something to show. cmdk's
-          // empty filter still applies to source items via shouldFilter
-          // — but since we asked the source for `query`, results
-          // generally pass cmdk's score against the same string.
+          // Only render a group when there's something to show. Source
+          // rows are already filtered by the source, so force-mount the
+          // group as well as the items; cmdk hides a group when none of
+          // its registered children score against the input.
           if (!query) return null;
           if (state.loading) {
             return (
-              <CommandGroup key={source.id} heading={heading}>
+              <CommandGroup key={source.id} heading={heading} forceMount>
                 <CommandLoading
                   className="px-3 py-2 text-xs text-muted-foreground"
                   label={`Searching ${heading}`}
@@ -580,7 +580,7 @@ export function CommandPalette({
           }
           if (state.error) {
             return (
-              <CommandGroup key={source.id} heading={heading}>
+              <CommandGroup key={source.id} heading={heading} forceMount>
                 <div className="px-3 py-2 text-xs text-destructive">
                   {state.error}
                 </div>
@@ -589,7 +589,7 @@ export function CommandPalette({
           }
           if (state.results.length === 0) return null;
           return (
-            <CommandGroup key={source.id} heading={heading}>
+            <CommandGroup key={source.id} heading={heading} forceMount>
               {state.results.map((action) => {
                 // Source action ids may collide with registry ids (e.g.
                 // a backend that returns "nav.settings", or two sources
