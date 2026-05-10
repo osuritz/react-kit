@@ -235,9 +235,10 @@ export function ShortcutsProvider({
   // re-attach when `bindings` changes (the ref read picks the new list up
   // immediately, with no event being missed).
   const bindingsRef = React.useRef(bindings);
-  bindingsRef.current = bindings;
+  React.useEffect(() => {
+    bindingsRef.current = bindings;
+  }, [bindings]);
   const scopeRef = React.useRef(scopeStore);
-  scopeRef.current = scopeStore;
 
   // In-progress sequence buffer.
   const cursorRef = React.useRef<{
@@ -464,12 +465,7 @@ export function ShortcutCheatsheet({
     [isControlled, onOpenChange],
   );
 
-  // Imperative toggle bound to the registered action. Stored in a ref so the
-  // useAction call below doesn't churn (it would re-register every render
-  // otherwise — `useAction` keys off id but writes through to the live
-  // getter, so a stable id + a ref-based run is the cheapest pattern).
-  const toggleRef = React.useRef<() => void>(() => {});
-  toggleRef.current = () => setOpen(!open);
+  const toggle = React.useCallback(() => setOpen(!open), [open, setOpen]);
 
   // Register a `system.cheatsheet` action so the cheatsheet's own binding
   // shows up in the cheatsheet — and so it picks up scopes / enabled
@@ -477,7 +473,7 @@ export function ShortcutCheatsheet({
   useShortcutSelfRegister({
     enabled: shortcut !== false,
     shortcut: shortcut === false ? undefined : shortcut,
-    run: () => toggleRef.current(),
+    run: toggle,
   });
 
   const { getAll, subscribe } = useActions();
@@ -621,7 +617,10 @@ function useShortcutSelfRegister({
   // we want one register call per (enabled, shortcut) tuple, not one per
   // render.
   const runRef = React.useRef(run);
-  runRef.current = run;
+
+  React.useEffect(() => {
+    runRef.current = run;
+  }, [run]);
 
   React.useEffect(() => {
     if (!enabled || shortcut === undefined) return;
