@@ -277,6 +277,40 @@ describe("ShortcutsProvider — single chord", () => {
     expect(onRun).toHaveBeenCalledTimes(2);
   });
 
+  it("passes source: 'shortcut' and the originating KeyboardEvent in ctx", () => {
+    const captured: Array<{
+      event: KeyboardEvent | undefined;
+      source: string | undefined;
+    }> = [];
+    function CaptureRegister() {
+      useAction({
+        id: "ctx.capture",
+        label: "Capture",
+        shortcut: "mod+k",
+        run: (ctx) => {
+          captured.push({ event: ctx.event, source: ctx.source });
+        },
+      });
+      return null;
+    }
+    render(
+      <ActionsProvider>
+        <ShortcutsProvider mac={false}>
+          <CaptureRegister />
+        </ShortcutsProvider>
+      </ActionsProvider>,
+    );
+    const ev = new KeyboardEvent("keydown", {
+      key: "k",
+      ctrlKey: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(ev);
+    expect(captured).toHaveLength(1);
+    expect(captured[0].source).toBe("shortcut");
+    expect(captured[0].event).toBe(ev);
+  });
+
   it("ignores key-repeat events", () => {
     const onRun = vi.fn();
     render(
@@ -552,6 +586,38 @@ describe("ShortcutCheatsheet", () => {
     expect(screen.queryByText("Keyboard shortcuts")).not.toBeInTheDocument();
     await user.click(screen.getByText("Open"));
     expect(await screen.findByText("Keyboard shortcuts")).toBeInTheDocument();
+  });
+
+  it("greys disabled rows with aria-disabled and reduced opacity", async () => {
+    render(
+      <ActionsProvider>
+        <ShortcutsProvider mac={false}>
+          <Register
+            id="enabled.row"
+            shortcut="mod+e"
+            label="Enabled row"
+            group="Test"
+            onRun={() => {}}
+          />
+          <Register
+            id="disabled.row"
+            shortcut="mod+d"
+            label="Disabled row"
+            group="Test"
+            enabled={() => false}
+            onRun={() => {}}
+          />
+          <ShortcutCheatsheet mac={false} open />
+        </ShortcutsProvider>
+      </ActionsProvider>,
+    );
+
+    const enabledRow = (await screen.findByText("Enabled row")).closest("li")!;
+    const disabledRow = screen.getByText("Disabled row").closest("li")!;
+    expect(disabledRow.getAttribute("aria-disabled")).toBe("true");
+    expect(disabledRow.className).toContain("opacity-50");
+    expect(enabledRow.getAttribute("aria-disabled")).toBeNull();
+    expect(enabledRow.className).not.toContain("opacity-50");
   });
 
   it("does not self-register a binding when shortcut={false}", () => {

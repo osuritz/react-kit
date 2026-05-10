@@ -449,7 +449,7 @@ export function CommandPalette({
       // `action.id` (or a source row colliding with a registered one)
       // don't fight for the same recent slot.
       try {
-        const result = action.run({});
+        const result = action.run({ source: "palette" });
         if (result instanceof Promise) {
           result.then(
             () => pushRecent(recentId),

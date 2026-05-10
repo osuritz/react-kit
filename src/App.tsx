@@ -4,12 +4,14 @@ import searchFacetsSrc from "#components/search-facets-demo.tsx?raw";
 import actionRegistrySrc from "#components/action-registry-demo.tsx?raw";
 import keyboardShortcutsSrc from "#components/keyboard-shortcuts-demo.tsx?raw";
 import commandPaletteSrc from "#components/command-palette-demo.tsx?raw";
+import integrationSrc from "#components/integration-demo.tsx?raw";
 import { ModeToggleButton } from "#components/mode-toggle-button-demo.tsx";
 import { ModeToggleSegmented } from "#components/mode-toggle-segmented-demo.tsx";
 import { SearchFacetsDemo } from "#components/search-facets-demo.tsx";
 import { ActionRegistryDemo } from "#components/action-registry-demo.tsx";
 import { KeyboardShortcutsDemo } from "#components/keyboard-shortcuts-demo.tsx";
 import { CommandPaletteDemo } from "#components/command-palette-demo.tsx";
+import { IntegrationDemo } from "#components/integration-demo.tsx";
 
 export default function App() {
   return (
@@ -116,6 +118,21 @@ export default function App() {
               source={commandPaletteSrc}
             >
               <CommandPaletteDemo />
+            </DemoCard>
+          </DropIn>
+
+          <DropIn
+            id="integration"
+            heading="Integration"
+            description="All three action drop-ins wired together. Exercises the seams between action-registry, keyboard-shortcuts, and command-palette — surface attribution via ctx.source, live disable, mount/unmount cleanup, allowInInput suppression, async sources, and the palette.open action."
+            href="https://github.com/osuritz/react-kit/tree/main/src/components/integration-demo.tsx"
+          >
+            <DemoCard
+              title="Action system end-to-end"
+              description="Walk the seams checklist at the top of the demo. The event log below shows which surface invoked each action via ctx.source."
+              source={integrationSrc}
+            >
+              <IntegrationDemo />
             </DemoCard>
           </DropIn>
         </div>

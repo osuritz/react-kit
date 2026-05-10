@@ -216,6 +216,19 @@ last). The cheatsheet self-registers a `system.cheatsheet` action under
 the "Help" group so its own binding shows up in the listing — pass
 `shortcut={false}` to suppress that.
 
+Disabled rows (where `action.enabled?.() === false` at the time the
+cheatsheet renders) get `aria-disabled` and `opacity-50`. They're still
+listed — the cheatsheet is a *reference*, not an *invoker*; users still
+benefit from seeing what would be available if the action's gate
+flipped on.
+
+### `ctx.source`
+
+When this drop-in fires an action, it passes `source: "shortcut"` in
+the `run` ctx alongside the originating `KeyboardEvent`. See the
+[action-registry README](../../hooks/action-registry/README.md#ctxsource--invocation-attribution)
+for the full convention.
+
 ### `useShortcutScope(scope?: string): void`
 
 Activates `scope` for the calling component's lifetime.

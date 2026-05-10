@@ -165,14 +165,32 @@ type Action = {
   shortcut?: string | string[];  // "mod+k", "g i", ["mod+s","ctrl+s"]
   scope?: string;                // "global" (default) | route/component scope id
   enabled?: () => boolean;
-  run: (ctx: { event?: KeyboardEvent }) => void | Promise<void>;
+  run: (ctx: ActionRunContext) => void | Promise<void>;
   icon?: React.ReactNode;
 };
+
+interface ActionRunContext {
+  event?: KeyboardEvent;     // present only when invoked by keyboard-shortcuts
+  source?: ActionSource;     // identifies the invoking surface
+}
+
+type ActionSource = "shortcut" | "palette" | (string & {});
 ```
 
 The `shortcut` string is consumed by the keybinding hook, not the registry
 — `"mod"` resolves to `cmd` on macOS / `ctrl` elsewhere; sequences are
 space-separated (`"g i"`).
+
+#### `ctx.source` — invocation attribution
+
+Both consumer drop-ins identify themselves: keyboard-shortcuts passes
+`source: "shortcut"`, command-palette passes `source: "palette"`. App
+callers that invoke `action.run` directly (a button click, a context
+menu, a programmatic dispatch) should pass their own value
+(`"click"`, `"menu"`, …). The registry doesn't read this field — it's
+threaded through verbatim by the `useAction` wrapper. Useful for
+analytics, logging, or "did the user reach this via keyboard?"
+branching inside an action.
 
 ## Testing this drop-in
 

@@ -215,6 +215,13 @@ are rendered in their own `CommandGroup` and bypass cmdk's filter
 (`forceMount`) so the source's own ranking wins; selecting a row
 calls its `run`, just like a registered action.
 
+### `ctx.source`
+
+When the palette fires an action (registered or source-returned), it
+passes `source: "palette"` in the `run` ctx. See the
+[action-registry README](../../hooks/action-registry/README.md#ctxsource--invocation-attribution)
+for the full convention.
+
 ### Re-exports
 
 ```ts

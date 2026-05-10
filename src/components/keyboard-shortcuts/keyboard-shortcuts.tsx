@@ -338,7 +338,7 @@ export function ShortcutsProvider({
         event.preventDefault();
         resetCursor();
         try {
-          const result = completed.action.run({ event });
+          const result = completed.action.run({ event, source: "shortcut" });
           if (result instanceof Promise) {
             result.catch((err) => {
               if (typeof console !== "undefined") {
@@ -527,26 +527,33 @@ export function ShortcutCheatsheet({
                       {group.name}
                     </h3>
                     <ul className="flex flex-col gap-1">
-                      {group.rows.map(({ action, sequences }) => (
-                        <li
-                          key={action.id}
-                          className="flex items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-muted/40"
-                        >
-                          <span className="truncate text-sm">{action.label}</span>
-                          <span className="flex shrink-0 items-center gap-1.5">
-                            {sequences.map((seq, i) => (
-                              <React.Fragment key={i}>
-                                {i > 0 ? (
-                                  <span className="text-xs text-muted-foreground">
-                                    or
-                                  </span>
-                                ) : null}
-                                <SequenceCaps sequence={seq} />
-                              </React.Fragment>
-                            ))}
-                          </span>
-                        </li>
-                      ))}
+                      {group.rows.map(({ action, sequences }) => {
+                        const disabled = action.enabled?.() === false;
+                        return (
+                          <li
+                            key={action.id}
+                            aria-disabled={disabled || undefined}
+                            className={cn(
+                              "flex items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-muted/40",
+                              disabled && "opacity-50",
+                            )}
+                          >
+                            <span className="truncate text-sm">{action.label}</span>
+                            <span className="flex shrink-0 items-center gap-1.5">
+                              {sequences.map((seq, i) => (
+                                <React.Fragment key={i}>
+                                  {i > 0 ? (
+                                    <span className="text-xs text-muted-foreground">
+                                      or
+                                    </span>
+                                  ) : null}
+                                  <SequenceCaps sequence={seq} />
+                                </React.Fragment>
+                              ))}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </section>
                 ))}
