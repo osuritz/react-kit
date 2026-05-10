@@ -38,6 +38,17 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   `react-day-picker`-backed date. Reach for it when filtering has more
   than two or three orthogonal axes and users will be mixing them.
 
+- **[keyboard-shortcuts](src/components/keyboard-shortcuts/README.md)** —
+  drop-in keybinding layer + cheatsheet. Subscribes to the
+  [action-registry](src/hooks/action-registry/README.md) and binds any
+  action with a `shortcut` field — `mod+k`, `["mod+s","ctrl+s"]`,
+  `g i` sequences. Ignores keystrokes inside inputs unless the action
+  opts in (`allowInInput`), normalizes `mod` to ⌘ on macOS / Ctrl
+  elsewhere, and renders a shadcn-styled cheatsheet that picks up new
+  actions automatically. Reach for it once you have more than three or
+  four global shortcuts and want to stop hand-rolling per-component
+  `keydown` listeners.
+
 ## License
 
 MIT
