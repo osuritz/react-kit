@@ -3,11 +3,13 @@ import segmentedSrc from "#components/mode-toggle-segmented-demo.tsx?raw";
 import searchFacetsSrc from "#components/search-facets-demo.tsx?raw";
 import actionRegistrySrc from "#components/action-registry-demo.tsx?raw";
 import keyboardShortcutsSrc from "#components/keyboard-shortcuts-demo.tsx?raw";
+import commandPaletteSrc from "#components/command-palette-demo.tsx?raw";
 import { ModeToggleButton } from "#components/mode-toggle-button-demo.tsx";
 import { ModeToggleSegmented } from "#components/mode-toggle-segmented-demo.tsx";
 import { SearchFacetsDemo } from "#components/search-facets-demo.tsx";
 import { ActionRegistryDemo } from "#components/action-registry-demo.tsx";
 import { KeyboardShortcutsDemo } from "#components/keyboard-shortcuts-demo.tsx";
+import { CommandPaletteDemo } from "#components/command-palette-demo.tsx";
 
 export default function App() {
   return (
@@ -99,6 +101,21 @@ export default function App() {
               source={keyboardShortcutsSrc}
             >
               <KeyboardShortcutsDemo />
+            </DemoCard>
+          </DropIn>
+
+          <DropIn
+            id="command-palette"
+            heading="CommandPalette"
+            description="A drop-in cmd+k launcher built on cmdk. Reads from the action-registry, groups by Action.group, fuzzy-matches label + keywords, filters out disabled actions, shows platform-correct shortcut glyphs, persists last-5 recents, and accepts async CommandSources for backend search — debounced, with per-source loading."
+            href="https://github.com/osuritz/react-kit/tree/main/src/components/command-palette"
+          >
+            <DemoCard
+              title="Palette + async source"
+              description="Press ⌘K (or click the button) to open. Try ‘theme’, ‘sign’, or ‘onboarding’ (the last hits a fake async docs source). Recents persist across reloads in localStorage."
+              source={commandPaletteSrc}
+            >
+              <CommandPaletteDemo />
             </DemoCard>
           </DropIn>
         </div>

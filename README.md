@@ -49,6 +49,17 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   four global shortcuts and want to stop hand-rolling per-component
   `keydown` listeners.
 
+- **[command-palette](src/components/command-palette/README.md)** —
+  drop-in `⌘K` launcher built on
+  [cmdk](https://cmdk.paco.me). Subscribes to the
+  [action-registry](src/hooks/action-registry/README.md), groups
+  rows by `Action.group`, fuzzy-matches `label` + `keywords`, filters
+  out `enabled() === false`, and renders platform-correct shortcut
+  glyphs on the right. Persists last-5 recents to `localStorage` and
+  accepts async `CommandSource`s for backend search — debounced, with
+  per-source loading. Owns its own open hotkey only; per-action
+  shortcuts stay with the keyboard-shortcuts drop-in.
+
 ## License
 
 MIT
