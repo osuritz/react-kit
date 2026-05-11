@@ -69,9 +69,11 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
 
 ## Integration demo
 
-The three action drop-ins above are designed to compose. See
-[`src/components/integration-demo.tsx`](src/components/integration-demo.tsx)
-for a single page that wires
+The three action drop-ins above are designed to compose. The
+[`/integration`](https://osuritz.github.io/react-kit/integration) route
+on the demo site (source:
+[`app/components/demos/integration.tsx`](app/components/demos/integration.tsx))
+wires
 [action-registry](src/hooks/action-registry/README.md),
 [keyboard-shortcuts](src/components/keyboard-shortcuts/README.md), and
 [command-palette](src/components/command-palette/README.md) together
