@@ -14,7 +14,7 @@ import {
   Sun,
   User,
 } from "lucide-react";
-import { Button } from "#components/ui/button.tsx";
+import { Button } from "~/components/ui/button.tsx";
 import {
   ActionsProvider,
   useAction,
