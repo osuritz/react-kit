@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { Link } from "react-router";
 
 const ENTRIES: ReadonlyArray<{ to: string; label: string; blurb: string }> = [
   {
@@ -51,7 +51,7 @@ export default function IndexRoute() {
       <ul className="grid gap-3 sm:grid-cols-2">
         {ENTRIES.map((entry) => (
           <li key={entry.to}>
-            <NavLink
+            <Link
               to={entry.to}
               className="border-border bg-card hover:bg-muted/50 block rounded-lg border p-4 transition-colors"
             >
@@ -59,7 +59,7 @@ export default function IndexRoute() {
               <p className="text-muted-foreground mt-1 text-sm">
                 {entry.blurb}
               </p>
-            </NavLink>
+            </Link>
           </li>
         ))}
       </ul>

@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { SiteLayout } from "./components/site-layout";
 import IndexRoute from "./routes/index";
 import ColorSchemeRoute from "./routes/color-scheme";
@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
       { path: "keyboard-shortcuts", element: <KeyboardShortcutsRoute /> },
       { path: "command-palette", element: <CommandPaletteRoute /> },
       { path: "integration", element: <IntegrationRoute /> },
-      { path: "*", element: <IndexRoute /> },
+      { path: "*", element: <Navigate to="/" replace /> },
     ],
   },
 ]);
