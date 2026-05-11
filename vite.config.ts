@@ -16,6 +16,7 @@ import { fileURLToPath, URL } from "node:url";
 // root, popovers would not anchor, route navigation would not propagate — so
 // dedupe them too.
 export default defineConfig({
+  base: "/react-kit/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
