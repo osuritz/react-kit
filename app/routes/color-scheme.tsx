@@ -1,12 +1,32 @@
-export default function PlaceholderRoute() {
+import { DropInPage } from "~/components/drop-in-page";
+import { ModeToggleButton } from "~/components/demos/mode-toggle-button";
+import { ModeToggleSegmented } from "~/components/demos/mode-toggle-segmented";
+import buttonSrc from "~/components/demos/mode-toggle-button.tsx?raw";
+import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?raw";
+
+export default function ColorSchemeRoute() {
   return (
-    <article className="flex flex-col gap-3">
-      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-        useColorScheme
-      </h1>
-      <p className="text-muted-foreground text-sm">
-        TODO — wired up in Phase 3.
-      </p>
-    </article>
+    <DropInPage
+      title="useColorScheme"
+      description="A drop-in React hook for resolving and applying a light/dark color scheme. Works without a provider, persists the user choice, and tracks the OS preference. Two recommended toggle patterns are shown below."
+      sourceHref="https://github.com/osuritz/react-kit/tree/main/src/hooks/color-scheme"
+      readmeHref="https://github.com/osuritz/react-kit/blob/main/src/hooks/color-scheme/README.md"
+      demos={[
+        {
+          title: "Light / dark button",
+          description:
+            "Two-state icon button. Setting either light or dark is explicit — clicking breaks 'system' tracking.",
+          source: buttonSrc,
+          render: <ModeToggleButton />,
+        },
+        {
+          title: "Light / dark / system segmented",
+          description:
+            "Three-state segmented control bound to the user choice. When 'system' is selected, the resolved scheme is shown below.",
+          source: segmentedSrc,
+          render: <ModeToggleSegmented />,
+        },
+      ]}
+    />
   );
 }
