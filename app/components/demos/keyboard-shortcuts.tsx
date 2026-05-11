@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button } from "#components/ui/button.tsx";
+import { Button } from "~/components/ui/button.tsx";
 import {
   ActionsProvider,
   useAction,
