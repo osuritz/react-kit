@@ -4,9 +4,16 @@ A collection of reusable React hooks and utilities for common frontend patterns.
 Copy what you need, no dependencies required (mostly).
 MIT licensed.
 
+**Live demo:** <https://osuritz.github.io/react-kit/>
+
 ## Why this exists
 
 You end up rewriting the same hooks and utilities across projects. This is a place to keep the ones that actually work.
+
+## Repo layout
+
+- **`src/`** — the drop-ins. Self-contained hooks and components, each with its own README, peer-dependency list, and isolated test harness. This is what you copy into your project.
+- **`app/`** — the demo site. Renders one page per drop-in at the live URL above. Never copy from here.
 
 ## How to use
 
