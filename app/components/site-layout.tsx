@@ -53,14 +53,14 @@ export function SiteLayout() {
       <div className="mx-auto flex max-w-6xl gap-10 px-6 py-8 md:py-12">
         <aside className="sticky top-16 hidden h-[calc(100svh-4rem)] w-48 shrink-0 overflow-y-auto md:block">
           <nav aria-label="Primary">
-            <ul className="flex flex-col gap-6">
+            <ul className="flex flex-col gap-4">
               {NAV.map((group) => {
                 const labelId = `nav-group-${group.heading.toLowerCase()}`;
                 return (
-                  <li key={group.heading} className="flex flex-col gap-1.5">
+                  <li key={group.heading} className="flex flex-col">
                     <div
                       id={labelId}
-                      className="text-muted-foreground px-2 text-[11px] font-semibold tracking-wider uppercase"
+                      className="text-muted-foreground px-3 py-1.5 text-sm"
                     >
                       {group.heading}
                     </div>
@@ -72,10 +72,10 @@ export function SiteLayout() {
                             end
                             className={({ isActive }) =>
                               [
-                                "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors",
+                                "block rounded-md px-3 py-1.5 text-sm transition-colors",
                                 isActive
-                                  ? "border-foreground text-foreground bg-muted/50"
-                                  : "text-muted-foreground hover:text-foreground border-transparent",
+                                  ? "bg-accent text-foreground ring-1 ring-inset ring-border"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-accent",
                               ].join(" ")
                             }
                           >
