@@ -77,7 +77,7 @@ Peer requirements:
 
    ```tsx
    import { useAction } from "./hooks/action-registry/actions";
-   import { useNavigate } from "react-router-dom";
+   import { useNavigate } from "react-router";
 
    export function NavShortcuts() {
      const navigate = useNavigate();
