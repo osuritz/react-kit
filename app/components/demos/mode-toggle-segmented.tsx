@@ -2,7 +2,7 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "#components/ui/toggle-group.tsx";
+} from "~/components/ui/toggle-group.tsx";
 import {
   useColorScheme,
   type UserSpecifiedColorScheme,

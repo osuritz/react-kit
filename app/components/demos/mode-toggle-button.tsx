@@ -1,5 +1,5 @@
 import { Moon, Sun } from "lucide-react";
-import { Button } from "#components/ui/button.tsx";
+import { Button } from "~/components/ui/button.tsx";
 import { useColorScheme } from "#hooks/color-scheme/color-scheme.tsx";
 
 export function ModeToggleButton() {
