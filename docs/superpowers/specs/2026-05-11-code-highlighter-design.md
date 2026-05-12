@@ -179,8 +179,14 @@ re-running Shiki.
 
 ## `CodeBlock` component
 
-`app/components/ui/code-block.tsx` is the only consumer-facing piece of
-the highlighter:
+Shiki's `codeToHtml` emits a complete `<pre class="shiki shadcn" style="..."><code>...</code></pre>`.
+The wrapper element in `CodeBlock` must therefore be a `<div>` — nesting
+the Shiki `<pre>` inside another `<pre>` is invalid HTML. Styling that
+needs to land on the actual `<pre>` (background, padding, max-height,
+scroll, font) is applied via Tailwind arbitrary-variants on the
+wrapper, which target the descendant `<pre>` Shiki produces.
+
+`app/components/ui/code-block.tsx`:
 
 ```tsx
 import { Check, Copy } from "lucide-react";
@@ -196,7 +202,22 @@ export interface CodeBlockProps {
 export function CodeBlock({ raw, html, className }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className={cn("group relative", className)}>
+    <div
+      className={cn(
+        "group relative",
+        // Style the <pre> Shiki emitted, not a wrapper <pre> (would nest).
+        "[&_pre]:bg-[var(--shiki-background)]",
+        "[&_pre]:text-[var(--shiki-foreground)]",
+        "[&_pre]:max-h-80 [&_pre]:overflow-auto",
+        "[&_pre]:rounded-md [&_pre]:p-4",
+        "[&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed",
+        // Shiki ships inline `background-color` / `color` on the <pre>;
+        // override so our CSS-vars win regardless of theme name.
+        "[&_pre]:![background-color:var(--shiki-background)]",
+        "[&_pre]:![color:var(--shiki-foreground)]",
+        className,
+      )}
+    >
       <button
         type="button"
         onClick={async () => {
@@ -209,14 +230,19 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
       >
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       </button>
-      <pre
-        className="bg-[var(--shiki-background)] text-[var(--shiki-foreground)] max-h-80 overflow-auto rounded-md p-4 font-mono text-xs leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {/* eslint-disable-next-line react/no-danger -- build-time, file-owned HTML */}
+      <div dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
 ```
+
+Why the inline-style override: Shiki's `codeToHtml` writes
+`style="background-color:...; color:..."` directly on the emitted
+`<pre>`. Without `!important` the inline style would beat our utility
+classes. The `--shiki-background` / `--shiki-foreground` CSS vars do
+flow through, but only because we forced them via Tailwind's `!`
+prefix.
 
 `dangerouslySetInnerHTML` is acceptable here because the HTML is
 produced at build time by Shiki from source files we own
@@ -274,9 +300,18 @@ manual:
    CSS without flicker or re-render.
 3. Edit `app/components/demos/action-registry.tsx` and save. Confirm
    HMR re-runs highlighting and the page updates without a full reload.
-4. `npm run build`. Confirm the build succeeds and the production
-   bundle contains no Shiki runtime
-   (`grep -r "createHighlighter" dist/` is empty).
+4. `npm run build`. Confirm the build succeeds and that no Shiki
+   runtime leaks into the client bundle. A `grep` for one symbol is
+   not enough — minified output mangles identifiers. Run all of:
+   - `grep -rEi "shiki|@shikijs|oniguruma" dist/assets/` — should
+     return only references inside the static HTML strings already
+     embedded by the plugin (i.e., the `shiki` class on emitted
+     `<pre>` elements), not module code.
+   - `find dist -name "*.wasm"` — should be empty (Shiki's onig WASM
+     would land here if it slipped through).
+   - Compare `du -sh dist/assets/` against a pre-change baseline. The
+     full Shiki runtime + grammars is on the order of ~1 MB
+     unminified, so any unintended inclusion will be obvious.
 5. After merge, visit one route on the deployed Pages site to confirm
    production HTML still highlights.
 
@@ -288,8 +323,11 @@ manual:
   (e.g. ~3KB raw → ~15KB HTML). Gzipped this is much smaller. Sample
   was within budget on inspection.
 - **`shiki` dependency placement**: Shiki is only used by `vite.config.ts`
-  (build time). Keep it in `dependencies` (so `vite build` resolves it
-  in CI), not `devDependencies`. It does not ship to the client.
+  at build time. Install it as a `devDependency` for consistency with
+  the rest of the build chain (Vite, Tailwind, the React plugin, and
+  `@types/*` already live there). CI runs `npm ci` without
+  `--omit=dev`, so devDeps are present at build time. Shiki does not
+  ship to the client.
 - **ESLint `dangerouslySetInnerHTML`**: a single
   `// eslint-disable-next-line react/no-danger` in `CodeBlock` with a
   one-line note that the HTML is build-time, file-owned input.
