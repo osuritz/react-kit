@@ -149,9 +149,9 @@ function DemoBody() {
       </div>
 
       <section className="border-border bg-muted/30 flex flex-col gap-2 rounded-md border px-3 py-2.5">
-        <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+        <h3 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
           Activity
-        </h4>
+        </h3>
         {log.length === 0 ? (
           <p className="text-muted-foreground text-xs">
             Run an action — its log line shows up here.

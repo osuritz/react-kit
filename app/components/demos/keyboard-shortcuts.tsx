@@ -98,9 +98,9 @@ function DemoBody() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="border-border bg-muted/30 flex flex-col gap-2 rounded-md border px-3 py-2.5">
-          <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+          <h3 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
             Registered shortcuts
-          </h4>
+          </h3>
           <ul className="flex flex-col gap-1">
             {allActions
               .filter((a) => a.shortcut)
@@ -117,9 +117,9 @@ function DemoBody() {
         </section>
 
         <section className="border-border bg-muted/30 flex flex-col gap-2 rounded-md border px-3 py-2.5">
-          <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+          <h3 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
             Activity
-          </h4>
+          </h3>
           {log.length === 0 ? (
             <p className="text-muted-foreground text-xs">
               Press a shortcut anywhere on the page.
