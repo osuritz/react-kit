@@ -1,6 +1,6 @@
 import { DropInPage } from "~/components/drop-in-page";
 import { SearchFacetsDemo } from "~/components/demos/search-facets";
-import searchFacetsSrc from "~/components/demos/search-facets.tsx?raw";
+import searchFacetsSrc from "~/components/demos/search-facets.tsx?shiki";
 import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
 
 const DROP_IN_PATH = "src/components/search-facets";

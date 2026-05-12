@@ -81,6 +81,18 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+    /* Shiki highlighter — light */
+    --shiki-background: var(--muted);
+    --shiki-foreground: var(--foreground);
+    --shiki-token-constant:          oklch(0.45 0.13 250);
+    --shiki-token-string:            oklch(0.55 0.13 145);
+    --shiki-token-comment:           var(--muted-foreground);
+    --shiki-token-keyword:           oklch(0.50 0.20 350);
+    --shiki-token-parameter:         oklch(0.50 0.13  60);
+    --shiki-token-function:          oklch(0.50 0.17 285);
+    --shiki-token-string-expression: oklch(0.55 0.13 145);
+    --shiki-token-punctuation:       var(--foreground);
+    --shiki-token-link:              oklch(0.55 0.15 220);
 }
 
 .dark {
@@ -115,6 +127,15 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    /* Shiki highlighter — dark */
+    --shiki-background: var(--card);
+    --shiki-token-constant:          oklch(0.78 0.12 250);
+    --shiki-token-string:            oklch(0.80 0.13 145);
+    --shiki-token-keyword:           oklch(0.78 0.18 350);
+    --shiki-token-parameter:         oklch(0.82 0.13  60);
+    --shiki-token-function:          oklch(0.78 0.15 285);
+    --shiki-token-string-expression: oklch(0.80 0.13 145);
+    --shiki-token-link:              oklch(0.78 0.15 220);
 }
 
 @layer base {

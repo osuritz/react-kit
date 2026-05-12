@@ -1,6 +1,6 @@
 import { DropInPage } from "~/components/drop-in-page";
 import { KeyboardShortcutsDemo } from "~/components/demos/keyboard-shortcuts";
-import keyboardShortcutsSrc from "~/components/demos/keyboard-shortcuts.tsx?raw";
+import keyboardShortcutsSrc from "~/components/demos/keyboard-shortcuts.tsx?shiki";
 import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
 
 const DROP_IN_PATH = "src/components/keyboard-shortcuts";

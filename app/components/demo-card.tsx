@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
+import { CodeBlock } from "./ui/code-block";
+import type { HighlightedSource } from "~/lib/shiki-source";
 
 export interface DemoCardProps {
   title: string;
   description: string;
-  source: string;
+  source: HighlightedSource;
   render: ReactNode;
 }
 
@@ -17,9 +19,7 @@ export function DemoCard({ title, description, source, render }: DemoCardProps) 
       <div className="border-border flex min-h-32 items-center justify-center border-b p-6">
         {render}
       </div>
-      <pre className="bg-muted/30 max-h-80 overflow-auto p-4 font-mono text-xs leading-relaxed">
-        <code>{source}</code>
-      </pre>
+      <CodeBlock raw={source.raw} html={source.html} />
     </section>
   );
 }

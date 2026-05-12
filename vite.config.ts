@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { shiki } from "./app/vite-plugins/shiki";
 import { fileURLToPath, URL } from "node:url";
 
 // Each drop-in folder under src/{hooks,components}/<name>/ ships its own
@@ -17,7 +18,7 @@ import { fileURLToPath, URL } from "node:url";
 // dedupe them too.
 export default defineConfig({
   base: "/react-kit/",
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), shiki()],
   resolve: {
     alias: {
       "~": fileURLToPath(new URL("./app", import.meta.url)),
