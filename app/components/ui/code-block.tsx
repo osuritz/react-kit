@@ -17,7 +17,7 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
         "group relative",
         "[&_pre]:max-h-80 [&_pre]:overflow-auto",
         "[&_pre]:rounded-md [&_pre]:p-4",
-        "[&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed",
+        "[&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed",
         // Shiki writes inline style="background-color:...; color:..." on
         // the <pre>; force our CSS-vars to win.
         "[&_pre]:![background-color:var(--shiki-background)]",
