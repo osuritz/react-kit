@@ -280,9 +280,9 @@ function ChildActions({
 function SeamsChecklist() {
   return (
     <section className="border-border bg-muted/30 flex flex-col gap-2 rounded-md border px-4 py-3">
-      <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+      <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
         Seams checklist — interact, then mark each
-      </h4>
+      </h2>
       <ul className="flex flex-col gap-1 text-xs leading-relaxed">
         {SEAMS.map((line, i) => (
           <li key={i} className="flex items-start gap-2">
@@ -317,9 +317,9 @@ function ControlsPanel({
   const [text, setText] = React.useState("");
   return (
     <section className="border-border bg-card flex flex-col gap-3 rounded-md border p-3">
-      <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+      <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
         Controls
-      </h4>
+      </h2>
       <div className="flex flex-wrap items-center gap-2">
         <Button
           onClick={() => {
@@ -386,9 +386,9 @@ function ControlsPanel({
 function RegistryPanel({ actions }: { actions: ReadonlyArray<Action> }) {
   return (
     <section className="border-border bg-card flex flex-col gap-2 rounded-md border p-3">
-      <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+      <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
         Registered actions ({actions.length})
-      </h4>
+      </h2>
       <ul className="divide-border bg-background border-border divide-y rounded-md border text-xs">
         {actions.map((a) => {
           const sc = a.shortcut
@@ -429,9 +429,9 @@ function RegistryPanel({ actions }: { actions: ReadonlyArray<Action> }) {
 function EventLog({ log }: { log: string[] }) {
   return (
     <section className="border-border bg-card flex flex-col gap-2 rounded-md border p-3">
-      <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+      <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
         Event log
-      </h4>
+      </h2>
       {log.length === 0 ? (
         <p className="text-muted-foreground text-xs">
           Fire any action — its surface and id show up here.

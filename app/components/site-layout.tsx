@@ -52,34 +52,42 @@ export function SiteLayout() {
 
       <div className="mx-auto flex max-w-6xl gap-10 px-6 py-8 md:py-12">
         <aside className="sticky top-16 hidden h-[calc(100svh-4rem)] w-48 shrink-0 overflow-y-auto md:block">
-          <nav aria-label="Primary" className="flex flex-col gap-6">
-            {NAV.map((group) => (
-              <div key={group.heading} className="flex flex-col gap-1.5">
-                <h2 className="text-muted-foreground px-2 text-[11px] font-semibold tracking-wider uppercase">
-                  {group.heading}
-                </h2>
-                <ul className="flex flex-col">
-                  {group.items.map((item) => (
-                    <li key={item.to}>
-                      <NavLink
-                        to={item.to}
-                        end
-                        className={({ isActive }) =>
-                          [
-                            "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors",
-                            isActive
-                              ? "border-foreground text-foreground bg-muted/50"
-                              : "text-muted-foreground hover:text-foreground border-transparent",
-                          ].join(" ")
-                        }
-                      >
-                        {item.label}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <nav aria-label="Primary">
+            <ul className="flex flex-col gap-6">
+              {NAV.map((group) => {
+                const labelId = `nav-group-${group.heading.toLowerCase()}`;
+                return (
+                  <li key={group.heading} className="flex flex-col gap-1.5">
+                    <div
+                      id={labelId}
+                      className="text-muted-foreground px-2 text-[11px] font-semibold tracking-wider uppercase"
+                    >
+                      {group.heading}
+                    </div>
+                    <ul aria-labelledby={labelId} className="flex flex-col">
+                      {group.items.map((item) => (
+                        <li key={item.to}>
+                          <NavLink
+                            to={item.to}
+                            end
+                            className={({ isActive }) =>
+                              [
+                                "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors",
+                                isActive
+                                  ? "border-foreground text-foreground bg-muted/50"
+                                  : "text-muted-foreground hover:text-foreground border-transparent",
+                              ].join(" ")
+                            }
+                          >
+                            {item.label}
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
         </aside>
 
