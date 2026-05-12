@@ -230,7 +230,7 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
       >
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       </button>
-      {/* eslint-disable-next-line react/no-danger -- build-time, file-owned HTML */}
+      {/* HTML is build-time output of Shiki over file-owned source — not user input. */}
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
@@ -276,8 +276,20 @@ declare module "*?shiki" {
 
 ## Route changes
 
-All seven routes under `app/routes/` already pass `source` through to
-`DemoCard`. The change is mechanical — replace the import suffix:
+Five routes under `app/routes/` currently import a demo's source via
+`?raw` and pass it through to `DemoCard`:
+
+- `action-registry.tsx`
+- `color-scheme.tsx`
+- `command-palette.tsx`
+- `keyboard-shortcuts.tsx`
+- `search-facets.tsx`
+
+The remaining routes (`index.tsx`, `integration.tsx`) do not use
+`?raw` and do not render through `DemoCard`, so they need no change.
+
+For each of the five, the change is mechanical — replace the import
+suffix:
 
 ```ts
 // before
@@ -328,6 +340,7 @@ manual:
   `@types/*` already live there). CI runs `npm ci` without
   `--omit=dev`, so devDeps are present at build time. Shiki does not
   ship to the client.
-- **ESLint `dangerouslySetInnerHTML`**: a single
-  `// eslint-disable-next-line react/no-danger` in `CodeBlock` with a
-  one-line note that the HTML is build-time, file-owned input.
+- **ESLint `dangerouslySetInnerHTML`**: this project does not install
+  or configure `eslint-plugin-react`, so the `react/no-danger` rule is
+  not active. No disable comment is needed. A plain JSX comment in
+  `CodeBlock` documents the trust boundary instead.
