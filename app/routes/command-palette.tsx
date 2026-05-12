@@ -1,6 +1,6 @@
 import { DropInPage } from "~/components/drop-in-page";
 import { CommandPaletteDemo } from "~/components/demos/command-palette";
-import commandPaletteSrc from "~/components/demos/command-palette.tsx?raw";
+import commandPaletteSrc from "~/components/demos/command-palette.tsx?shiki";
 import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
 
 const DROP_IN_PATH = "src/components/command-palette";

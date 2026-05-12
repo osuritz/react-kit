@@ -1,8 +1,8 @@
 import { DropInPage } from "~/components/drop-in-page";
 import { ModeToggleButton } from "~/components/demos/mode-toggle-button";
 import { ModeToggleSegmented } from "~/components/demos/mode-toggle-segmented";
-import buttonSrc from "~/components/demos/mode-toggle-button.tsx?raw";
-import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?raw";
+import buttonSrc from "~/components/demos/mode-toggle-button.tsx?shiki";
+import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?shiki";
 import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
 
 const DROP_IN_PATH = "src/hooks/color-scheme";

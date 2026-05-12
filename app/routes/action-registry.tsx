@@ -1,6 +1,6 @@
 import { DropInPage } from "~/components/drop-in-page";
 import { ActionRegistryDemo } from "~/components/demos/action-registry";
-import actionRegistrySrc from "~/components/demos/action-registry.tsx?raw";
+import actionRegistrySrc from "~/components/demos/action-registry.tsx?shiki";
 import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
 
 const DROP_IN_PATH = "src/hooks/action-registry";
