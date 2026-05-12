@@ -1,4 +1,5 @@
 import { IntegrationDemo } from "~/components/demos/integration";
+import { repoBlobUrl } from "~/lib/github";
 
 export default function IntegrationRoute() {
   return (
@@ -17,7 +18,7 @@ export default function IntegrationRoute() {
         <p className="text-sm">
           <a
             className="text-primary underline-offset-4 hover:underline"
-            href="https://github.com/osuritz/react-kit/blob/main/app/components/demos/integration.tsx"
+            href={repoBlobUrl("app/components/demos/integration.tsx")}
           >
             View source on GitHub →
           </a>

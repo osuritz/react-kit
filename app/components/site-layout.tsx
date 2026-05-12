@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router";
+import { repoRootUrl } from "~/lib/github";
 
 interface NavGroup {
   heading: string;
@@ -40,7 +41,7 @@ export function SiteLayout() {
           </NavLink>
           <a
             className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
-            href="https://github.com/osuritz/react-kit"
+            href={repoRootUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
