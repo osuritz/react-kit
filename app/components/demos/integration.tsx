@@ -281,16 +281,11 @@ function SeamsChecklist() {
   return (
     <section className="border-border bg-muted/30 flex flex-col gap-2 rounded-md border px-4 py-3">
       <h2 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
-        Seams checklist — interact, then mark each
+        Things to try
       </h2>
-      <ul className="flex flex-col gap-1 text-xs leading-relaxed">
+      <ul className="flex list-disc flex-col gap-1 pl-5 text-xs leading-relaxed">
         {SEAMS.map((line, i) => (
-          <li key={i} className="flex items-start gap-2">
-            <span aria-hidden className="select-none">
-              ✅ / ❌
-            </span>
-            <span>{line}</span>
-          </li>
+          <li key={i}>{line}</li>
         ))}
       </ul>
     </section>
