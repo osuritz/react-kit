@@ -1,9 +1,9 @@
 # command-palette
 
 A drop-in `⌘K`-style command palette for React. Built on
-[cmdk](https://cmdk.paco.me) (the same primitive shadcn ships its
-`<Command>` on top of), styled with shadcn theme tokens. Subscribes to
-the [action-registry](../../hooks/action-registry/README.md) — every
+[Base UI](https://base-ui.com/)'s `Combobox` and `Dialog`, styled with
+shadcn theme tokens. Subscribes to the
+[action-registry](../../hooks/action-registry/README.md) — every
 registered action shows up as a row, grouped by `Action.group`, with
 platform-correct shortcut glyphs on the right. Optional async
 `CommandSource`s plug in for backend search (debounced, per-source
@@ -25,6 +25,8 @@ Copy these files into your project (e.g. `src/components/command-palette/`):
 - `format-shortcut.ts` — tiny platform-correct shortcut formatter
   (used by the row glyphs; pulled out so the file is reusable)
 - `lib/cn.ts` — local class-name composer (shadcn idiom)
+- `lib/command-score.ts` — vendored MIT fuzzy-match scorer (same
+  algorithm `cmdk` uses; ~50 LOC, pure function)
 - *(optional)* this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
@@ -42,8 +44,9 @@ registry).
 Peer requirements:
 
 - React 18+ (uses `useSyncExternalStore`)
-- `cmdk` ≥ 1.0 — pulls in Radix Dialog as a transitive (used for the
-  modal wrapper, focus trap, and accessible labelling)
+- `@base-ui/react` ≥ 1.4 — provides `Dialog` (modal wrapper, focus
+  trap, accessible labelling) and `Combobox` (input, list, keyboard
+  navigation, empty/status slots)
 - `clsx` ≥ 2, `tailwind-merge` ≥ 2 — for the local `cn()` helper
 - Tailwind v4 + the standard shadcn theme tokens (`bg-popover`,
   `text-popover-foreground`, `border-border`, …) on `:root` — see
@@ -194,9 +197,11 @@ one.
 | `className`         | `string`                             | —                                |
 | `mac`               | `boolean`                            | autodetected                     |
 
-Must be mounted inside an `<ActionsProvider>`. Uses cmdk's
-`<Command.Dialog>` for the modal — focus trap, scroll lock, and ARIA
-labelling are inherited from there.
+Must be mounted inside an `<ActionsProvider>`. The modal is a Base UI
+`Dialog.Popup` — focus trap, scroll lock, and ARIA labelling are
+inherited from there. The input + list are a Base UI `Combobox.Root`
+in `inline` mode (no floating popover; the list renders directly
+inside the dialog).
 
 ### `CommandSource`
 
@@ -211,9 +216,11 @@ interface CommandSource {
 Sources are searched in parallel as the user types, debounced by
 `sourceDebounceMs`. v1 fires sources only when the query is non-empty
 — the empty-state shows recents + registered actions. Source results
-are rendered in their own `CommandGroup` and bypass cmdk's filter
-(`forceMount`) so the source's own ranking wins; selecting a row
-calls its `run`, just like a registered action.
+are rendered in their own group and bypass the local fuzzy filter —
+the source already vetted them for this query, so we trust its own
+ranking. Registered actions are scored locally against `label` plus
+`keywords` plus `group`. Selecting a row calls its `run`, just like
+a registered action.
 
 ### `ctx.source`
 
@@ -246,12 +253,14 @@ npm test -- --coverage
 
 ## Decisions made (where the spec left a choice)
 
-- **Built on cmdk, not on a hand-rolled list.** cmdk handles the
-  filter, the keyboard navigation, the
-  `Command.Dialog`-with-focus-trap, the `useSyncExternalStore`-y
-  internals, and the well-tested arrow/Enter/Escape semantics. We add
-  the registry adapter, the recents bucket, the async-source plumbing,
-  and the row layout.
+- **Built on Base UI Combobox + Dialog, with a vendored
+  `command-score`.** Base UI handles the dialog focus trap, the
+  combobox keyboard navigation (arrow/Enter/Escape), and ARIA
+  labelling. We own the filter (`lib/command-score.ts` is `cmdk`'s
+  MIT-licensed fuzzy-matcher, vendored verbatim — ~50 LOC, pure) and
+  the group-hiding rule (a group with no rows passing the filter is
+  omitted). We add the registry adapter, the recents bucket, the
+  async-source plumbing, and the row layout.
 - **Palette owns *only* its open hotkey.** Per-action shortcuts are
   the keyboard-shortcuts drop-in's responsibility. The palette
   deliberately does not register itself in the action registry — that
@@ -259,22 +268,23 @@ npm test -- --coverage
   same chord. Apps that want the palette in their cheatsheet register
   a stub action.
 - **`enabled() === false` filters at the action level, not the row
-  level.** Disabled actions never reach cmdk, which means they don't
-  show up in the empty-state group either, and arrow-key navigation
-  doesn't skip over phantom rows. The registry leaves `enabled`
-  evaluation to consumers; we evaluate on every render because the
-  result may depend on app state outside the registry.
+  level.** Disabled actions never reach the Combobox, which means they
+  don't show up in the empty-state group either, and arrow-key
+  navigation doesn't skip over phantom rows. The registry leaves
+  `enabled` evaluation to consumers; we evaluate on every render
+  because the result may depend on app state outside the registry.
 - **Recents persist on success, not on intent.** We update the recents
   list inside `runAction` after we've called the action's `run` — a
   user who opened the palette and immediately escaped doesn't pollute
   the list. We close the palette before invoking `run` so an action
   that opens its own dialog/route doesn't fight the palette for focus.
-- **Source results bypass cmdk's filter.** `forceMount` on source
-  rows. The source returned them for *this* query; trusting cmdk's
-  default fuzzy score on top of the source's own ranking would
-  occasionally hide a relevant result with low character overlap.
-  Registered actions still go through cmdk's default filter so
-  `keywords` and `label` match works as expected.
+- **Source results bypass the local filter.** Source rows are
+  force-included regardless of `command-score`. The source returned
+  them for *this* query; double-filtering on top of the source's own
+  ranking would occasionally hide a relevant result with low character
+  overlap. Registered actions still go through `command-score` against
+  `label`, `keywords`, and `group` so the usual fuzzy match works as
+  expected.
 - **Sources fire only on non-empty queries.** The empty-state list is
   recents + registered actions. Async sources tend to be expensive
   (network, RAG) and asking them to populate "what should I search

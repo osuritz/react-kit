@@ -1,4 +1,4 @@
-// Peer requirements: react >=18, react-dom >=18, cmdk >=1.0,
+// Peer requirements: react >=18, react-dom >=18, @base-ui/react >=1.4,
 // clsx >=2, tailwind-merge >=2. Tailwind v4 + the standard shadcn theme
 // tokens (`bg-popover`, `text-popover-foreground`, `border-border`, ...) are
 // expected at the host-app level — see `index.css` in the demo or the
@@ -8,29 +8,16 @@
 // folder `src/hooks/action-registry/`). It does not redefine the `Action`
 // contract and it does not bind shortcuts on behalf of individual actions
 // — that's the keyboard-shortcuts drop-in's job. The palette only owns
-// its own open-hotkey listener; in-palette navigation (arrow keys, Enter,
-// Escape) is handled by cmdk.
+// its own open-hotkey listener.
 
 import * as React from "react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandLoading,
-} from "cmdk";
-// `cmdk` pulls `@radix-ui/react-dialog` in as a direct dep — we reach
-// through it for `Title` / `Description` so screen readers get a real
-// labelled-region (Radix nags loudly in dev when these are missing).
-// No additional install: the transitive is guaranteed available
-// wherever cmdk is.
-import * as RadixDialog from "@radix-ui/react-dialog";
+import { Combobox } from "@base-ui/react/combobox";
+import { Dialog } from "@base-ui/react/dialog";
 import {
   type Action,
   useActions,
 } from "../../hooks/action-registry/actions";
+import { commandScore } from "./lib/command-score";
 import { cn } from "./lib/cn";
 import { formatShortcutCaps, isMacLike, type KeyCap } from "./format-shortcut";
 
@@ -99,7 +86,7 @@ export interface CommandPaletteProps {
   onOpenChange?: (open: boolean) => void;
   /** Placeholder for the search input. Defaults to "Search…". */
   placeholder?: string;
-  /** Extra classes for the cmdk dialog content. Merged with `tailwind-merge`. */
+  /** Extra classes for the dialog popup. Merged with `tailwind-merge`. */
   className?: string;
   /**
    * Override platform detection (used for `mod` resolution and shortcut
@@ -302,6 +289,130 @@ function useSourceResults(
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Filter + grouping                                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Unified row shape. Registry rows come from the action registry (split
+ * into "recent" + per-group buckets); source rows come from async
+ * `CommandSource.search` results and are force-included (no local
+ * scoring) — the source already vetted them for this query.
+ *
+ * `value` is the Combobox.Item identifier and the recent-slot key.
+ * Source-row values are namespaced (`${source.id}:${action.id}`) so
+ * two sources returning the same `action.id`, or a source returning
+ * the same id as a registered action, don't collide on keyboard
+ * navigation or recent storage.
+ */
+type Row =
+  | { kind: "registry"; bucket: "recent" | string; action: Action; value: string }
+  | { kind: "source"; sourceId: string; action: Action; value: string };
+
+interface VisibleGroup {
+  /** Stable React key; not user-visible. */
+  id: string;
+  heading: string;
+  rows: Row[];
+  /** Error message for a source group, if its last fetch failed. */
+  error: string | null;
+}
+
+interface VisibleRowsResult {
+  flat: Row[];
+  groups: VisibleGroup[];
+  anySourceLoading: boolean;
+}
+
+function scoreRegistryRows(
+  actions: Action[],
+  query: string | null,
+  bucket: "recent" | string,
+): Row[] {
+  if (query === null) {
+    // Empty query: pass through in registration order, no scoring.
+    return actions.map<Row>((a) => ({
+      kind: "registry",
+      bucket,
+      action: a,
+      value: a.id,
+    }));
+  }
+  const scored: Array<{ row: Row; score: number; idx: number }> = [];
+  actions.forEach((a, idx) => {
+    const aliases: string[] = [];
+    if (a.keywords) aliases.push(...a.keywords);
+    if (a.group) aliases.push(a.group);
+    const score = commandScore(a.label, query, aliases);
+    if (score > 0) {
+      scored.push({
+        row: { kind: "registry", bucket, action: a, value: a.id },
+        score,
+        idx,
+      });
+    }
+  });
+  scored.sort((a, b) => b.score - a.score || a.idx - b.idx);
+  return scored.map((x) => x.row);
+}
+
+function buildVisibleRows(args: {
+  query: string;
+  recents: Action[];
+  registryGroups: Array<[string, Action[]]>;
+  sources: Array<{ id: string; heading: string; state: SourceState }>;
+}): VisibleRowsResult {
+  const { query, recents, registryGroups, sources } = args;
+  const trimmed = query.trim();
+  const filterQuery = trimmed.length > 0 ? trimmed : null;
+
+  const groups: VisibleGroup[] = [];
+  const flat: Row[] = [];
+
+  if (recents.length > 0) {
+    const rows = scoreRegistryRows(recents, filterQuery, "recent");
+    if (rows.length > 0) {
+      groups.push({ id: "__recent__", heading: "Recent", rows, error: null });
+      flat.push(...rows);
+    }
+  }
+
+  for (const [name, actions] of registryGroups) {
+    const rows = scoreRegistryRows(actions, filterQuery, name);
+    if (rows.length > 0) {
+      groups.push({ id: `__reg__:${name}`, heading: name, rows, error: null });
+      flat.push(...rows);
+    }
+  }
+
+  let anySourceLoading = false;
+  if (filterQuery !== null) {
+    for (const s of sources) {
+      if (s.state.loading) anySourceLoading = true;
+      // Source rows always force-mount through the local filter — the
+      // source already vetted them. Show the group whenever there are
+      // results or an error to surface; loading-only groups are folded
+      // into the global Status row instead of a per-source affordance.
+      const rows: Row[] = s.state.results.map((a) => ({
+        kind: "source",
+        sourceId: s.id,
+        action: a,
+        value: `${s.id}:${a.id}`,
+      }));
+      if (rows.length === 0 && !s.state.error) continue;
+      groups.push({
+        id: `__src__:${s.id}`,
+        heading: s.heading,
+        rows,
+        error: s.state.error,
+      });
+      flat.push(...rows);
+    }
+  }
+
+  return { flat, groups, anySourceLoading };
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -367,12 +478,13 @@ export function CommandPalette({
   const { getAll, getById, subscribe } = useActions();
   const allActions = React.useSyncExternalStore(subscribe, getAll, getAll);
 
-  // Filter out disabled actions. enabled() is a function the registry
-  // doesn't evaluate — that's our job. We re-call on every render because
-  // it's a free read and may depend on app state outside the registry.
-  const enabledActions = React.useMemo(() => {
-    return allActions.filter((a) => !a.enabled || a.enabled());
-  }, [allActions]);
+  // Filter out disabled actions. `enabled()` is a closure that often
+  // captures app state outside the registry — we must re-evaluate it
+  // on every palette render, not just when `allActions` identity
+  // changes (the registry's snapshot only flips on register/unregister,
+  // so field-level updates wouldn't otherwise invalidate a memo here).
+  // Cost is trivial over a typical action list.
+  const enabledActions = allActions.filter((a) => !a.enabled || a.enabled());
 
   // Recents are seeded from storage once and updated via `pushRecent`.
   // We rehydrate on mount only — subsequent reads come from React state
@@ -396,7 +508,6 @@ export function CommandPalette({
   // unregistered, or never matched a real id) are filtered out — but kept
   // in storage so they re-appear if the action remounts later.
   const recentActions = React.useMemo<Action[]>(() => {
-    if (query) return [];
     const out: Action[] = [];
     for (const id of recents) {
       const a = getById(id);
@@ -405,7 +516,7 @@ export function CommandPalette({
       out.push(a);
     }
     return out;
-  }, [recents, query, getById, allActions]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [recents, getById, allActions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Recent ids form a Set so we can suppress duplicates from the main
   // groups when the recents bucket is showing them.
@@ -415,7 +526,7 @@ export function CommandPalette({
   );
 
   // Group registered actions by Action.group, with "Other" pinned last.
-  const groupedActions = React.useMemo(() => {
+  const registryGroups = React.useMemo<Array<[string, Action[]]>>(() => {
     const map = new Map<string, Action[]>();
     for (const action of enabledActions) {
       if (recentIdSet.has(action.id)) continue;
@@ -433,6 +544,27 @@ export function CommandPalette({
 
   const sourceList = sources ?? EMPTY_SOURCES;
   const sourceState = useSourceResults(sourceList, query, sourceDebounceMs);
+
+  const sourcesForBuild = React.useMemo(
+    () =>
+      sourceList.map((s) => ({
+        id: s.id,
+        heading: s.heading ?? s.id,
+        state: sourceState[s.id] ?? EMPTY_SOURCE_STATE,
+      })),
+    [sourceList, sourceState],
+  );
+
+  const { flat, groups, anySourceLoading } = React.useMemo(
+    () =>
+      buildVisibleRows({
+        query,
+        recents: recentActions,
+        registryGroups,
+        sources: sourcesForBuild,
+      }),
+    [query, recentActions, registryGroups, sourcesForBuild],
+  );
 
   const runAction = React.useCallback(
     (action: Action, recentId: string) => {
@@ -478,209 +610,153 @@ export function CommandPalette({
   );
 
   return (
-    <CommandDialog
-      open={open}
-      onOpenChange={setOpen}
-      label="Command palette"
-      shouldFilter
-      overlayClassName={cn(
-        "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
-        "data-[state=closed]:animate-out data-[state=open]:animate-in",
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      )}
-      contentClassName={cn(
-        "fixed top-[12vh] left-1/2 z-50 -translate-x-1/2",
-        "w-full max-w-xl rounded-lg border border-border bg-popover text-popover-foreground shadow-lg",
-        "outline-none",
-        "data-[state=closed]:animate-out data-[state=open]:animate-in",
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        "[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:pb-1",
-        "[&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold",
-        "[&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:uppercase",
-        "[&_[cmdk-group-heading]]:text-muted-foreground",
-        className,
-      )}
-    >
-      {/*
-        Radix Dialog warns in dev when a `Content` has no `Title` /
-        `Description`. cmdk's `CommandDialog` doesn't expose those slots,
-        so we render them ourselves — sr-only because the visible label
-        is the search input itself. They live inside the cmdk `Command`
-        (cmdk passes children through to it), which is rendered inside
-        `RadixDialog.Content`, so Radix's traversal finds them.
-      */}
-      <RadixDialog.Title className="sr-only">Command palette</RadixDialog.Title>
-      <RadixDialog.Description className="sr-only">
-        Search and run a command. Use arrow keys to navigate, enter to select, escape to close.
-      </RadixDialog.Description>
-      <div className="flex items-center border-b border-border px-3">
-        <SearchIcon className="size-4 text-muted-foreground shrink-0" />
-        <CommandInput
-          value={query}
-          onValueChange={setQuery}
-          placeholder={placeholder}
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Portal>
+        <Dialog.Backdrop
           className={cn(
-            "flex h-11 w-full bg-transparent py-3 pl-2 text-sm outline-none",
-            "placeholder:text-muted-foreground",
-            "disabled:cursor-not-allowed disabled:opacity-50",
+            "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
+            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+            "transition-opacity duration-150",
           )}
         />
-      </div>
-      <CommandList className="max-h-[60vh] overflow-y-auto p-1">
-        <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
-          No results.
-        </CommandEmpty>
+        <Dialog.Popup
+          aria-label="Command palette"
+          className={cn(
+            "fixed top-[12vh] left-1/2 z-50 -translate-x-1/2",
+            "w-full max-w-xl rounded-lg border border-border bg-popover text-popover-foreground shadow-lg",
+            "outline-none",
+            "data-[starting-style]:opacity-0 data-[starting-style]:scale-95",
+            "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",
+            "transition-all duration-150",
+            className,
+          )}
+        >
+          {/*
+            BaseUI Dialog warns in dev when a `Popup` has no `Title` /
+            `Description`. The visible label is the search input itself,
+            so we render the title/description sr-only.
+          */}
+          <Dialog.Title className="sr-only">Command palette</Dialog.Title>
+          <Dialog.Description className="sr-only">
+            Search and run a command. Use arrow keys to navigate, enter to select, escape to close.
+          </Dialog.Description>
 
-        {recentActions.length > 0 ? (
-          <CommandGroup heading="Recent">
-            {recentActions.map((action) => (
-              <ActionRow
-                key={action.id}
-                action={action}
-                value={action.id}
-                mac={macResolved}
-                onSelect={() => runAction(action, action.id)}
+          <Combobox.Root
+            inline
+            items={flat}
+            filter={null}
+            inputValue={query}
+            onInputValueChange={(next: string) => setQuery(next)}
+            value={null}
+            onValueChange={(committed: Row | null) => {
+              // `onValueChange` fires for both pointer clicks AND
+              // keyboard Enter — so it's the single hook for "the user
+              // picked this row". We never persist the selection
+              // (`value` stays null), so this is essentially a
+              // "select means run + close" wire. The setOpen(false)
+              // inside runAction resets the input.
+              if (committed) runAction(committed.action, committed.value);
+            }}
+            // Combobox.Root narrows `autoHighlight` to boolean in its
+            // public type, but the underlying implementation still
+            // accepts the string `"always"` and forwards it to the
+            // store. We need "always" (not boolean true, which maps to
+            // "input-change") so the first row is highlighted on mount
+            // — that's the cmdk behaviour, and it makes Enter useful
+            // immediately after opening the palette. Drop the directive
+            // when BaseUI widens the Root type.
+            // @ts-expect-error see comment above
+            autoHighlight="always"
+          >
+            <div className="flex items-center border-b border-border px-3">
+              <SearchIcon className="size-4 text-muted-foreground shrink-0" />
+              <Combobox.Input
+                placeholder={placeholder}
+                className={cn(
+                  "flex h-11 w-full bg-transparent py-3 pl-2 text-sm outline-none",
+                  "placeholder:text-muted-foreground",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
+                )}
               />
-            ))}
-          </CommandGroup>
-        ) : null}
+            </div>
+            <Combobox.List className="max-h-[60vh] overflow-y-auto p-1">
+              {/*
+                Combobox.Status and Combobox.Empty must remain mounted
+                so the polite live regions are wired up consistently
+                across screen readers. Keep their wrappers naked (no
+                visible styling) and gate visibility on the inner
+                content — an unconditionally-rendered wrapper with
+                padding would consume 48px under the input even when
+                there is nothing to announce.
 
-        {groupedActions.map(([groupName, actions]) => (
-          <CommandGroup key={groupName} heading={groupName}>
-            {actions.map((action) => (
-              <ActionRow
-                key={action.id}
-                action={action}
-                value={action.id}
-                mac={macResolved}
-                onSelect={() => runAction(action, action.id)}
-              />
-            ))}
-          </CommandGroup>
-        ))}
+                The empty state is also suppressed while a source is
+                in flight to avoid two contradictory live-region
+                announcements ("Searching…" + "No results.") firing
+                at the same time.
+              */}
+              <Combobox.Status>
+                {anySourceLoading ? (
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
+                    Searching…
+                  </div>
+                ) : null}
+              </Combobox.Status>
 
-        {sourceList.map((source) => {
-          const state = sourceState[source.id] ?? EMPTY_SOURCE_STATE;
-          const heading = source.heading ?? source.id;
-          // Only render a group when there's something to show. Source
-          // rows are already filtered by the source, so force-mount the
-          // group as well as the items; cmdk hides a group when none of
-          // its registered children score against the input.
-          if (!query) return null;
-          if (state.loading) {
-            return (
-              <CommandGroup key={source.id} heading={heading} forceMount>
-                <CommandLoading
-                  className="px-3 py-2 text-xs text-muted-foreground"
-                  label={`Searching ${heading}`}
-                >
-                  Searching…
-                </CommandLoading>
-              </CommandGroup>
-            );
-          }
-          if (state.error) {
-            return (
-              <CommandGroup key={source.id} heading={heading} forceMount>
-                <div className="px-3 py-2 text-xs text-destructive">
-                  {state.error}
-                </div>
-              </CommandGroup>
-            );
-          }
-          if (state.results.length === 0) return null;
-          return (
-            <CommandGroup key={source.id} heading={heading} forceMount>
-              {state.results.map((action) => {
-                // Source action ids may collide with registry ids (e.g.
-                // a backend that returns "nav.settings", or two sources
-                // returning "doc:onboarding"). cmdk identifies items by
-                // `value` — two items with the same value would both
-                // appear selected on arrow-key nav and `onSelect` would
-                // fire on whichever the DOM scan finds first. Namespace
-                // with the source id so the value, the React key, and
-                // the recent slot are all globally unique.
-                const namespacedId = `${source.id}:${action.id}`;
-                return (
-                  <ActionRow
-                    key={namespacedId}
-                    action={action}
-                    value={namespacedId}
-                    // Source rows always force-mount through cmdk's
-                    // filter so a "Search docs" group with three
-                    // results doesn't disappear when the query happens
-                    // to score 0 against the action's label (the
-                    // source already vetted them).
-                    forceMount
-                    mac={macResolved}
-                    onSelect={() => runAction(action, namespacedId)}
-                  />
-                );
-              })}
-            </CommandGroup>
-          );
-        })}
-      </CommandList>
-    </CommandDialog>
+              <Combobox.Empty>
+                {anySourceLoading ? null : (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    No results.
+                  </div>
+                )}
+              </Combobox.Empty>
+
+              {groups.map((group) => (
+                <Combobox.Group key={group.id}>
+                  <Combobox.GroupLabel className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+                    {group.heading}
+                  </Combobox.GroupLabel>
+                  {group.rows.map((row) => (
+                    <Combobox.Item
+                      key={row.value}
+                      value={row}
+                      className={cn(
+                        "flex cursor-default items-center gap-2 rounded-md px-3 py-2 text-sm",
+                        "outline-none select-none",
+                        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+                        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                      )}
+                    >
+                      {row.action.icon ? (
+                        <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center [&_svg]:size-4">
+                          {row.action.icon}
+                        </span>
+                      ) : null}
+                      <span className="flex-1 truncate">{row.action.label}</span>
+                      {row.action.shortcut ? (
+                        <ShortcutCaps shortcut={row.action.shortcut} mac={macResolved} />
+                      ) : null}
+                    </Combobox.Item>
+                  ))}
+                  {group.error ? (
+                    <div className="px-3 py-2 text-xs text-destructive">
+                      {group.error}
+                    </div>
+                  ) : null}
+                </Combobox.Group>
+              ))}
+            </Combobox.List>
+          </Combobox.Root>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
 const EMPTY_SOURCES: CommandSource[] = [];
 
 /* -------------------------------------------------------------------------- */
-/*  Row                                                                       */
+/*  Shortcut glyph row                                                        */
 /* -------------------------------------------------------------------------- */
-
-interface ActionRowProps {
-  action: Action;
-  /**
-   * cmdk identifier for this row. Namespaced for source rows so two
-   * items with the same `action.id` (e.g. a registry `nav.settings`
-   * and a source-returned `nav.settings`) don't collide on arrow-key
-   * selection or `aria-selected` state.
-   */
-  value: string;
-  mac: boolean;
-  onSelect: () => void;
-  forceMount?: boolean;
-}
-
-function ActionRow({ action, value, mac, onSelect, forceMount }: ActionRowProps) {
-  // Build the searchable haystack from the keyword list — cmdk's default
-  // filter scores the visible value plus these. Including the group name
-  // matches the "I know it's in Settings" search flow.
-  const keywords = React.useMemo(() => {
-    const out = action.keywords ? [...action.keywords] : [];
-    if (action.group) out.push(action.group);
-    return out;
-  }, [action.keywords, action.group]);
-
-  return (
-    <CommandItem
-      value={value}
-      keywords={keywords}
-      onSelect={onSelect}
-      forceMount={forceMount}
-      className={cn(
-        "flex cursor-default items-center gap-2 rounded-md px-3 py-2 text-sm",
-        "outline-none select-none",
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground",
-        "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
-      )}
-    >
-      {action.icon ? (
-        <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center [&_svg]:size-4">
-          {action.icon}
-        </span>
-      ) : null}
-      <span className="flex-1 truncate">{action.label}</span>
-      {action.shortcut ? (
-        <ShortcutCaps shortcut={action.shortcut} mac={mac} />
-      ) : null}
-    </CommandItem>
-  );
-}
 
 function ShortcutCaps({
   shortcut,
