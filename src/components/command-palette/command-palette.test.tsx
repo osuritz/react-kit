@@ -1479,8 +1479,41 @@ describe("accessibility wiring", () => {
     fireEvent.change(screen.getByRole("combobox"), {
       target: { value: "q" },
     });
-    const status = await screen.findByText(/Searching/);
-    expect(status).toHaveAttribute("aria-live", "polite");
+    // The text is inside a styled child; the live region is the
+    // (naked) Combobox.Status wrapper one level up.
+    const textNode = await screen.findByText(/Searching/);
+    const liveRegion = textNode.closest("[aria-live]");
+    expect(liveRegion).not.toBeNull();
+    expect(liveRegion).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("keeps the empty live region naked so it consumes no vertical space when not empty", () => {
+    // Regression for the "48px gap under the search input" bug:
+    // Combobox.Empty's wrapper must stay mounted (BaseUI requirement
+    // for consistent AT announcements), so applying padding /
+    // text-size classes directly to it leaves a 48px ghost block
+    // visible whenever the list is non-empty. Styling belongs on the
+    // inner content; the wrapper stays naked.
+    render(
+      <Harness
+        open
+        actions={[{ id: "a", label: "Alpha", group: "Nav", run: () => {} }]}
+      />,
+    );
+    // Find the empty-state live region by structural traversal:
+    // there are two role=status nodes (Combobox.Status for
+    // "Searching…", Combobox.Empty for "No results.") — the empty
+    // one is the only one whose textContent is empty right now (no
+    // search in flight, list non-empty).
+    const liveRegions = document.querySelectorAll('[aria-live="polite"]');
+    const naked = Array.from(liveRegions).filter(
+      (n) => (n.textContent ?? "").trim() === "",
+    );
+    expect(naked.length).toBeGreaterThan(0);
+    for (const n of naked) {
+      expect(n.className).not.toMatch(/py-\d/);
+      expect(n.className).not.toMatch(/p-\d/);
+    }
   });
 
   it("renders the empty state as a polite live region", () => {
@@ -1493,8 +1526,10 @@ describe("accessibility wiring", () => {
     fireEvent.change(screen.getByRole("combobox"), {
       target: { value: "zzzz" },
     });
-    const empty = screen.getByText(/No results\./);
-    expect(empty).toHaveAttribute("aria-live", "polite");
+    const textNode = screen.getByText(/No results\./);
+    const liveRegion = textNode.closest("[aria-live]");
+    expect(liveRegion).not.toBeNull();
+    expect(liveRegion).toHaveAttribute("aria-live", "polite");
   });
 
   it("moves focus to the search input when the dialog opens", async () => {

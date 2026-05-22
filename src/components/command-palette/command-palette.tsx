@@ -680,29 +680,35 @@ export function CommandPalette({
               />
             </div>
             <Combobox.List className="max-h-[60vh] overflow-y-auto p-1">
-              {anySourceLoading ? (
-                <Combobox.Status
-                  className="px-3 py-2 text-xs text-muted-foreground"
-                  role="status"
-                >
-                  Searching…
-                </Combobox.Status>
-              ) : null}
-
               {/*
-                Suppress the empty state while a source is in flight —
-                otherwise both Status ("Searching…") and Empty ("No
-                results.") render simultaneously as polite live
-                regions, sending contradictory announcements to screen
-                readers. Once `anySourceLoading` flips back to false,
-                Combobox.Empty fires as normal when the filtered item
-                list is empty.
+                Combobox.Status and Combobox.Empty must remain mounted
+                so the polite live regions are wired up consistently
+                across screen readers. Keep their wrappers naked (no
+                visible styling) and gate visibility on the inner
+                content — an unconditionally-rendered wrapper with
+                padding would consume 48px under the input even when
+                there is nothing to announce.
+
+                The empty state is also suppressed while a source is
+                in flight to avoid two contradictory live-region
+                announcements ("Searching…" + "No results.") firing
+                at the same time.
               */}
-              {anySourceLoading ? null : (
-                <Combobox.Empty className="py-6 text-center text-sm text-muted-foreground">
-                  No results.
-                </Combobox.Empty>
-              )}
+              <Combobox.Status>
+                {anySourceLoading ? (
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
+                    Searching…
+                  </div>
+                ) : null}
+              </Combobox.Status>
+
+              <Combobox.Empty>
+                {anySourceLoading ? null : (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    No results.
+                  </div>
+                )}
+              </Combobox.Empty>
 
               {groups.map((group) => (
                 <Combobox.Group
