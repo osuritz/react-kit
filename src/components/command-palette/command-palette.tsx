@@ -689,15 +689,29 @@ export function CommandPalette({
                 </Combobox.Status>
               ) : null}
 
-              <Combobox.Empty className="py-6 text-center text-sm text-muted-foreground">
-                No results.
-              </Combobox.Empty>
+              {/*
+                Suppress the empty state while a source is in flight —
+                otherwise both Status ("Searching…") and Empty ("No
+                results.") render simultaneously as polite live
+                regions, sending contradictory announcements to screen
+                readers. Once `anySourceLoading` flips back to false,
+                Combobox.Empty fires as normal when the filtered item
+                list is empty.
+              */}
+              {anySourceLoading ? null : (
+                <Combobox.Empty className="py-6 text-center text-sm text-muted-foreground">
+                  No results.
+                </Combobox.Empty>
+              )}
 
               {groups.map((group) => (
-                <section key={group.id} className="contents">
-                  <div className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+                <Combobox.Group
+                  key={group.id}
+                  className="flex flex-col"
+                >
+                  <Combobox.GroupLabel className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
                     {group.heading}
-                  </div>
+                  </Combobox.GroupLabel>
                   {group.rows.map((row) => (
                     <Combobox.Item
                       key={row.value}
@@ -725,7 +739,7 @@ export function CommandPalette({
                       {group.error}
                     </div>
                   ) : null}
-                </section>
+                </Combobox.Group>
               ))}
             </Combobox.List>
           </Combobox.Root>

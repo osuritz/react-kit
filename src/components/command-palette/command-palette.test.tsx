@@ -1510,6 +1510,87 @@ describe("accessibility wiring", () => {
     await waitFor(() => expect(document.activeElement).toBe(input));
   });
 
+  it("labels each group section via aria-labelledby resolving to the heading text", () => {
+    // Issue 1 from review: groups are real Combobox.Group elements
+    // (role=group + aria-labelledby), not unnamed sections. ATs
+    // announce "Navigation, group, …" when arrowing into a group.
+    render(
+      <Harness
+        open
+        actions={[
+          { id: "a", label: "Inbox", group: "Navigation", run: () => {} },
+          { id: "b", label: "Save", group: "Documents", run: () => {} },
+        ]}
+      />,
+    );
+    const groups = screen.getAllByRole("group");
+    expect(groups.length).toBeGreaterThanOrEqual(2);
+    const headings = groups
+      .map((g) => {
+        const id = g.getAttribute("aria-labelledby");
+        return id ? document.getElementById(id)?.textContent ?? null : null;
+      })
+      .filter((x): x is string => x !== null);
+    expect(headings).toContain("Navigation");
+    expect(headings).toContain("Documents");
+  });
+
+  it("suppresses the empty state while a source is loading (no contradictory live regions)", async () => {
+    // Issue 3 from review: when the local registry filter returns
+    // zero rows AND a source is still loading, the old code rendered
+    // both Combobox.Status ("Searching…") and Combobox.Empty ("No
+    // results.") as polite live regions — two contradictory
+    // announcements. Empty is now suppressed while loading.
+    const source: CommandSource = {
+      id: "docs",
+      heading: "Docs",
+      // Never resolves — the loading state is what we want to assert
+      // against, and the test cleans up by unmounting.
+      search: () => new Promise(() => {}),
+    };
+    render(
+      <Harness
+        open
+        sources={[source]}
+        actions={[]}
+      />,
+    );
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "anything" },
+    });
+    await screen.findByText(/Searching/);
+    expect(screen.queryByText(/No results\./)).not.toBeInTheDocument();
+  });
+
+  it("Enter on the input commits the highlighted row via the value-change path", async () => {
+    // Issue 4 from review: pin an explicit assertion that Enter
+    // routes through Combobox.Root's onValueChange, the single hook
+    // we use to run actions. In jsdom, BaseUI's Enter handler
+    // delegates to `activeListItem.click()`, which fires both
+    // onValueChange and any per-item onClick — so this test can't
+    // distinguish between the two implementations, but it does fail
+    // immediately if the dispatch path is removed entirely. The
+    // userEvent setup mirrors the existing keyboard-nav Enter test
+    // because fireEvent.keyDown for Enter (alone) doesn't reach
+    // BaseUI's selection commit reliably in jsdom — userEvent does.
+    const user = userEvent.setup();
+    const top = vi.fn();
+    const middle = vi.fn();
+    render(
+      <Harness
+        open
+        actions={[
+          { id: "a", label: "Top", group: "Nav", run: top },
+          { id: "b", label: "Middle", group: "Nav", run: middle },
+        ]}
+      />,
+    );
+    await user.click(screen.getByRole("combobox"));
+    await user.keyboard("{ArrowDown}{Enter}");
+    await waitFor(() => expect(middle).toHaveBeenCalledTimes(1));
+    expect(top).not.toHaveBeenCalled();
+  });
+
   it("returns focus to the previously-focused element when the dialog closes", async () => {
     function Controlled() {
       const [open, setOpen] = React.useState(false);
