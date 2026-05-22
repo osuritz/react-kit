@@ -711,10 +711,7 @@ export function CommandPalette({
               </Combobox.Empty>
 
               {groups.map((group) => (
-                <Combobox.Group
-                  key={group.id}
-                  className="flex flex-col"
-                >
+                <Combobox.Group key={group.id}>
                   <Combobox.GroupLabel className="px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
                     {group.heading}
                   </Combobox.GroupLabel>
