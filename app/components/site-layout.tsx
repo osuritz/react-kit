@@ -93,7 +93,7 @@ export function SiteLayout() {
                                 "block rounded-md px-3 py-1.5 text-sm transition-colors",
                                 isActive
                                   ? "bg-accent text-foreground ring-1 ring-inset ring-border"
-                                  : "text-foreground/80 hover:text-foreground hover:bg-accent",
+                                  : "text-foreground/85 hover:text-foreground hover:bg-accent",
                               ].join(" ")
                             }
                           >
