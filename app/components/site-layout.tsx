@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { NavLink, Outlet } from "react-router";
 import { Dialog } from "@base-ui/react/dialog";
 import { Menu, X } from "lucide-react";
@@ -24,10 +24,14 @@ function GitHubIcon({ className }: { className?: string }) {
  * `onNavigate` lets the drawer close itself when a link is followed.
  */
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
+  // NavList renders in both the (display:none) desktop sidebar and the mobile
+  // drawer, so both live in the DOM at once. A per-instance base id keeps the
+  // group label ids unique instead of colliding on `nav-group-hooks` etc.
+  const baseId = useId();
   return (
     <ul className="flex flex-col gap-4">
       {NAV_GROUPS.map((group) => {
-        const labelId = `nav-group-${group.heading.toLowerCase()}`;
+        const labelId = `${baseId}-${group.heading.toLowerCase()}`;
         return (
           <li key={group.heading} className="flex flex-col">
             <div
