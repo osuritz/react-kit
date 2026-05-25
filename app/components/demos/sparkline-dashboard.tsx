@@ -10,6 +10,11 @@ import { BulletGraph } from "#components/sparkline/bullet-graph/bullet-graph.tsx
 import { StackedBar } from "#components/sparkline/stacked-bar/stacked-bar.tsx";
 import { HeatStrip } from "#components/sparkline/heat-strip/heat-strip.tsx";
 import { DeltaChip } from "#components/sparkline/delta-chip/delta-chip.tsx";
+// Defined once in the error-containment demo and reused here: a real dashboard
+// wraps each widget in its own boundary so one bad feed degrades a single tile
+// instead of blanking the whole surface. The "Error rate" card below is wired
+// to a down feed to show that containment in place.
+import { ErrorBoundary, WidgetFallback } from "./dashboard-error-containment";
 
 const pct = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n)}%`;
 
@@ -40,6 +45,30 @@ function StatCard({
   );
 }
 
+/** A stat card wrapped in its own error boundary — degrades to a fallback tile. */
+function GuardedStatCard(props: {
+  label: string;
+  value: string;
+  delta: number;
+  invert?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <ErrorBoundary
+      fallback={({ error, reset }) => (
+        <WidgetFallback label={props.label} error={error} onRetry={reset} />
+      )}
+    >
+      <StatCard {...props} />
+    </ErrorBoundary>
+  );
+}
+
+/** Stand-in for a widget whose data feed is down — throws during render. */
+function FailingTrend(): never {
+  throw new Error("Monitoring feed unavailable (503)");
+}
+
 export function SparklineDashboardDemo() {
   return (
     <div className="flex w-full flex-col gap-5">
@@ -53,9 +82,10 @@ export function SparklineDashboardDemo() {
         sizes.
       </p>
 
-      {/* KPI stat cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Revenue · 12wk" value="$1.41M" delta={7.2}>
+      {/* KPI stat cards — each guarded by its own boundary, so the "Error rate"
+          card (its feed is down) degrades alone while the rest keep rendering. */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <GuardedStatCard label="Revenue · 12wk" value="$1.41M" delta={7.2}>
           <div className="text-sky-600 dark:text-sky-400">
             <SparklineArea
               values={[82, 88, 91, 87, 95, 102, 99, 110, 121, 118, 132, 141]}
@@ -66,9 +96,9 @@ export function SparklineDashboardDemo() {
               className="w-full"
             />
           </div>
-        </StatCard>
+        </GuardedStatCard>
 
-        <StatCard label="Signups · 14d" value="31/day" delta={9}>
+        <GuardedStatCard label="Signups · 14d" value="31/day" delta={9}>
           <div className="text-violet-600 dark:text-violet-400">
             <SparklineBar
               values={[12, 18, 9, 22, 16, 25, 30, 21, 28, 33, 19, 27, 35, 31]}
@@ -78,9 +108,9 @@ export function SparklineDashboardDemo() {
               className="w-full"
             />
           </div>
-        </StatCard>
+        </GuardedStatCard>
 
-        <StatCard label="SLA · 20d" value="17/20" delta={-2}>
+        <GuardedStatCard label="SLA · 20d" value="17/20" delta={-2}>
           <div className="text-emerald-600 dark:text-emerald-400">
             <SparklineWinLoss
               values={[1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, 0, 1, 1, -1, 1, 1, 1, 1, 1]}
@@ -90,9 +120,9 @@ export function SparklineDashboardDemo() {
               className="w-full"
             />
           </div>
-        </StatCard>
+        </GuardedStatCard>
 
-        <StatCard label="p95 latency" value="150 ms" delta={18} invert>
+        <GuardedStatCard label="p95 latency" value="150 ms" delta={18} invert>
           <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
             <GaugeRing value={75} size={40} thickness={6} centerLabel="75" label="latency budget used 75%" />
             <span className="text-muted-foreground text-xs leading-tight">
@@ -101,7 +131,13 @@ export function SparklineDashboardDemo() {
               SLO budget
             </span>
           </div>
-        </StatCard>
+        </GuardedStatCard>
+
+        {/* This widget's feed is down — it throws on render and its boundary
+            catches it, leaving the four healthy cards untouched. */}
+        <GuardedStatCard label="Error rate · 24h" value="0.4%" delta={0} invert>
+          <FailingTrend />
+        </GuardedStatCard>
       </div>
 
       {/* Goals scorecard + composition */}
