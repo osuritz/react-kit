@@ -78,7 +78,7 @@ export function SiteLayout() {
                   <li key={group.heading} className="flex flex-col">
                     <div
                       id={labelId}
-                      className="text-muted-foreground px-3 py-1.5 text-sm"
+                      className="text-muted-foreground px-3 py-1.5 text-xs font-medium"
                     >
                       {group.heading}
                     </div>
@@ -93,7 +93,7 @@ export function SiteLayout() {
                                 "block rounded-md px-3 py-1.5 text-sm transition-colors",
                                 isActive
                                   ? "bg-accent text-foreground ring-1 ring-inset ring-border"
-                                  : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                                  : "text-foreground/85 hover:text-foreground hover:bg-accent",
                               ].join(" ")
                             }
                           >
