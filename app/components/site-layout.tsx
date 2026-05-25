@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from "react";
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, ScrollRestoration } from "react-router";
 import { Dialog } from "@base-ui/react/dialog";
 import { Menu, X } from "lucide-react";
 import { NAV_GROUPS } from "~/lib/nav";
@@ -85,6 +85,11 @@ export function SiteLayout() {
 
   return (
     <div className="bg-background text-foreground min-h-svh">
+      {/* Reset window scroll to top on navigation (and restore it on
+          back/forward). React Router's data router doesn't do this by
+          default, so navigating between long pages kept the prior scroll
+          offset. */}
+      <ScrollRestoration />
       <header className="border-border bg-background sticky top-0 z-30 border-b">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
