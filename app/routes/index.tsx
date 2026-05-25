@@ -1,41 +1,9 @@
 import { Link } from "react-router";
-
-const ENTRIES: ReadonlyArray<{ to: string; label: string; blurb: string }> = [
-  {
-    to: "/color-scheme",
-    label: "useColorScheme",
-    blurb: "Light/dark color scheme hook with SSR FOUC blocker.",
-  },
-  {
-    to: "/action-registry",
-    label: "action-registry",
-    blurb: "Shared registry that the keybinding hook and command palette subscribe to.",
-  },
-  {
-    to: "/search-facets",
-    label: "SearchFacets",
-    blurb: "Schema-driven faceted search bar with Gmail-flavor grammar.",
-  },
-  {
-    to: "/keyboard-shortcuts",
-    label: "KeyboardShortcuts",
-    blurb: "Keybinding layer + cheatsheet that consume the action registry.",
-  },
-  {
-    to: "/command-palette",
-    label: "CommandPalette",
-    blurb: "⌘K launcher built on cmdk with async sources.",
-  },
-  {
-    to: "/integration",
-    label: "Integration demo",
-    blurb: "All three action drop-ins wired together end-to-end.",
-  },
-];
+import { NAV_GROUPS } from "~/lib/nav";
 
 export default function IndexRoute() {
   return (
-    <article className="flex flex-col gap-8">
+    <article className="flex flex-col gap-10">
       <header className="flex flex-col gap-3">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
           react-kit
@@ -48,21 +16,28 @@ export default function IndexRoute() {
         </p>
       </header>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
-        {ENTRIES.map((entry) => (
-          <li key={entry.to}>
-            <Link
-              to={entry.to}
-              className="border-border bg-card hover:bg-muted/50 block rounded-lg border p-4 transition-colors"
-            >
-              <h2 className="text-base font-semibold">{entry.label}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {entry.blurb}
-              </p>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {NAV_GROUPS.map((group) => (
+        <section key={group.heading} className="flex flex-col gap-3">
+          <h2 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+            {group.heading}
+          </h2>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {group.items.map((item) => (
+              <li key={item.to}>
+                <Link
+                  to={item.to}
+                  className="border-border bg-card hover:bg-muted/50 block h-full rounded-lg border p-4 transition-colors"
+                >
+                  <h3 className="text-base font-semibold">{item.label}</h3>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    {item.blurb}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </article>
   );
 }
