@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import { SiteLayout } from "./components/site-layout";
+import { RouteErrorPanel } from "./components/route-error";
 import IndexRoute from "./routes/index";
 import ColorSchemeRoute from "./routes/color-scheme";
 import ActionRegistryRoute from "./routes/action-registry";
@@ -23,26 +24,34 @@ export const router = createBrowserRouter(
   [
     {
       element: <SiteLayout />,
+      // Pathless layout route: its `errorElement` catches render (and loader/
+      // action) errors from any child below and renders the panel into
+      // SiteLayout's <Outlet>, so the header + sidebar survive a broken route.
       children: [
-        { path: "/", element: <IndexRoute /> },
-        { path: "color-scheme", element: <ColorSchemeRoute /> },
-        { path: "action-registry", element: <ActionRegistryRoute /> },
-        { path: "search-facets", element: <SearchFacetsRoute /> },
-        { path: "keyboard-shortcuts", element: <KeyboardShortcutsRoute /> },
-        { path: "command-palette", element: <CommandPaletteRoute /> },
-        { path: "sparkline-line", element: <SparklineLineRoute /> },
-        { path: "sparkline-area", element: <SparklineAreaRoute /> },
-        { path: "sparkline-bar", element: <SparklineBarRoute /> },
-        { path: "sparkline-winloss", element: <SparklineWinLossRoute /> },
-        { path: "sparkline-threshold", element: <SparklineThresholdRoute /> },
-        { path: "bullet-graph", element: <BulletGraphRoute /> },
-        { path: "stacked-bar", element: <StackedBarRoute /> },
-        { path: "gauge-ring", element: <GaugeRingRoute /> },
-        { path: "heat-strip", element: <HeatStripRoute /> },
-        { path: "delta-chip", element: <DeltaChipRoute /> },
-        { path: "sparkline-dashboard", element: <SparklineDashboardRoute /> },
-        { path: "integration", element: <IntegrationRoute /> },
-        { path: "*", element: <Navigate to="/" replace /> },
+        {
+          errorElement: <RouteErrorPanel />,
+          children: [
+            { path: "/", element: <IndexRoute /> },
+            { path: "color-scheme", element: <ColorSchemeRoute /> },
+            { path: "action-registry", element: <ActionRegistryRoute /> },
+            { path: "search-facets", element: <SearchFacetsRoute /> },
+            { path: "keyboard-shortcuts", element: <KeyboardShortcutsRoute /> },
+            { path: "command-palette", element: <CommandPaletteRoute /> },
+            { path: "sparkline-line", element: <SparklineLineRoute /> },
+            { path: "sparkline-area", element: <SparklineAreaRoute /> },
+            { path: "sparkline-bar", element: <SparklineBarRoute /> },
+            { path: "sparkline-winloss", element: <SparklineWinLossRoute /> },
+            { path: "sparkline-threshold", element: <SparklineThresholdRoute /> },
+            { path: "bullet-graph", element: <BulletGraphRoute /> },
+            { path: "stacked-bar", element: <StackedBarRoute /> },
+            { path: "gauge-ring", element: <GaugeRingRoute /> },
+            { path: "heat-strip", element: <HeatStripRoute /> },
+            { path: "delta-chip", element: <DeltaChipRoute /> },
+            { path: "sparkline-dashboard", element: <SparklineDashboardRoute /> },
+            { path: "integration", element: <IntegrationRoute /> },
+            { path: "*", element: <Navigate to="/" replace /> },
+          ],
+        },
       ],
     },
   ],
