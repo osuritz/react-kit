@@ -23,8 +23,26 @@ const NAV: ReadonlyArray<NavGroup> = [
     ],
   },
   {
+    heading: "Sparklines",
+    items: [
+      { to: "/sparkline-line", label: "SparklineLine" },
+      { to: "/sparkline-area", label: "SparklineArea" },
+      { to: "/sparkline-bar", label: "SparklineBar" },
+      { to: "/sparkline-winloss", label: "SparklineWinLoss" },
+      { to: "/sparkline-threshold", label: "SparklineThreshold" },
+      { to: "/bullet-graph", label: "BulletGraph" },
+      { to: "/stacked-bar", label: "StackedBar" },
+      { to: "/gauge-ring", label: "GaugeRing" },
+      { to: "/heat-strip", label: "HeatStrip" },
+      { to: "/delta-chip", label: "DeltaChip" },
+    ],
+  },
+  {
     heading: "Demos",
-    items: [{ to: "/integration", label: "Integration" }],
+    items: [
+      { to: "/sparkline-dashboard", label: "Sparkline dashboard" },
+      { to: "/integration", label: "Integration" },
+    ],
   },
 ];
 
