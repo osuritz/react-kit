@@ -1,5 +1,10 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router";
+import { Dialog } from "@base-ui/react/dialog";
+import { Menu, X } from "lucide-react";
+import { NAV_GROUPS } from "~/lib/nav";
 import { repoRootUrl } from "~/lib/github";
+import { cn } from "~/lib/utils";
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -14,62 +19,125 @@ function GitHubIcon({ className }: { className?: string }) {
   );
 }
 
-interface NavGroup {
-  heading: string;
-  items: ReadonlyArray<{ to: string; label: string }>;
+/**
+ * Grouped link list shared by the desktop sidebar and the mobile drawer.
+ * `onNavigate` lets the drawer close itself when a link is followed.
+ */
+function NavList({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <ul className="flex flex-col gap-4">
+      {NAV_GROUPS.map((group) => {
+        const labelId = `nav-group-${group.heading.toLowerCase()}`;
+        return (
+          <li key={group.heading} className="flex flex-col">
+            <div
+              id={labelId}
+              className="text-muted-foreground px-3 py-1.5 text-xs font-medium"
+            >
+              {group.heading}
+            </div>
+            <ul aria-labelledby={labelId} className="flex flex-col">
+              {group.items.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    end
+                    onClick={onNavigate}
+                    className={({ isActive }) =>
+                      [
+                        "block rounded-md px-3 py-1.5 text-sm transition-colors",
+                        isActive
+                          ? "bg-accent text-foreground ring-1 ring-inset ring-border"
+                          : "text-foreground/85 hover:text-foreground hover:bg-accent",
+                      ].join(" ")
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
-const NAV: ReadonlyArray<NavGroup> = [
-  {
-    heading: "Hooks",
-    items: [
-      { to: "/color-scheme", label: "useColorScheme" },
-      { to: "/action-registry", label: "action-registry" },
-    ],
-  },
-  {
-    heading: "Components",
-    items: [
-      { to: "/search-facets", label: "SearchFacets" },
-      { to: "/keyboard-shortcuts", label: "KeyboardShortcuts" },
-      { to: "/command-palette", label: "CommandPalette" },
-    ],
-  },
-  {
-    heading: "Sparklines",
-    items: [
-      { to: "/sparkline-line", label: "SparklineLine" },
-      { to: "/sparkline-area", label: "SparklineArea" },
-      { to: "/sparkline-bar", label: "SparklineBar" },
-      { to: "/sparkline-winloss", label: "SparklineWinLoss" },
-      { to: "/sparkline-threshold", label: "SparklineThreshold" },
-      { to: "/bullet-graph", label: "BulletGraph" },
-      { to: "/stacked-bar", label: "StackedBar" },
-      { to: "/gauge-ring", label: "GaugeRing" },
-      { to: "/heat-strip", label: "HeatStrip" },
-      { to: "/delta-chip", label: "DeltaChip" },
-    ],
-  },
-  {
-    heading: "Demos",
-    items: [
-      { to: "/sparkline-dashboard", label: "Sparkline dashboard" },
-      { to: "/integration", label: "Integration" },
-    ],
-  },
-];
-
 export function SiteLayout() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // The drawer only exists below `md`; if the viewport grows past the
+  // breakpoint while it's open, close it so Base UI releases the body
+  // scroll lock (otherwise the page would be silently unscrollable).
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const closeIfDesktop = () => {
+      if (mq.matches) setMenuOpen(false);
+    };
+    mq.addEventListener("change", closeIfDesktop);
+    return () => mq.removeEventListener("change", closeIfDesktop);
+  }, []);
+
   return (
     <div className="bg-background text-foreground min-h-svh">
       <header className="border-border bg-background sticky top-0 z-30 border-b">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <NavLink
-            to="/"
-            className="text-base font-semibold tracking-tight hover:opacity-80"
-          >
-            react-kit
-          </NavLink>
+          <div className="flex items-center gap-2">
+            <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+              <Dialog.Trigger
+                aria-label="Open navigation menu"
+                className="text-foreground hover:bg-accent -ml-2 inline-flex size-9 items-center justify-center rounded-md transition-colors md:hidden"
+              >
+                <Menu className="size-5" aria-hidden="true" />
+              </Dialog.Trigger>
+              <Dialog.Portal>
+                <Dialog.Backdrop
+                  className={cn(
+                    "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm",
+                    "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+                    "transition-opacity duration-150",
+                    "md:hidden",
+                  )}
+                />
+                <Dialog.Popup
+                  className={cn(
+                    "fixed inset-y-0 left-0 z-50 flex w-72 max-w-[80vw] flex-col gap-4 overflow-y-auto",
+                    "border-border bg-background border-r p-4 shadow-lg outline-none",
+                    "data-[starting-style]:-translate-x-full data-[ending-style]:-translate-x-full",
+                    "transition-transform duration-200",
+                    "md:hidden",
+                  )}
+                >
+                  <div className="flex items-center justify-between px-3">
+                    <Dialog.Title className="text-sm font-semibold">
+                      react-kit
+                    </Dialog.Title>
+                    <Dialog.Close
+                      aria-label="Close navigation menu"
+                      className="text-muted-foreground hover:bg-accent hover:text-foreground -mr-2 inline-flex size-9 items-center justify-center rounded-md transition-colors"
+                    >
+                      <X className="size-5" aria-hidden="true" />
+                    </Dialog.Close>
+                  </div>
+                  <Dialog.Description className="sr-only">
+                    Browse react-kit hooks, components, sparklines, and demos.
+                  </Dialog.Description>
+                  <nav aria-label="Primary">
+                    <NavList onNavigate={() => setMenuOpen(false)} />
+                  </nav>
+                </Dialog.Popup>
+              </Dialog.Portal>
+            </Dialog.Root>
+
+            <NavLink
+              to="/"
+              className="text-base font-semibold tracking-tight hover:opacity-80"
+            >
+              react-kit
+            </NavLink>
+          </div>
+
           <a
             className="text-foreground hover:bg-accent flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
             href={repoRootUrl}
@@ -85,41 +153,7 @@ export function SiteLayout() {
       <div className="mx-auto flex max-w-6xl gap-10 px-6 py-8 md:py-12">
         <aside className="sticky top-16 hidden h-[calc(100svh-4rem)] w-48 shrink-0 overflow-y-auto md:block">
           <nav aria-label="Primary">
-            <ul className="flex flex-col gap-4">
-              {NAV.map((group) => {
-                const labelId = `nav-group-${group.heading.toLowerCase()}`;
-                return (
-                  <li key={group.heading} className="flex flex-col">
-                    <div
-                      id={labelId}
-                      className="text-muted-foreground px-3 py-1.5 text-xs font-medium"
-                    >
-                      {group.heading}
-                    </div>
-                    <ul aria-labelledby={labelId} className="flex flex-col">
-                      {group.items.map((item) => (
-                        <li key={item.to}>
-                          <NavLink
-                            to={item.to}
-                            end
-                            className={({ isActive }) =>
-                              [
-                                "block rounded-md px-3 py-1.5 text-sm transition-colors",
-                                isActive
-                                  ? "bg-accent text-foreground ring-1 ring-inset ring-border"
-                                  : "text-foreground/85 hover:text-foreground hover:bg-accent",
-                              ].join(" ")
-                            }
-                          >
-                            {item.label}
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              })}
-            </ul>
+            <NavList />
           </nav>
         </aside>
 
