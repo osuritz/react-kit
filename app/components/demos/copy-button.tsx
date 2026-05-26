@@ -1,8 +1,8 @@
-import { Check, Copy } from "lucide-react";
-import { Button } from "~/components/ui/button.tsx";
-import { useClipboard } from "#hooks/use-clipboard/use-clipboard.ts";
+import { Check, Copy } from 'lucide-react';
+import { Button } from '~/components/ui/button.tsx';
+import { useClipboard } from '#hooks/use-clipboard/use-clipboard.ts';
 
-const VALUE = "npm install @osuritz/react-kit";
+const VALUE = 'npm install @osuritz/react-kit';
 
 export function CopyButton() {
   const { copy, copied, error } = useClipboard({ text: VALUE, timeout: 2000 });
@@ -11,14 +11,14 @@ export function CopyButton() {
       <code className="bg-muted rounded px-3 py-1.5 text-sm">{VALUE}</code>
       <Button
         variant="outline"
-        aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
+        aria-label={copied ? 'Copied to clipboard' : 'Copy to clipboard'}
         onClick={() => void copy()}
       >
         {copied ? <Check /> : <Copy />}
-        {copied ? "Copied!" : "Copy"}
+        {copied ? 'Copied!' : 'Copy'}
       </Button>
       <span role="status" aria-live="polite" className="sr-only">
-        {copied ? "Copied to clipboard" : ""}
+        {copied ? 'Copied to clipboard' : ''}
       </span>
       {error && (
         <p role="alert" className="text-destructive text-xs">

@@ -1,9 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type ClipboardErrorReason =
-  | "not-supported"
-  | "insecure-context"
-  | "write-failed";
+export type ClipboardErrorReason = 'not-supported' | 'insecure-context' | 'write-failed';
 
 /**
  * Thrown internally and surfaced via `onError` / the `error` result. Uses the
@@ -12,13 +9,9 @@ export type ClipboardErrorReason =
  */
 export class ClipboardError extends Error {
   readonly reason: ClipboardErrorReason;
-  constructor(
-    reason: ClipboardErrorReason,
-    message: string,
-    options?: { cause?: unknown },
-  ) {
+  constructor(reason: ClipboardErrorReason, message: string, options?: { cause?: unknown }) {
     super(message, options);
-    this.name = "ClipboardError";
+    this.name = 'ClipboardError';
     this.reason = reason;
   }
 }
@@ -33,9 +26,7 @@ export interface UseClipboardOptions {
    * `false` (strict) to abort cleanly. Async-aware. A throw/reject aborts and
    * is routed to `onError`.
    */
-  onBeforeCopy?: (
-    text: string,
-  ) => void | false | string | Promise<void | false | string>;
+  onBeforeCopy?: (text: string) => void | false | string | Promise<void | false | string>;
   /** Runs after a successful write. */
   onCopied?: (text: string) => void;
   /** Runs when the copy fails. Never receives a raw DOMException. */
@@ -54,27 +45,24 @@ const DEFAULT_TIMEOUT = 2000;
 
 /** Hardened legacy fallback: hidden readonly textarea + document.execCommand("copy"). */
 function execCommandCopy(text: string): boolean {
-  if (
-    typeof document === "undefined" ||
-    typeof document.execCommand !== "function"
-  ) {
+  if (typeof document === 'undefined' || typeof document.execCommand !== 'function') {
     return false;
   }
   const previouslyFocused = document.activeElement as HTMLElement | null;
-  const textarea = document.createElement("textarea");
+  const textarea = document.createElement('textarea');
   textarea.value = text;
   // readonly stops the iOS soft keyboard from opening on focus.
-  textarea.setAttribute("readonly", "");
+  textarea.setAttribute('readonly', '');
   // Rendered but out of the way (display:none can't be selected).
   textarea.style.cssText =
-    "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;margin:0;opacity:0;";
+    'position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;margin:0;opacity:0;';
   document.body.appendChild(textarea);
   textarea.focus();
   textarea.select();
   // iOS Safari needs an explicit range.
   textarea.setSelectionRange(0, text.length);
   try {
-    return document.execCommand("copy");
+    return document.execCommand('copy');
   } finally {
     // Runs before the value is returned (and before a throw propagates), so the
     // textarea is always removed and prior focus restored.
@@ -92,19 +80,13 @@ function execCommandCopy(text: string): boolean {
  */
 async function writeClipboard(text: string): Promise<void> {
   const asyncAvailable =
-    typeof navigator !== "undefined" &&
-    typeof navigator.clipboard?.writeText === "function";
+    typeof navigator !== 'undefined' && typeof navigator.clipboard?.writeText === 'function';
   const fallbackAvailable =
-    typeof document !== "undefined" &&
-    typeof document.execCommand === "function";
-  const insecure =
-    typeof window !== "undefined" && window.isSecureContext === false;
+    typeof document !== 'undefined' && typeof document.execCommand === 'function';
+  const insecure = typeof window !== 'undefined' && window.isSecureContext === false;
 
   if (!asyncAvailable && !fallbackAvailable) {
-    throw new ClipboardError(
-      "not-supported",
-      "Clipboard is not available in this environment.",
-    );
+    throw new ClipboardError('not-supported', 'Clipboard is not available in this environment.');
   }
 
   let firstError: unknown;
@@ -123,19 +105,17 @@ async function writeClipboard(text: string): Promise<void> {
 
   if (!asyncAvailable && insecure) {
     throw new ClipboardError(
-      "insecure-context",
-      "Clipboard write requires a secure context (HTTPS).",
-      { cause: firstError },
+      'insecure-context',
+      'Clipboard write requires a secure context (HTTPS).',
+      { cause: firstError }
     );
   }
-  throw new ClipboardError("write-failed", "Failed to write to the clipboard.", {
+  throw new ClipboardError('write-failed', 'Failed to write to the clipboard.', {
     cause: firstError,
   });
 }
 
-export function useClipboard(
-  options: UseClipboardOptions = {},
-): UseClipboardResult {
+export function useClipboard(options: UseClipboardOptions = {}): UseClipboardResult {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<ClipboardError | null>(null);
 
@@ -176,19 +156,18 @@ export function useClipboard(
     async (override?: string): Promise<boolean> => {
       const { text, timeout, onBeforeCopy, onCopied, onError } = optionsRef.current;
       const generation = ++generationRef.current;
-      const isCurrent = () =>
-        mountedRef.current && generation === generationRef.current;
+      const isCurrent = () => mountedRef.current && generation === generationRef.current;
 
       if (mountedRef.current) setError(null);
       try {
-        let payload = override ?? text ?? "";
+        let payload = override ?? text ?? '';
 
         if (onBeforeCopy) {
           const transformed = await onBeforeCopy(payload);
           if (transformed === false) {
             return false;
           }
-          if (typeof transformed === "string") {
+          if (typeof transformed === 'string') {
             payload = transformed;
           }
         }
@@ -215,7 +194,7 @@ export function useClipboard(
         const err =
           raw instanceof ClipboardError
             ? raw
-            : new ClipboardError("write-failed", "Failed to copy.", { cause: raw });
+            : new ClipboardError('write-failed', 'Failed to copy.', { cause: raw });
         if (isCurrent()) {
           setError(err);
           onError?.(err);
@@ -223,7 +202,7 @@ export function useClipboard(
         return false;
       }
     },
-    [clearTimer],
+    [clearTimer]
   );
 
   return { copy, copied, error, reset };

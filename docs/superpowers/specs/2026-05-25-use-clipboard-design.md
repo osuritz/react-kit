@@ -9,6 +9,7 @@ in the docs demo as the usage pattern.
 ## Goals & non-goals
 
 **Goals**
+
 - One small hook that handles the `navigator.clipboard.writeText` gotchas:
   async rejection, missing secure context, denied permission, and the
   `execCommand` fallback for browsers without the async API.
@@ -18,6 +19,7 @@ in the docs demo as the usage pattern.
 - SSR-safe, zero runtime deps, React 18+.
 
 **Non-goals (v1)**
+
 - Rich payloads (`text/html`, images via `ClipboardItem`). The API is shaped
   to add these later without a breaking change, but v1 is text-only.
 - Reading from the clipboard.
@@ -29,7 +31,7 @@ in the docs demo as the usage pattern.
   matching `color-scheme` (the hook is the drop-in; `ModeToggle` lives in the
   demo/README).
 - **`onBeforeCopy` cancels by returning `false`** (strict `=== false`), and
-  transforms by returning a string. Throwing is *not* the cancel channel.
+  transforms by returning a string. Throwing is _not_ the cancel channel.
 - **Default `timeout` is `2000` ms.** `timeout <= 0` disables auto-reset.
 - **Folder name is `use-clipboard`** (matches the issue title), even though
   existing hook folders aren't `use-`prefixed.
@@ -62,7 +64,7 @@ Docs app wiring (files to **modify/create**):
 
 - `app/components/demos/copy-button.tsx` — **new** `<CopyButton>` demo (`.tsx`).
 - `app/routes/use-clipboard.tsx` — **new** route; `DROP_IN_PATH =
-  "src/hooks/use-clipboard"`; imports the demo source via
+"src/hooks/use-clipboard"`; imports the demo source via
   `~/components/demos/copy-button.tsx?shiki`.
 - `app/router.tsx` — **modify**: import `UseClipboardRoute`, register
   `{ path: "use-clipboard", element: <UseClipboardRoute /> }` under the
@@ -75,9 +77,9 @@ Docs app wiring (files to **modify/create**):
 
 ```ts
 export type ClipboardErrorReason =
-  | "not-supported"     // no clipboard mechanism at all (SSR / locked-down env)
-  | "insecure-context"  // best-effort: blocked, likely because !isSecureContext
-  | "write-failed";     // an attempt was made and failed; see .cause
+  | 'not-supported' // no clipboard mechanism at all (SSR / locked-down env)
+  | 'insecure-context' // best-effort: blocked, likely because !isSecureContext
+  | 'write-failed'; // an attempt was made and failed; see .cause
 
 // Uses the native Error `cause` option (ES2022+; tsconfig targets es2023).
 // We add ONE field — `reason`. We do NOT redeclare `cause` (that would shadow
@@ -86,7 +88,7 @@ export class ClipboardError extends Error {
   readonly reason: ClipboardErrorReason;
   constructor(reason: ClipboardErrorReason, message: string, options?: { cause?: unknown }) {
     super(message, options);
-    this.name = "ClipboardError";
+    this.name = 'ClipboardError';
     this.reason = reason;
   }
 }
@@ -129,7 +131,7 @@ export function useClipboard(options?: UseClipboardOptions): UseClipboardResult;
 `ClipboardError` delivered to `onError` and reflected in `error`, and the
 promise resolves to a boolean.
 
-1. **Begin.** Bump a module-internal *generation* counter (`gen`) so a slower
+1. **Begin.** Bump a module-internal _generation_ counter (`gen`) so a slower
    earlier call can't clobber a later one. Clear `error`. Resolve
    `payload = override ?? text ?? ""`.
 2. **Before hook.** `const r = await onBeforeCopy?.(payload)`.
@@ -179,7 +181,7 @@ throw ClipboardError("write-failed", "...", { cause: firstError })
 
 `insecure-context` is documented as **best-effort**: it fires only when the
 async API was entirely absent and `isSecureContext === false`. A
-`NotAllowedError` from a *present-but-rejecting* async API surfaces as
+`NotAllowedError` from a _present-but-rejecting_ async API surfaces as
 `write-failed` with the `DOMException` on `.cause`, so consumers can branch
 precisely on `error.cause` when they need to.
 
@@ -192,7 +194,7 @@ it actually work and not disrupt the page:
 - Create a `<textarea>`, set `value = text`, set `readonly` (stops the iOS
   soft keyboard), and position it off-screen but rendered:
   `position: fixed; top: 0; left: 0; width: 1px; height: 1px; padding: 0;
-  border: 0; opacity: 0;` (not `display:none` — hidden elements can't be
+border: 0; opacity: 0;` (not `display:none` — hidden elements can't be
   selected).
 - Append, then select: `el.focus(); el.select();` and, for iOS Safari, also
   `el.setSelectionRange(0, text.length)` against a created range.

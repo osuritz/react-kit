@@ -16,7 +16,7 @@ your app.
 Copy this file into your project (e.g. `src/hooks/use-clipboard/`):
 
 - `use-clipboard.ts` — the `useClipboard` hook + `ClipboardError`
-- *(optional)* this README
+- _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
 `vitest.config.ts`, `vitest.setup.ts`, `use-clipboard.test.tsx`) are the
@@ -28,7 +28,7 @@ Peer requirements: React 18+ (works in 18 and 19). No runtime deps.
 ## Quick start
 
 ```tsx
-import { useClipboard } from "./hooks/use-clipboard/use-clipboard";
+import { useClipboard } from './hooks/use-clipboard/use-clipboard';
 
 export function CopyButton({ value }: { value: string }) {
   const { copy, copied, error } = useClipboard({ text: value });
@@ -36,14 +36,14 @@ export function CopyButton({ value }: { value: string }) {
     <>
       <button
         type="button"
-        aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
+        aria-label={copied ? 'Copied to clipboard' : 'Copy to clipboard'}
         onClick={() => void copy()}
       >
-        {copied ? "Copied!" : "Copy"}
+        {copied ? 'Copied!' : 'Copy'}
       </button>
       {/* Announce the change for screen readers — don't rely on the visual swap alone. */}
       <span role="status" aria-live="polite" className="sr-only">
-        {copied ? "Copied to clipboard" : ""}
+        {copied ? 'Copied to clipboard' : ''}
       </span>
       {error && <span role="alert">Couldn't copy ({error.reason}).</span>}
     </>
@@ -59,20 +59,20 @@ never throws.
 
 ```ts
 const { copy, copied, error, reset } = useClipboard({
-  text,          // default payload
-  timeout,       // ms before `copied` resets. Default 2000. <= 0 disables auto-reset.
-  onBeforeCopy,  // (text) => void | string | false | Promise<...>
-  onCopied,      // (text) => void  — after a successful write
-  onError,       // (err: ClipboardError) => void
+  text, // default payload
+  timeout, // ms before `copied` resets. Default 2000. <= 0 disables auto-reset.
+  onBeforeCopy, // (text) => void | string | false | Promise<...>
+  onCopied, // (text) => void  — after a successful write
+  onError, // (err: ClipboardError) => void
 });
 ```
 
-| Result | Type | Notes |
-|---|---|---|
-| `copy` | `(override?: string) => Promise<boolean>` | Copies `override ?? text ?? ""`. Identity-stable. Never throws. |
-| `copied` | `boolean` | True from a successful write until `timeout` elapses or `reset()`. |
-| `error` | `ClipboardError \| null` | The last failure. Cleared at the start of each `copy()` and by `reset()`. |
-| `reset` | `() => void` | Clears the timer, `copied`, and `error`. Identity-stable. |
+| Result   | Type                                      | Notes                                                                     |
+| -------- | ----------------------------------------- | ------------------------------------------------------------------------- |
+| `copy`   | `(override?: string) => Promise<boolean>` | Copies `override ?? text ?? ""`. Identity-stable. Never throws.           |
+| `copied` | `boolean`                                 | True from a successful write until `timeout` elapses or `reset()`.        |
+| `error`  | `ClipboardError \| null`                  | The last failure. Cleared at the start of each `copy()` and by `reset()`. |
+| `reset`  | `() => void`                              | Clears the timer, `copied`, and `error`. Identity-stable.                 |
 
 ### `onBeforeCopy`
 
@@ -90,14 +90,14 @@ Runs before the write, with the resolved payload:
 
 ```ts
 class ClipboardError extends Error {
-  reason: "not-supported" | "insecure-context" | "write-failed";
+  reason: 'not-supported' | 'insecure-context' | 'write-failed';
   // plus the native Error `cause` (the original DOMException, when there is one)
 }
 ```
 
 - `not-supported` — no clipboard mechanism at all (SSR / locked-down env).
 - `insecure-context` — **best-effort**: the async API was absent and the page
-  isn't a secure context (serve over HTTPS). A *present-but-rejecting* async
+  isn't a secure context (serve over HTTPS). A _present-but-rejecting_ async
   API (e.g. a `NotAllowedError`) surfaces as `write-failed` instead.
 - `write-failed` — an attempt was made and all paths failed (or `onBeforeCopy`
   threw). Inspect `error.cause` for the underlying `DOMException` when you need
