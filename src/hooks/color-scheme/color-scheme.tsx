@@ -3,7 +3,7 @@ import {
   type PropsWithChildren,
   useContext,
   useEffect,
-  useRef,
+  useState,
   useSyncExternalStore,
 } from 'react';
 
@@ -318,16 +318,15 @@ export function ColorSchemeProvider({
   target,
   attributeName,
 }: PropsWithChildren<ColorSchemeProviderProps>) {
-  const storeRef = useRef<ColorSchemeStore | null>(null);
-  if (storeRef.current === null) {
-    storeRef.current = new ColorSchemeStore({
-      resolver: colorSchemeResolver,
-      strategy,
-      target,
-      attributeName,
-    });
-  }
-  const store = storeRef.current;
+  const [store] = useState(
+    () =>
+      new ColorSchemeStore({
+        resolver: colorSchemeResolver,
+        strategy,
+        target,
+        attributeName,
+      })
+  );
 
   useEffect(() => {
     store.start();

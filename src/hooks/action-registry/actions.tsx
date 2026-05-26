@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 
 /**
@@ -103,11 +104,8 @@ const ActionsContext = createContext<ActionRegistry | null>(null);
 ActionsContext.displayName = 'ActionsContext';
 
 export function ActionsProvider({ children }: PropsWithChildren<unknown>) {
-  const registryRef = useRef<ActionRegistry | null>(null);
-  if (registryRef.current === null) {
-    registryRef.current = new ActionRegistry();
-  }
-  return <ActionsContext.Provider value={registryRef.current}>{children}</ActionsContext.Provider>;
+  const [registry] = useState(() => new ActionRegistry());
+  return <ActionsContext.Provider value={registry}>{children}</ActionsContext.Provider>;
 }
 
 export function useActions(): ActionsContextValue {
@@ -151,6 +149,7 @@ export function useActions(): ActionsContextValue {
 export function useAction(action: Action): void {
   const { register } = useActions();
   const ref = useRef(action);
+  // oxlint-disable-next-line react-hooks-js/refs -- intentional always-fresh-ref write (see comment above): same-render consumers must read the latest action fields.
   ref.current = action;
 
   useEffect(() => {
