@@ -120,6 +120,7 @@ export function useClipboard(options: UseClipboardOptions = {}): UseClipboardRes
   const [error, setError] = useState<ClipboardError | null>(null);
 
   const optionsRef = useRef(options);
+  // oxlint-disable-next-line react-hooks-js/refs -- intentional always-fresh-ref write: the stable copy()/reset() callbacks read the latest options via optionsRef.current without re-binding their identity.
   optionsRef.current = options;
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
