@@ -1,4 +1,5 @@
 {
+  "name": "use-clipboard",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,0 +1,7 @@
+packages:
+  - 'src/components/*'
+  - 'src/components/sparkline/*'
+  - 'src/hooks/*'
+allowBuilds:
+  esbuild: true
+  msw: true
