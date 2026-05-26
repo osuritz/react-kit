@@ -26,7 +26,5 @@ jobs:
       - name: Check formatting
         run: npm run format
 
-      # Placeholder — oxlint is introduced in a follow-up PR. This step keeps
-      # a slot in the pipeline so wiring it up later is a one-line change.
       - name: Lint
-        run: echo 'Linter not configured yet; oxlint will be added in a follow-up PR.'
+        run: npm run lint

@@ -1,0 +1,15 @@
+{
+  "plugins": ["react", "unicorn", "typescript", "oxc"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.{ts,tsx}"],
+      "rules": {
+        "no-eval": "off"
+      }
+    }
+  ]
+}
