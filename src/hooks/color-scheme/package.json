@@ -1,4 +1,5 @@
 {
+  "name": "color-scheme",
   "private": true,
   "type": "module",
   "scripts": {

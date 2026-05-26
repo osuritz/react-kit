@@ -1,4 +1,5 @@
 {
+  "name": "keyboard-shortcuts",
   "private": true,
   "type": "module",
   "scripts": {

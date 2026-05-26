@@ -23,6 +23,7 @@
     "#*": "./src/*"
   },
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint .",
@@ -30,7 +31,7 @@
     "format": "oxfmt --check .",
     "format:fix": "oxfmt .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "pnpm -r run test"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -59,5 +60,9 @@
     "shiki": "^4.0.2",
     "typescript": "~6.0.2",
     "vite": "^8.0.10"
-  }
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "packageManager": "pnpm@11.1.3"
 }

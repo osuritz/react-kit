@@ -1,4 +1,5 @@
 {
+  "name": "action-registry",
   "private": true,
   "type": "module",
   "scripts": {
