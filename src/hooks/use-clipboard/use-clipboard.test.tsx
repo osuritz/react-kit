@@ -251,4 +251,24 @@ describe("useClipboard — timer & lifecycle", () => {
     // The stale first copy resolved last but must not have fired its callback.
     expect(onCopied).toHaveBeenCalledTimes(1);
   });
+
+  test("a pending auto-reset timer does not fire after unmount", async () => {
+    vi.useFakeTimers();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { result, unmount } = renderHook(() => useClipboard({ text: "v" }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    expect(result.current.copied).toBe(true);
+
+    unmount();
+    // The 2000ms timer would fire here; the unmount cleanup + mounted guard
+    // must prevent any setState on the now-unmounted component.
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
 });
