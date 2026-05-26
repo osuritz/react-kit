@@ -1,12 +1,12 @@
-import { SparklineLine } from "#components/sparkline/sparkline-line/sparkline-line.tsx";
+import { SparklineLine } from '#components/sparkline/sparkline-line/sparkline-line.tsx';
 
 // Weekly revenue over the last 12 weeks (indexed $K), trending up.
 const revenue = [82, 88, 91, 87, 95, 102, 99, 110, 121, 118, 132, 141];
 
 const regions = [
-  { region: "AMER", series: [40, 44, 42, 50, 55, 53, 61], total: "612" },
-  { region: "EMEA", series: [30, 28, 33, 31, 29, 35, 38], total: "388" },
-  { region: "APAC", series: [12, 18, 22, 19, 27, 33, 41], total: "415" },
+  { region: 'AMER', series: [40, 44, 42, 50, 55, 53, 61], total: '612' },
+  { region: 'EMEA', series: [30, 28, 33, 31, 29, 35, 38], total: '388' },
+  { region: 'APAC', series: [12, 18, 22, 19, 27, 33, 41], total: '415' },
 ];
 
 export function SparklineLineDemo() {
@@ -50,9 +50,7 @@ export function SparklineLineDemo() {
                   label={`${r.region} weekly trend`}
                 />
               </td>
-              <td className="text-foreground text-right font-mono tabular-nums">
-                {r.total}
-              </td>
+              <td className="text-foreground text-right font-mono tabular-nums">{r.total}</td>
             </tr>
           ))}
         </tbody>

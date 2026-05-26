@@ -1,9 +1,9 @@
-import { StackedBar } from "#components/sparkline/stacked-bar/stacked-bar.tsx";
+import { StackedBar } from '#components/sparkline/stacked-bar/stacked-bar.tsx';
 
 const ci = [
-  { value: 412, label: "passed", color: "#10b981", swatch: "bg-emerald-500" },
-  { value: 18, label: "failed", color: "var(--destructive)", swatch: "bg-destructive" },
-  { value: 7, label: "skipped", color: "#9ca3af", swatch: "bg-zinc-400" },
+  { value: 412, label: 'passed', color: '#10b981', swatch: 'bg-emerald-500' },
+  { value: 18, label: 'failed', color: 'var(--destructive)', swatch: 'bg-destructive' },
+  { value: 7, label: 'skipped', color: '#9ca3af', swatch: 'bg-zinc-400' },
 ];
 
 export function StackedBarDemo() {

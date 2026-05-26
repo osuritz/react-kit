@@ -8,13 +8,13 @@
 // Optional peer: react-day-picker >=9.1 — required only if your schema
 // declares a `date` facet (transitively imported via builder-popover →
 // editors/date-editor).
-import * as React from "react";
-import { Combobox } from "@base-ui/react/combobox";
-import { ChipStrip } from "./chip-strip";
-import { useSearchFacets } from "./use-search-facets";
-import { BuilderPopover } from "./builder-popover";
-import { cn } from "./lib/cn";
-import type { FacetSchema, Query } from "./grammar/types";
+import * as React from 'react';
+import { Combobox } from '@base-ui/react/combobox';
+import { ChipStrip } from './chip-strip';
+import { useSearchFacets } from './use-search-facets';
+import { BuilderPopover } from './builder-popover';
+import { cn } from './lib/cn';
+import type { FacetSchema, Query } from './grammar/types';
 
 export interface BuilderTriggerApi {
   schema: FacetSchema;
@@ -58,22 +58,14 @@ export interface SearchFacetsProps {
  * actions, and you become responsible for rendering your own `<BuilderPopover>`.
  */
 export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
-  const {
-    schema,
-    value,
-    onChange,
-    placeholder,
-    className,
-    onSubmit,
-    renderBuilderTrigger,
-  } = props;
+  const { schema, value, onChange, placeholder, className, onSubmit, renderBuilderTrigger } = props;
 
   const api = useSearchFacets({ schema, value, onChange });
 
   // Polite live announcements for chip add/remove. We track the previous
   // clause count and announce a short status string when it changes.
   const prevCountRef = React.useRef<number>(value.clauses.length);
-  const [liveMessage, setLiveMessage] = React.useState<string>("");
+  const [liveMessage, setLiveMessage] = React.useState<string>('');
   React.useEffect(() => {
     const prev = prevCountRef.current;
     const next = value.clauses.length;
@@ -81,17 +73,17 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
       const added = value.clauses[next - 1];
       if (added) {
         setLiveMessage(
-          `Filter added: ${added.facet} ${added.negated ? "is NOT" : "is"} ${
-            added.value.kind === "literal"
+          `Filter added: ${added.facet} ${added.negated ? 'is NOT' : 'is'} ${
+            added.value.kind === 'literal'
               ? added.value.raw
-              : added.value.kind === "compare"
+              : added.value.kind === 'compare'
                 ? `${added.value.op} ${added.value.raw}`
                 : `${added.value.from} to ${added.value.to}`
-          }`,
+          }`
         );
       }
     } else if (next < prev) {
-      setLiveMessage("Filter removed");
+      setLiveMessage('Filter removed');
     }
     prevCountRef.current = next;
   }, [value.clauses]);
@@ -107,7 +99,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   const lastTriggerRef = React.useRef<HTMLElement | null>(null);
 
   const openBuilder = React.useCallback((index?: number | null) => {
-    if (typeof document !== "undefined") {
+    if (typeof document !== 'undefined') {
       const el = document.activeElement;
       if (el instanceof HTMLElement) {
         lastTriggerRef.current = el;
@@ -122,7 +114,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
     setEditingIndex(null);
     // Defer to next frame so Base UI's portal teardown runs first.
     const target = lastTriggerRef.current ?? triggerRef.current;
-    if (target && typeof target.focus === "function") {
+    if (target && typeof target.focus === 'function') {
       requestAnimationFrame(() => {
         target.focus();
       });
@@ -133,7 +125,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
     (index: number) => {
       openBuilder(index);
     },
-    [openBuilder],
+    [openBuilder]
   );
 
   const handleSubmitEmpty = React.useCallback(() => {
@@ -156,13 +148,12 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
       }
       if (removedIndex >= 0) api.removeClause(removedIndex);
     },
-    [api],
+    [api]
   );
 
   // Inline facet-name suggestions — only shown when the trailing partial token
   // is a facet-name fragment.
-  const showSuggestions =
-    api.partial.kind === "facet-name" && api.facetSuggestions.length > 0;
+  const showSuggestions = api.partial.kind === 'facet-name' && api.facetSuggestions.length > 0;
 
   const handleSuggestionSelect = React.useCallback(
     (facet: string) => {
@@ -176,18 +167,18 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
           inQuote = !inQuote;
           continue;
         }
-        if (!inQuote && (ch === " " || ch === "\t")) lastBoundary = i + 1;
+        if (!inQuote && (ch === ' ' || ch === '\t')) lastBoundary = i + 1;
       }
       const before = buf.slice(0, lastBoundary);
       const trailing = buf.slice(lastBoundary);
-      const negated = trailing.startsWith("-");
-      const prefix = negated ? "-" : "";
+      const negated = trailing.startsWith('-');
+      const prefix = negated ? '-' : '';
       api.setInputValue(`${before}${prefix}${facet}:`);
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
     },
-    [api],
+    [api]
   );
 
   const triggerApi: BuilderTriggerApi = {
@@ -203,7 +194,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   return (
     <div
       data-slot="search-facets"
-      className={cn("flex w-full flex-wrap items-center gap-2", className)}
+      className={cn('flex w-full flex-wrap items-center gap-2', className)}
     >
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {liveMessage}
@@ -227,8 +218,8 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
               <Combobox.Popup
                 data-slot="search-facets-suggestions"
                 className={cn(
-                  "z-50 max-h-72 min-w-48 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden",
-                  "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 transition-[opacity,scale] duration-150",
+                  'z-50 max-h-72 min-w-48 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden',
+                  'data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 transition-[opacity,scale] duration-150'
                 )}
               >
                 <Combobox.List>
@@ -238,8 +229,8 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
                       value={s.facet}
                       data-slot="search-facets-suggestion"
                       className={cn(
-                        "flex cursor-pointer flex-col gap-0.5 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none",
-                        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+                        'flex cursor-pointer flex-col gap-0.5 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none',
+                        'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground'
                       )}
                       onClick={(event) => {
                         // Suppress Base UI's default select behavior — we
@@ -252,9 +243,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
                     >
                       <span className="font-medium">{s.label}</span>
                       {s.description ? (
-                        <span className="text-xs text-muted-foreground">
-                          {s.description}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{s.description}</span>
                       ) : null}
                     </Combobox.Item>
                   ))}
@@ -273,11 +262,11 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
             type="button"
             data-slot="search-facets-trigger"
             className={cn(
-              "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium whitespace-nowrap shadow-xs transition-colors",
-              "hover:bg-muted hover:text-foreground",
-              "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-              "aria-expanded:bg-muted aria-expanded:text-foreground",
-              "dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+              'inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium whitespace-nowrap shadow-xs transition-colors',
+              'hover:bg-muted hover:text-foreground',
+              'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
+              'aria-expanded:bg-muted aria-expanded:text-foreground',
+              'dark:border-input dark:bg-input/30 dark:hover:bg-input/50'
             )}
             onClick={() => openBuilder(null)}
             aria-haspopup="dialog"

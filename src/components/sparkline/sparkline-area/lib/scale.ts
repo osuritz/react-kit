@@ -14,10 +14,7 @@ export interface Extent {
  * empty input (no finite min/max) and flat input (every value equal, so the
  * span would be 0 and `(v - min) / span` would divide by zero).
  */
-export function extent(
-  values: number[],
-  opts?: { min?: number; max?: number },
-): Extent {
+export function extent(values: number[], opts?: { min?: number; max?: number }): Extent {
   // Only finite values define the range — a stray NaN/Infinity in otherwise
   // good data must not poison min/max (Math.min(1, NaN, 3) is NaN).
   const finite = values.filter((v) => Number.isFinite(v));
@@ -50,8 +47,7 @@ export function toPoints(values: number[], opts: ScaleOpts): Point[] {
   const { min, max } = extent(values, { min: opts.min, max: opts.max });
   const span = max - min; // guaranteed > 0 by `extent`
   const innerH = height - pad * 2;
-  const step =
-    values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
+  const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
   return values.map((raw, i) => {
     // A non-finite point is pinned to the baseline so it yields a finite
     // coordinate instead of NaN (it renders flat rather than corrupting the path).
@@ -66,16 +62,16 @@ export function toPoints(values: number[], opts: ScaleOpts): Point[] {
 /** `M`/`L` polyline through the points. Empty input → empty string. */
 export function linePath(points: Point[]): string {
   return points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`)
-    .join(" ");
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`)
+    .join(' ');
 }
 
 /** Line path closed down to the baseline (chart bottom) for an area fill. */
 export function areaPath(points: Point[], height: number): string {
-  if (points.length === 0) return "";
+  if (points.length === 0) return '';
   const first = points[0];
   const last = points[points.length - 1];
   return `${linePath(points)} L${last.x.toFixed(2)},${height.toFixed(
-    2,
+    2
   )} L${first.x.toFixed(2)},${height.toFixed(2)} Z`;
 }

@@ -1,7 +1,7 @@
 export interface FoucScriptOptions {
   storageKey?: string;
   attributeName?: string;
-  strategy?: "data-attribute" | "class" | "both";
+  strategy?: 'data-attribute' | 'class' | 'both';
 }
 
 /**
@@ -11,9 +11,9 @@ export interface FoucScriptOptions {
  *   <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript() }} />
  */
 export function getColorSchemeFoucScript(options: FoucScriptOptions = {}): string {
-  const storageKey = options.storageKey ?? "color-scheme";
-  const attributeName = options.attributeName ?? "data-theme";
-  const strategy = options.strategy ?? "class";
+  const storageKey = options.storageKey ?? 'color-scheme';
+  const attributeName = options.attributeName ?? 'data-theme';
+  const strategy = options.strategy ?? 'class';
 
   const k = JSON.stringify(storageKey);
   const a = JSON.stringify(attributeName);

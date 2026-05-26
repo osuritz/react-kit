@@ -27,7 +27,7 @@ they can point colleagues at.
 
 ## Goals
 
-1. `src/` contains *only* drop-in source. Nothing demo-only lives there.
+1. `src/` contains _only_ drop-in source. Nothing demo-only lives there.
 2. Each drop-in gets its own page in the demo site (one URL per drop-in plus
    one for the integration demo).
 3. The demo deploys automatically to GitHub Pages on push to `main`.
@@ -120,8 +120,8 @@ react-kit/
 `package.json`'s `"imports": { "#*": "./src/*" }` keeps `#hooks/*` and
 `#components/*` pointing at `./src/`. Drop-in folders, their per-folder
 `package.json` test harnesses, their READMEs, and the per-drop-in `?raw`
-imports from the demo continue to resolve unchanged. The reorg moves *out*
-of `src/`, never *within* it.
+imports from the demo continue to resolve unchanged. The reorg moves _out_
+of `src/`, never _within_ it.
 
 ### Aliases
 
@@ -189,7 +189,7 @@ links; content area on the right.
   lives under Demos.
 - On viewports below `md`, the sidebar collapses to a top dropdown.
 - No search, no version selector, no theme toggle in chrome — the
-  color-scheme drop-in's own demo *is* the toggle. Keeps chrome minimal.
+  color-scheme drop-in's own demo _is_ the toggle. Keeps chrome minimal.
 
 ### Per-drop-in route page template
 
@@ -198,11 +198,11 @@ then renders a shared `DropInPage` template:
 
 ```tsx
 // app/routes/color-scheme.tsx
-import { DropInPage } from "~/components/drop-in-page";
-import { ModeToggleButton } from "~/components/demos/mode-toggle-button";
-import { ModeToggleSegmented } from "~/components/demos/mode-toggle-segmented";
-import buttonSrc from "~/components/demos/mode-toggle-button.tsx?raw";
-import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?raw";
+import { DropInPage } from '~/components/drop-in-page';
+import { ModeToggleButton } from '~/components/demos/mode-toggle-button';
+import { ModeToggleSegmented } from '~/components/demos/mode-toggle-segmented';
+import buttonSrc from '~/components/demos/mode-toggle-button.tsx?raw';
+import segmentedSrc from '~/components/demos/mode-toggle-segmented.tsx?raw';
 
 export default function ColorSchemeRoute() {
   return (
@@ -212,8 +212,18 @@ export default function ColorSchemeRoute() {
       sourceHref="https://github.com/osuritz/react-kit/tree/main/src/hooks/color-scheme"
       readmeHref="https://github.com/osuritz/react-kit/blob/main/src/hooks/color-scheme/README.md"
       demos={[
-        { title: "Light / dark button", description: "...", source: buttonSrc, render: <ModeToggleButton /> },
-        { title: "Light / dark / system segmented", description: "...", source: segmentedSrc, render: <ModeToggleSegmented /> },
+        {
+          title: 'Light / dark button',
+          description: '...',
+          source: buttonSrc,
+          render: <ModeToggleButton />,
+        },
+        {
+          title: 'Light / dark / system segmented',
+          description: '...',
+          source: segmentedSrc,
+          render: <ModeToggleSegmented />,
+        },
       ]}
     />
   );
@@ -226,6 +236,7 @@ exception that doesn't use the template, since its body is a hand-rolled
 seams-checklist UI; it carries over verbatim into `routes/integration.tsx`.
 
 Adding a new drop-in to the site is now four steps:
+
 1. Create `app/components/demos/<name>.tsx`.
 2. Create `app/routes/<name>.tsx` using the `DropInPage` template.
 3. Add a route to `app/router.tsx`.
@@ -240,19 +251,13 @@ No conditional logic, no centralized switch.
 ```ts
 // vite.config.ts (updated)
 export default defineConfig({
-  base: "/react-kit/",
+  base: '/react-kit/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "~": path.resolve(__dirname, "./app"),
+      '~': path.resolve(__dirname, './app'),
     },
-    dedupe: [
-      "react",
-      "react-dom",
-      "@base-ui/react",
-      "react-day-picker",
-      "react-router",
-    ],
+    dedupe: ['react', 'react-dom', '@base-ui/react', 'react-day-picker', 'react-router'],
   },
 });
 ```
@@ -308,7 +313,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "20", cache: "npm" }
+        with: { node-version: '20', cache: 'npm' }
       - run: npm ci
       - run: npm run build
       - uses: actions/configure-pages@v5
@@ -325,6 +330,7 @@ Standard pattern from GitHub's own docs. No `gh-pages` npm package, no
 ### One-time manual setup
 
 In the repo settings:
+
 - Settings → Pages → Source: **GitHub Actions** (not "Deploy from branch").
 
 This must be done by the repo owner once before the workflow can succeed.
@@ -409,7 +415,7 @@ is bisectable to a single small commit.
   resolves `?raw` via the import path, so this should work transparently.
   Verify on the first migrated drop-in (color-scheme) before continuing.
 - **Tailwind v4 + `index.css`**: the file has `@import` directives and theme
-  tokens consumed by both `app/components/ui/` *and* each drop-in component's
+  tokens consumed by both `app/components/ui/` _and_ each drop-in component's
   inline classes. Drop-ins assume the host app provides Tailwind v4 + the
   shadcn token set — they always have. After the move, `app/index.css` keeps
   providing them in the demo. Drop-in files don't change.

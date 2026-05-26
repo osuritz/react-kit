@@ -2,8 +2,8 @@
 // Pure presentational SVG. Bars at/above the baseline use `currentColor`; bars
 // below it are tinted with the shadcn `text-destructive` token. Set the primary
 // hue with a text-* class on the element.
-import { cn } from "./lib/cn";
-import { extent } from "./lib/scale";
+import { cn } from './lib/cn';
+import { extent } from './lib/scale';
 
 export interface SparklineBarProps {
   /** The series to plot, oldest → newest. */
@@ -48,8 +48,8 @@ export function SparklineBar({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block overflow-visible", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block overflow-visible', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >
@@ -71,7 +71,7 @@ export function SparklineBar({
             height={h.toFixed(2)}
             rx={Math.min(1, barW / 2)}
             fill="currentColor"
-            className={negative ? "text-destructive" : undefined}
+            className={negative ? 'text-destructive' : undefined}
           />
         );
       })}

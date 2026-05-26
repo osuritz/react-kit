@@ -3,25 +3,25 @@
 // side-effect so the harness picks it up too; Vitest ignores CSS imports.
 // Note: react-day-picker v9 exposes the stylesheet at `react-day-picker/style.css`
 // (not `react-day-picker/dist/style.css` as in v8).
-import "react-day-picker/style.css";
+import 'react-day-picker/style.css';
 
-import * as React from "react";
-import { DayPicker, type DateRange } from "react-day-picker";
-import { Select } from "@base-ui/react/select";
-import { Checkbox } from "@base-ui/react/checkbox";
+import * as React from 'react';
+import { DayPicker, type DateRange } from 'react-day-picker';
+import { Select } from '@base-ui/react/select';
+import { Checkbox } from '@base-ui/react/checkbox';
 
-import type { DateFacet, EditorProps, Value } from "../grammar/types";
-import { cn, editorStyles } from "../lib/cn";
+import type { DateFacet, EditorProps, Value } from '../grammar/types';
+import { cn, editorStyles } from '../lib/cn';
 
-type Op = "eq" | "gte" | "lte" | "range";
+type Op = 'eq' | 'gte' | 'lte' | 'range';
 
-const DEFAULT_OPS: ReadonlyArray<Op> = ["eq", "gte", "lte", "range"];
+const DEFAULT_OPS: ReadonlyArray<Op> = ['eq', 'gte', 'lte', 'range'];
 
 const OP_LABELS: Record<Op, string> = {
-  eq: "is",
-  gte: "on or after",
-  lte: "on or before",
-  range: "between",
+  eq: 'is',
+  gte: 'on or after',
+  lte: 'on or before',
+  range: 'between',
 };
 
 function pad2(n: number): string {
@@ -52,7 +52,7 @@ export function DateEditor(props: EditorProps): React.ReactNode {
   const ops: ReadonlyArray<Op> =
     dateFacet.ops && dateFacet.ops.length > 0 ? dateFacet.ops : DEFAULT_OPS;
 
-  const soleOpIsEq = ops.length === 1 && ops[0] === "eq";
+  const soleOpIsEq = ops.length === 1 && ops[0] === 'eq';
 
   const initial = React.useMemo(() => {
     if (!value) {
@@ -62,14 +62,14 @@ export function DateEditor(props: EditorProps): React.ReactNode {
         range: undefined as DateRange | undefined,
       };
     }
-    if (value.kind === "literal") {
+    if (value.kind === 'literal') {
       return {
-        op: "eq" as Op,
+        op: 'eq' as Op,
         single: fromISO(value.raw),
         range: undefined as DateRange | undefined,
       };
     }
-    if (value.kind === "compare") {
+    if (value.kind === 'compare') {
       return {
         op: value.op as Op,
         single: fromISO(value.raw),
@@ -77,7 +77,7 @@ export function DateEditor(props: EditorProps): React.ReactNode {
       };
     }
     return {
-      op: "range" as Op,
+      op: 'range' as Op,
       single: undefined as Date | undefined,
       range: {
         from: fromISO(value.from),
@@ -95,25 +95,20 @@ export function DateEditor(props: EditorProps): React.ReactNode {
 
   const showNegate = facet.negatable !== false;
 
-  const canApply =
-    op === "range"
-      ? Boolean(range && range.from && range.to)
-      : Boolean(single);
+  const canApply = op === 'range' ? Boolean(range && range.from && range.to) : Boolean(single);
 
   const handleApply = () => {
     let next: Value;
-    if (op === "range") {
+    if (op === 'range') {
       if (!range || !range.from || !range.to) return;
-      next = { kind: "range", from: toISO(range.from), to: toISO(range.to) };
-    } else if (op === "eq") {
+      next = { kind: 'range', from: toISO(range.from), to: toISO(range.to) };
+    } else if (op === 'eq') {
       if (!single) return;
       const iso = toISO(single);
-      next = soleOpIsEq
-        ? { kind: "literal", raw: iso }
-        : { kind: "compare", op: "eq", raw: iso };
+      next = soleOpIsEq ? { kind: 'literal', raw: iso } : { kind: 'compare', op: 'eq', raw: iso };
     } else {
       if (!single) return;
-      next = { kind: "compare", op, raw: toISO(single) };
+      next = { kind: 'compare', op, raw: toISO(single) };
     }
     onCommit({ value: next, negated: localNegated });
   };
@@ -131,19 +126,15 @@ export function DateEditor(props: EditorProps): React.ReactNode {
           >
             <Select.Trigger
               className={cn(
-                "inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-sm shadow-xs transition-colors",
-                "hover:bg-muted hover:text-foreground",
-                "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                "dark:bg-input/30",
+                'inline-flex h-9 items-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-sm shadow-xs transition-colors',
+                'hover:bg-muted hover:text-foreground',
+                'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
+                'dark:bg-input/30'
               )}
             >
               <Select.Value>{(v) => OP_LABELS[(v as Op) ?? op]}</Select.Value>
               <Select.Icon className="text-muted-foreground">
-                <svg
-                  viewBox="0 0 16 16"
-                  className="size-3"
-                  aria-hidden="true"
-                >
+                <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
                   <path
                     d="M4 6l4 4 4-4"
                     fill="none"
@@ -159,7 +150,7 @@ export function DateEditor(props: EditorProps): React.ReactNode {
               <Select.Positioner sideOffset={4}>
                 <Select.Popup
                   className={cn(
-                    "z-50 min-w-32 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden",
+                    'z-50 min-w-32 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden'
                   )}
                 >
                   {ops.map((candidate) => (
@@ -167,16 +158,12 @@ export function DateEditor(props: EditorProps): React.ReactNode {
                       key={candidate}
                       value={candidate}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none",
-                        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
+                        'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none',
+                        'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground'
                       )}
                     >
                       <Select.ItemIndicator className="size-3 text-current">
-                        <svg
-                          viewBox="0 0 16 16"
-                          className="size-3"
-                          aria-hidden="true"
-                        >
+                        <svg viewBox="0 0 16 16" className="size-3" aria-hidden="true">
                           <path
                             d="M3 8l3 3 7-7"
                             fill="none"
@@ -187,9 +174,7 @@ export function DateEditor(props: EditorProps): React.ReactNode {
                           />
                         </svg>
                       </Select.ItemIndicator>
-                      <Select.ItemText>
-                        {OP_LABELS[candidate]}
-                      </Select.ItemText>
+                      <Select.ItemText>{OP_LABELS[candidate]}</Select.ItemText>
                     </Select.Item>
                   ))}
                 </Select.Popup>
@@ -224,27 +209,15 @@ export function DateEditor(props: EditorProps): React.ReactNode {
       </div>
 
       <div className="rounded-md border bg-background p-1 text-sm dark:bg-input/30">
-        {op === "range" ? (
-          <DayPicker
-            mode="range"
-            selected={range}
-            onSelect={(next) => setRange(next)}
-          />
+        {op === 'range' ? (
+          <DayPicker mode="range" selected={range} onSelect={(next) => setRange(next)} />
         ) : (
-          <DayPicker
-            mode="single"
-            selected={single}
-            onSelect={(next) => setSingle(next)}
-          />
+          <DayPicker mode="single" selected={single} onSelect={(next) => setSingle(next)} />
         )}
       </div>
 
       <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onCancel}
-          className={editorStyles.ghostButton}
-        >
+        <button type="button" onClick={onCancel} className={editorStyles.ghostButton}>
           Cancel
         </button>
         <button

@@ -1,13 +1,13 @@
-import "@testing-library/jest-dom/vitest";
-import { afterEach } from "vitest";
-import { cleanup } from "@testing-library/react";
+import '@testing-library/jest-dom/vitest';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 // jsdom 29 + the worktree's vitest combo doesn't reliably expose
 // `window.localStorage` even with a URL set in environmentOptions —
 // the property is missing entirely. Install a small in-memory shim so
 // the recents tests can read what the palette writes. (`localStorage`
 // is also exposed as a global alias matching the browser shape.)
-if (typeof window !== "undefined" && typeof window.localStorage === "undefined") {
+if (typeof window !== 'undefined' && typeof window.localStorage === 'undefined') {
   const store = new Map<string, string>();
   const fakeStorage: Storage = {
     get length() {
@@ -23,7 +23,7 @@ if (typeof window !== "undefined" && typeof window.localStorage === "undefined")
       store.set(key, String(value));
     },
   };
-  Object.defineProperty(window, "localStorage", {
+  Object.defineProperty(window, 'localStorage', {
     value: fakeStorage,
     configurable: true,
     writable: true,
@@ -38,15 +38,14 @@ class ResizeObserverStub implements ResizeObserver {
   unobserve(): void {}
   disconnect(): void {}
 }
-if (typeof globalThis.ResizeObserver === "undefined") {
+if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 }
 
 // jsdom's HTMLElement has no `scrollIntoView`. cmdk calls it when an item
 // becomes selected to keep it in view; in tests that's a no-op.
-if (typeof Element !== "undefined" && !("scrollIntoView" in Element.prototype)) {
-  (Element.prototype as Element & { scrollIntoView: () => void }).scrollIntoView =
-    function () {};
+if (typeof Element !== 'undefined' && !('scrollIntoView' in Element.prototype)) {
+  (Element.prototype as Element & { scrollIntoView: () => void }).scrollIntoView = function () {};
 }
 
 afterEach(() => {

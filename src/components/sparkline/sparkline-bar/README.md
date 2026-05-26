@@ -16,7 +16,7 @@ Copy into your project (e.g. `src/components/sparkline-bar/`):
 - `sparkline-bar.tsx` — `<SparklineBar>` + `SparklineBarProps`
 - `lib/scale.ts` — pure scaling helpers (shared across series sparklines)
 - `lib/cn.ts` — local class-name composer
-- *(optional)* this README
+- _(optional)_ this README
 
 `package.json`, `tsconfig.json`, `vitest.config.ts`, `vitest.setup.ts`, and
 `sparkline-bar.test.tsx` are the verification harness — not part of the copy.
@@ -44,16 +44,16 @@ import { SparklineBar } from "./components/sparkline-bar/sparkline-bar";
 
 ### `<SparklineBar>`
 
-| Prop          | Type       | Default | Notes                                            |
-| ------------- | ---------- | ------- | ------------------------------------------------ |
-| `values`      | `number[]` | —       | The series, oldest → newest.                     |
-| `width`       | `number`   | `100`   |                                                  |
-| `height`      | `number`   | `32`    |                                                  |
-| `min` / `max` | `number`   | data    | Pin the scale (baseline is always included).     |
-| `baseline`    | `number`   | `0`     | Bars below this read as negative (destructive).  |
-| `gap`         | `number`   | `1`     | Gap between bars, in viewBox units.              |
+| Prop          | Type       | Default | Notes                                           |
+| ------------- | ---------- | ------- | ----------------------------------------------- |
+| `values`      | `number[]` | —       | The series, oldest → newest.                    |
+| `width`       | `number`   | `100`   |                                                 |
+| `height`      | `number`   | `32`    |                                                 |
+| `min` / `max` | `number`   | data    | Pin the scale (baseline is always included).    |
+| `baseline`    | `number`   | `0`     | Bars below this read as negative (destructive). |
+| `gap`         | `number`   | `1`     | Gap between bars, in viewBox units.             |
 | `label`       | `string`   | —       | Accessible name; sets `role="img"` + `<title>`. |
-| `className`   | `string`   | —       | Merged onto the svg via `cn()`.                  |
+| `className`   | `string`   | —       | Merged onto the svg via `cn()`.                 |
 
 ## Testing this drop-in
 

@@ -15,7 +15,7 @@ Copy into your project (e.g. `src/components/stacked-bar/`):
 
 - `stacked-bar.tsx` — `<StackedBar>` + `StackedBarProps`, `StackedBarSegment`
 - `lib/cn.ts` — local class-name composer
-- *(optional)* this README
+- _(optional)_ this README
 
 `package.json`, `tsconfig.json`, `vitest.config.ts`, `vitest.setup.ts`, and
 `stacked-bar.test.tsx` are the verification harness — not part of the copy.
@@ -48,15 +48,15 @@ import { StackedBar } from "./components/stacked-bar/stacked-bar";
 
 ### `<StackedBar>`
 
-| Prop        | Type                  | Default | Notes                                            |
-| ----------- | --------------------- | ------- | ------------------------------------------------ |
-| `segments`  | `StackedBarSegment[]` | —       | `{ value, label?, color? }` parts.               |
-| `width`     | `number`              | `100`   |                                                  |
-| `height`    | `number`              | `8`     |                                                  |
-| `gap`       | `number`              | `2`     | Gap between segments, in viewBox units.          |
-| `radius`    | `number`              | `2`     | Corner radius of each segment.                   |
+| Prop        | Type                  | Default | Notes                                           |
+| ----------- | --------------------- | ------- | ----------------------------------------------- |
+| `segments`  | `StackedBarSegment[]` | —       | `{ value, label?, color? }` parts.              |
+| `width`     | `number`              | `100`   |                                                 |
+| `height`    | `number`              | `8`     |                                                 |
+| `gap`       | `number`              | `2`     | Gap between segments, in viewBox units.         |
+| `radius`    | `number`              | `2`     | Corner radius of each segment.                  |
 | `label`     | `string`              | —       | Accessible name; sets `role="img"` + `<title>`. |
-| `className` | `string`              | —       | Merged onto the svg via `cn()`.                  |
+| `className` | `string`              | —       | Merged onto the svg via `cn()`.                 |
 
 ## Testing this drop-in
 

@@ -1,6 +1,6 @@
-import { Link, isRouteErrorResponse, useRouteError } from "react-router";
-import { TriangleAlert } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Link, isRouteErrorResponse, useRouteError } from 'react-router';
+import { TriangleAlert } from 'lucide-react';
+import { Button } from '~/components/ui/button';
 
 /**
  * Route-level error boundary for the docs site. Wired as the `errorElement` on
@@ -34,9 +34,8 @@ export function RouteErrorPanel() {
         <h1 className="text-lg font-semibold">This page failed to render</h1>
       </div>
       <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-        Something in this route threw while rendering. The rest of the site is
-        unaffected — pick another drop-in from the sidebar, or reload to try this
-        page again.
+        Something in this route threw while rendering. The rest of the site is unaffected — pick
+        another drop-in from the sidebar, or reload to try this page again.
       </p>
       {detail ? (
         <pre className="border-border bg-muted/40 text-muted-foreground max-w-full overflow-x-auto rounded-md border px-3 py-2 font-mono text-xs">

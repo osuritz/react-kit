@@ -17,12 +17,14 @@
 ## File map
 
 Create:
+
 - `app/lib/shiki-source.ts` — `HighlightedSource` type
 - `app/vite-env.d.ts` — module declaration for `*?shiki`
 - `app/vite-plugins/shiki.ts` — the Vite plugin
 - `app/components/ui/code-block.tsx` — the `<CodeBlock>` component
 
 Modify:
+
 - `package.json` — add `shiki` to `devDependencies`
 - `vite.config.ts` — register the plugin
 - `app/index.css` — add `--shiki-*` CSS variables
@@ -38,11 +40,13 @@ Modify:
 ### Task 1: Install Shiki
 
 **Files:**
+
 - Modify: `package.json` (devDependencies)
 
 - [ ] **Step 1: Install Shiki as a devDependency**
 
 Run from the worktree root:
+
 ```bash
 npm install --save-dev shiki
 ```
@@ -52,6 +56,7 @@ Expected: `package.json` gains a `shiki` entry under `devDependencies` and `pack
 - [ ] **Step 2: Verify the install resolves**
 
 Run:
+
 ```bash
 node --input-type=module -e "import('shiki').then(m => console.log(typeof m.createHighlighter, typeof m.createCssVariablesTheme))"
 ```
@@ -70,6 +75,7 @@ git commit -m "chore: add shiki as a devDependency for build-time highlighting"
 ### Task 2: Define the `HighlightedSource` type and `?shiki` module declaration
 
 **Files:**
+
 - Create: `app/lib/shiki-source.ts`
 - Create: `app/vite-env.d.ts`
 
@@ -92,8 +98,8 @@ Write `app/vite-env.d.ts`:
 ```ts
 /// <reference types="vite/client" />
 
-declare module "*?shiki" {
-  const src: import("~/lib/shiki-source").HighlightedSource;
+declare module '*?shiki' {
+  const src: import('~/lib/shiki-source').HighlightedSource;
   export default src;
 }
 ```
@@ -103,6 +109,7 @@ The `/// <reference types="vite/client" />` line keeps Vite's existing client gl
 - [ ] **Step 3: Verify TypeScript picks the file up**
 
 Run:
+
 ```bash
 npx tsc -b --noEmit
 ```
@@ -121,6 +128,7 @@ git commit -m "feat(app): type the ?shiki import suffix"
 ### Task 3: Add CSS variables for the highlighter theme
 
 **Files:**
+
 - Modify: `app/index.css`
 
 - [ ] **Step 1: Add the light-mode token block**
@@ -128,18 +136,18 @@ git commit -m "feat(app): type the ?shiki import suffix"
 Inside the existing `:root { ... }` block in `app/index.css`, append (after `--sidebar-ring`):
 
 ```css
-    /* Shiki highlighter — light */
-    --shiki-background: var(--muted);
-    --shiki-foreground: var(--foreground);
-    --shiki-token-constant:          oklch(0.45 0.13 250);
-    --shiki-token-string:            oklch(0.55 0.13 145);
-    --shiki-token-comment:           var(--muted-foreground);
-    --shiki-token-keyword:           oklch(0.50 0.20 350);
-    --shiki-token-parameter:         oklch(0.50 0.13  60);
-    --shiki-token-function:          oklch(0.50 0.17 285);
-    --shiki-token-string-expression: oklch(0.55 0.13 145);
-    --shiki-token-punctuation:       var(--foreground);
-    --shiki-token-link:              oklch(0.55 0.15 220);
+/* Shiki highlighter — light */
+--shiki-background: var(--muted);
+--shiki-foreground: var(--foreground);
+--shiki-token-constant: oklch(0.45 0.13 250);
+--shiki-token-string: oklch(0.55 0.13 145);
+--shiki-token-comment: var(--muted-foreground);
+--shiki-token-keyword: oklch(0.5 0.2 350);
+--shiki-token-parameter: oklch(0.5 0.13 60);
+--shiki-token-function: oklch(0.5 0.17 285);
+--shiki-token-string-expression: oklch(0.55 0.13 145);
+--shiki-token-punctuation: var(--foreground);
+--shiki-token-link: oklch(0.55 0.15 220);
 ```
 
 - [ ] **Step 2: Add the dark-mode token block**
@@ -147,15 +155,15 @@ Inside the existing `:root { ... }` block in `app/index.css`, append (after `--s
 Inside the existing `.dark { ... }` block, append (after `--sidebar-ring`):
 
 ```css
-    /* Shiki highlighter — dark */
-    --shiki-background: var(--card);
-    --shiki-token-constant:          oklch(0.78 0.12 250);
-    --shiki-token-string:            oklch(0.80 0.13 145);
-    --shiki-token-keyword:           oklch(0.78 0.18 350);
-    --shiki-token-parameter:         oklch(0.82 0.13  60);
-    --shiki-token-function:          oklch(0.78 0.15 285);
-    --shiki-token-string-expression: oklch(0.80 0.13 145);
-    --shiki-token-link:              oklch(0.78 0.15 220);
+/* Shiki highlighter — dark */
+--shiki-background: var(--card);
+--shiki-token-constant: oklch(0.78 0.12 250);
+--shiki-token-string: oklch(0.8 0.13 145);
+--shiki-token-keyword: oklch(0.78 0.18 350);
+--shiki-token-parameter: oklch(0.82 0.13 60);
+--shiki-token-function: oklch(0.78 0.15 285);
+--shiki-token-string-expression: oklch(0.8 0.13 145);
+--shiki-token-link: oklch(0.78 0.15 220);
 ```
 
 `--shiki-foreground`, `--shiki-token-comment`, and `--shiki-token-punctuation` re-resolve correctly from their `var(...)` definitions in `:root` because shadcn's own light/dark cascade swaps `--foreground` and `--muted-foreground` for us.
@@ -163,6 +171,7 @@ Inside the existing `.dark { ... }` block, append (after `--sidebar-ring`):
 - [ ] **Step 3: Smoke-check the build still parses CSS**
 
 Run:
+
 ```bash
 npm run build
 ```
@@ -181,6 +190,7 @@ git commit -m "feat(app): add --shiki-* CSS variables for light + dark"
 ### Task 4: Write the Vite plugin
 
 **Files:**
+
 - Create: `app/vite-plugins/shiki.ts`
 
 - [ ] **Step 1: Create the plugin file**
@@ -188,25 +198,21 @@ git commit -m "feat(app): add --shiki-* CSS variables for light + dark"
 Write `app/vite-plugins/shiki.ts`:
 
 ```ts
-import fs from "node:fs/promises";
-import type { Plugin } from "vite";
-import {
-  createHighlighter,
-  createCssVariablesTheme,
-  type Highlighter,
-} from "shiki";
+import fs from 'node:fs/promises';
+import type { Plugin } from 'vite';
+import { createHighlighter, createCssVariablesTheme, type Highlighter } from 'shiki';
 
-const QUERY = "?shiki";
+const QUERY = '?shiki';
 
 const theme = createCssVariablesTheme({
-  name: "shadcn",
-  variablePrefix: "--shiki-",
+  name: 'shadcn',
+  variablePrefix: '--shiki-',
 });
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 function getHighlighter(): Promise<Highlighter> {
   highlighterPromise ??= createHighlighter({
-    langs: ["tsx"],
+    langs: ['tsx'],
     themes: [theme],
   });
   return highlighterPromise;
@@ -214,17 +220,17 @@ function getHighlighter(): Promise<Highlighter> {
 
 export function shiki(): Plugin {
   return {
-    name: "react-kit:shiki",
+    name: 'react-kit:shiki',
     async load(id) {
       if (!id.endsWith(QUERY)) return null;
 
       const filepath = id.slice(0, -QUERY.length);
-      const raw = await fs.readFile(filepath, "utf8");
+      const raw = await fs.readFile(filepath, 'utf8');
 
       const highlighter = await getHighlighter();
       const html = highlighter.codeToHtml(raw, {
-        lang: "tsx",
-        theme: "shadcn",
+        lang: 'tsx',
+        theme: 'shadcn',
       });
 
       this.addWatchFile(filepath);
@@ -232,7 +238,7 @@ export function shiki(): Plugin {
       return `export default ${JSON.stringify({
         raw,
         html,
-        lang: "tsx",
+        lang: 'tsx',
       })};`;
     },
   };
@@ -240,6 +246,7 @@ export function shiki(): Plugin {
 ```
 
 Key design points:
+
 - Module-scoped `highlighterPromise` makes `createHighlighter` a singleton across all `load` calls in one Vite process.
 - `this.addWatchFile(filepath)` ties the virtual `?shiki` module to the real source file so editing the demo `.tsx` triggers HMR.
 - `JSON.stringify` is sufficient — the emitted object contains only strings.
@@ -248,6 +255,7 @@ Key design points:
 - [ ] **Step 2: TypeScript-check the plugin**
 
 Run:
+
 ```bash
 npx tsc -b --noEmit
 ```
@@ -266,6 +274,7 @@ git commit -m "feat(app): add ?shiki Vite plugin for build-time highlighting"
 ### Task 5: Register the plugin in `vite.config.ts`
 
 **Files:**
+
 - Modify: `vite.config.ts`
 
 - [ ] **Step 1: Register the plugin**
@@ -273,7 +282,7 @@ git commit -m "feat(app): add ?shiki Vite plugin for build-time highlighting"
 Edit `vite.config.ts`. Add the import near the existing imports:
 
 ```ts
-import { shiki } from "./app/vite-plugins/shiki";
+import { shiki } from './app/vite-plugins/shiki';
 ```
 
 And add `shiki()` to the `plugins` array. The full plugins line becomes:
@@ -287,6 +296,7 @@ Place `shiki()` after `tailwindcss()` — order between these three doesn't matt
 - [ ] **Step 2: Smoke-test that a `?shiki` import resolves**
 
 Start dev:
+
 ```bash
 npm run dev
 ```
@@ -294,11 +304,16 @@ npm run dev
 In another terminal, hit the dev server with curl and check that one of the demo `.tsx` files can be imported with the `?shiki` suffix. Easiest path: temporarily add a console.log in `app/main.tsx`:
 
 ```ts
-import probe from "~/components/demos/action-registry.tsx?shiki";
-console.log("[shiki probe]", { rawLen: probe.raw.length, htmlLen: probe.html.length, lang: probe.lang });
+import probe from '~/components/demos/action-registry.tsx?shiki';
+console.log('[shiki probe]', {
+  rawLen: probe.raw.length,
+  htmlLen: probe.html.length,
+  lang: probe.lang,
+});
 ```
 
 Open `http://localhost:5173/react-kit/`, open DevTools console. Expected log:
+
 - `rawLen` > 1000 (the demo file is ~3 KB)
 - `htmlLen` significantly larger than `rawLen` (typical 4–6×)
 - `lang === "tsx"`
@@ -317,6 +332,7 @@ git commit -m "feat(app): register the shiki plugin in vite.config.ts"
 ### Task 6: Build the `<CodeBlock>` component
 
 **Files:**
+
 - Create: `app/components/ui/code-block.tsx`
 
 - [ ] **Step 1: Create the component**
@@ -324,9 +340,9 @@ git commit -m "feat(app): register the shiki plugin in vite.config.ts"
 Write `app/components/ui/code-block.tsx`:
 
 ```tsx
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
-import { cn } from "~/lib/utils";
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '~/lib/utils';
 
 export interface CodeBlockProps {
   raw: string;
@@ -340,20 +356,20 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
   return (
     <div
       className={cn(
-        "group relative",
-        "[&_pre]:max-h-80 [&_pre]:overflow-auto",
-        "[&_pre]:rounded-md [&_pre]:p-4",
-        "[&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed",
+        'group relative',
+        '[&_pre]:max-h-80 [&_pre]:overflow-auto',
+        '[&_pre]:rounded-md [&_pre]:p-4',
+        '[&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed',
         // Shiki writes inline style="background-color:...; color:..." on
         // the <pre>; force our CSS-vars to win.
-        "[&_pre]:![background-color:var(--shiki-background)]",
-        "[&_pre]:![color:var(--shiki-foreground)]",
-        className,
+        '[&_pre]:![background-color:var(--shiki-background)]',
+        '[&_pre]:![color:var(--shiki-foreground)]',
+        className
       )}
     >
       <button
         type="button"
-        aria-label={copied ? "Copied" : "Copy code"}
+        aria-label={copied ? 'Copied' : 'Copy code'}
         onClick={async () => {
           await navigator.clipboard.writeText(raw);
           setCopied(true);
@@ -371,6 +387,7 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
 ```
 
 Notes:
+
 - The outer wrapper is a `<div>`, **not** a `<pre>` — Shiki's `codeToHtml` already emits `<pre><code>...</code></pre>`, and nesting `<pre>` inside `<pre>` is invalid HTML.
 - `[&_pre]:...` Tailwind arbitrary-variants apply layout (max-height, overflow, padding, radius, type) to the Shiki-emitted `<pre>`. The `!` prefix overrides the inline `background-color` / `color` Shiki writes there.
 - Copy button hidden by default; revealed on group hover or when focused via keyboard.
@@ -378,6 +395,7 @@ Notes:
 - [ ] **Step 2: TypeScript-check**
 
 Run:
+
 ```bash
 npx tsc -b --noEmit
 ```
@@ -396,6 +414,7 @@ git commit -m "feat(app): add CodeBlock component with copy button"
 ### Task 7: Wire `<CodeBlock>` into `DemoCard`
 
 **Files:**
+
 - Modify: `app/components/demo-card.tsx`
 
 - [ ] **Step 1: Replace the file contents**
@@ -403,9 +422,9 @@ git commit -m "feat(app): add CodeBlock component with copy button"
 Replace `app/components/demo-card.tsx` with:
 
 ```tsx
-import type { ReactNode } from "react";
-import { CodeBlock } from "./ui/code-block";
-import type { HighlightedSource } from "~/lib/shiki-source";
+import type { ReactNode } from 'react';
+import { CodeBlock } from './ui/code-block';
+import type { HighlightedSource } from '~/lib/shiki-source';
 
 export interface DemoCardProps {
   title: string;
@@ -435,6 +454,7 @@ The card-level rounded-bottom corners come from the outer `<section>`'s `rounded
 - [ ] **Step 2: TypeScript-check**
 
 Run:
+
 ```bash
 npx tsc -b --noEmit
 ```
@@ -450,6 +470,7 @@ Don't commit here — the routes are now broken. We'll commit DemoCard + the rou
 ### Task 8: Migrate the five routes from `?raw` to `?shiki`
 
 **Files:**
+
 - Modify: `app/routes/action-registry.tsx`
 - Modify: `app/routes/color-scheme.tsx`
 - Modify: `app/routes/command-palette.tsx`
@@ -459,25 +480,31 @@ Don't commit here — the routes are now broken. We'll commit DemoCard + the rou
 - [ ] **Step 1: action-registry.tsx**
 
 In `app/routes/action-registry.tsx`, change:
+
 ```ts
-import actionRegistrySrc from "~/components/demos/action-registry.tsx?raw";
+import actionRegistrySrc from '~/components/demos/action-registry.tsx?raw';
 ```
+
 to:
+
 ```ts
-import actionRegistrySrc from "~/components/demos/action-registry.tsx?shiki";
+import actionRegistrySrc from '~/components/demos/action-registry.tsx?shiki';
 ```
 
 - [ ] **Step 2: color-scheme.tsx (two imports)**
 
 In `app/routes/color-scheme.tsx`, change both:
+
 ```ts
-import buttonSrc from "~/components/demos/mode-toggle-button.tsx?raw";
-import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?raw";
+import buttonSrc from '~/components/demos/mode-toggle-button.tsx?raw';
+import segmentedSrc from '~/components/demos/mode-toggle-segmented.tsx?raw';
 ```
+
 to:
+
 ```ts
-import buttonSrc from "~/components/demos/mode-toggle-button.tsx?shiki";
-import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?shiki";
+import buttonSrc from '~/components/demos/mode-toggle-button.tsx?shiki';
+import segmentedSrc from '~/components/demos/mode-toggle-segmented.tsx?shiki';
 ```
 
 - [ ] **Step 3: command-palette.tsx**
@@ -495,6 +522,7 @@ In `app/routes/search-facets.tsx`, change the `?raw` suffix to `?shiki` on its s
 - [ ] **Step 6: TypeScript-check**
 
 Run:
+
 ```bash
 npx tsc -b --noEmit
 ```
@@ -504,6 +532,7 @@ Expected: clean. No errors. If any route still complains about `source` type, sc
 - [ ] **Step 7: Verify no stray `?raw` for demo source remains**
 
 Run:
+
 ```bash
 grep -rn '?raw' app/
 ```
@@ -530,6 +559,7 @@ npm run dev
 ```
 
 Open `http://localhost:5173/react-kit/action-registry`. Confirm:
+
 - The source block at the bottom of each `DemoCard` shows colored syntax (keywords, strings, identifiers visibly distinct from punctuation).
 - Hovering the source block reveals a copy button in the top-right corner.
 - Clicking the copy button flips the icon to a check for ~1.5s.
@@ -538,6 +568,7 @@ Open `http://localhost:5173/react-kit/action-registry`. Confirm:
 - [ ] **Step 2: Color-scheme re-theme**
 
 While the dev server is still running, toggle the site's color-scheme via the existing toggle. Confirm:
+
 - The code block background swaps (light = muted gray; dark = card).
 - The token colors swap to the dark palette.
 - No flash, no remount — purely a CSS transition.
@@ -545,6 +576,7 @@ While the dev server is still running, toggle the site's color-scheme via the ex
 - [ ] **Step 3: HMR check**
 
 With dev still running, open `app/components/demos/action-registry.tsx`. Add a throwaway top-level comment like `// hmr probe`. Save. Confirm:
+
 - The browser updates within ~1s.
 - The new comment appears in the highlighted source block.
 - The page does **not** do a full reload (Vite's HMR overlay reports an update, not a reload).
@@ -562,6 +594,7 @@ Expected: build succeeds. No TS errors, no plugin errors.
 - [ ] **Step 5: Verify no Shiki runtime in the client bundle**
 
 Run all three:
+
 ```bash
 grep -rEi 'shiki|@shikijs|oniguruma' dist/assets/ || echo "no matches"
 find dist -name '*.wasm'
@@ -569,6 +602,7 @@ du -sh dist/assets
 ```
 
 Expected:
+
 - `grep` may surface the literal class names `shiki` and `language-tsx` inside the static HTML strings the plugin embedded — that's expected. There should be **no** matches that look like module code (no `createHighlighter`, no `oniguruma` strings, no large minified blocks).
 - `find` returns nothing.
 - `du -sh dist/assets` is comparable to the previous build (within ~5 KB). If it ballooned by hundreds of KB, the plugin output is leaking Shiki — investigate before shipping.

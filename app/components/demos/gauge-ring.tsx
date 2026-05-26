@@ -1,10 +1,10 @@
-import { GaugeRing } from "#components/sparkline/gauge-ring/gauge-ring.tsx";
+import { GaugeRing } from '#components/sparkline/gauge-ring/gauge-ring.tsx';
 
 const rings = [
-  { label: "Storage", value: 72, suffix: "%", tint: "text-sky-600 dark:text-sky-400" },
-  { label: "Seats used", value: 88, suffix: "%", tint: "text-violet-600 dark:text-violet-400" },
-  { label: "Budget", value: 96, suffix: "%", tint: "text-amber-600 dark:text-amber-400" },
-  { label: "Onboarding", value: 40, suffix: "%", tint: "text-emerald-600 dark:text-emerald-400" },
+  { label: 'Storage', value: 72, suffix: '%', tint: 'text-sky-600 dark:text-sky-400' },
+  { label: 'Seats used', value: 88, suffix: '%', tint: 'text-violet-600 dark:text-violet-400' },
+  { label: 'Budget', value: 96, suffix: '%', tint: 'text-amber-600 dark:text-amber-400' },
+  { label: 'Onboarding', value: 40, suffix: '%', tint: 'text-emerald-600 dark:text-emerald-400' },
 ];
 
 export function GaugeRingDemo() {

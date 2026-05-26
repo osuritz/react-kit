@@ -27,6 +27,7 @@ Goal of this phase: a fully working dev server that renders the new `app/` site 
 ### Task 1: Install `react-router`
 
 **Files:**
+
 - Modify: `package.json`
 - Modify: `package-lock.json`
 
@@ -52,6 +53,7 @@ git commit -m "chore: add react-router for the demo-site reorg"
 ### Task 2: Wire up build config (Vite alias + tsconfig paths)
 
 **Files:**
+
 - Modify: `vite.config.ts`
 - Modify: `tsconfig.app.json`
 
@@ -60,10 +62,10 @@ git commit -m "chore: add react-router for the demo-site reorg"
 Replace the file with:
 
 ```ts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { fileURLToPath, URL } from 'node:url';
 
 // Each drop-in folder under src/{hooks,components}/<name>/ ships its own
 // isolated test harness (its own package.json with React 18 in devDeps), so
@@ -81,15 +83,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "~": fileURLToPath(new URL("./app", import.meta.url)),
+      '~': fileURLToPath(new URL('./app', import.meta.url)),
     },
-    dedupe: [
-      "react",
-      "react-dom",
-      "@base-ui/react",
-      "react-day-picker",
-      "react-router",
-    ],
+    dedupe: ['react', 'react-dom', '@base-ui/react', 'react-day-picker', 'react-router'],
   },
 });
 ```
@@ -155,6 +151,7 @@ git commit -m "chore: wire up app/ alias and react-router dedupe"
 ### Task 3: Create `app/` entry point and CSS
 
 **Files:**
+
 - Create: `app/index.css` (verbatim copy of `src/index.css`)
 - Create: `app/main.tsx`
 - Modify: `index.html`
@@ -171,16 +168,16 @@ cp src/index.css app/index.css
 - [ ] **Step 2: Create `app/main.tsx`**
 
 ```tsx
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import { RouterProvider } from "react-router";
-import "./index.css";
-import { router } from "./router";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { RouterProvider } from 'react-router';
+import './index.css';
+import { router } from './router';
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RouterProvider router={router} />
-  </StrictMode>,
+  </StrictMode>
 );
 ```
 
@@ -220,6 +217,7 @@ git commit -m "feat(app): add demo-site entry point and CSS"
 ### Task 4: Create `app/components/site-layout.tsx`
 
 **Files:**
+
 - Create: `app/components/site-layout.tsx`
 
 The site layout is the chrome that wraps every route: top header + left sidebar (grouped nav links) + outlet for the active route.
@@ -227,7 +225,7 @@ The site layout is the chrome that wraps every route: top header + left sidebar 
 - [ ] **Step 1: Create the file**
 
 ```tsx
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet } from 'react-router';
 
 interface NavGroup {
   heading: string;
@@ -236,23 +234,23 @@ interface NavGroup {
 
 const NAV: ReadonlyArray<NavGroup> = [
   {
-    heading: "Hooks",
+    heading: 'Hooks',
     items: [
-      { to: "/color-scheme", label: "useColorScheme" },
-      { to: "/action-registry", label: "action-registry" },
+      { to: '/color-scheme', label: 'useColorScheme' },
+      { to: '/action-registry', label: 'action-registry' },
     ],
   },
   {
-    heading: "Components",
+    heading: 'Components',
     items: [
-      { to: "/search-facets", label: "SearchFacets" },
-      { to: "/keyboard-shortcuts", label: "KeyboardShortcuts" },
-      { to: "/command-palette", label: "CommandPalette" },
+      { to: '/search-facets', label: 'SearchFacets' },
+      { to: '/keyboard-shortcuts', label: 'KeyboardShortcuts' },
+      { to: '/command-palette', label: 'CommandPalette' },
     ],
   },
   {
-    heading: "Demos",
-    items: [{ to: "/integration", label: "Integration" }],
+    heading: 'Demos',
+    items: [{ to: '/integration', label: 'Integration' }],
   },
 ];
 
@@ -261,10 +259,7 @@ export function SiteLayout() {
     <div className="bg-background text-foreground min-h-svh">
       <header className="border-border bg-background sticky top-0 z-10 border-b">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <NavLink
-            to="/"
-            className="text-base font-semibold tracking-tight hover:opacity-80"
-          >
+          <NavLink to="/" className="text-base font-semibold tracking-tight hover:opacity-80">
             react-kit
           </NavLink>
           <a
@@ -292,11 +287,11 @@ export function SiteLayout() {
                         end
                         className={({ isActive }) =>
                           [
-                            "block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors",
+                            'block rounded-md border-l-2 px-3 py-1.5 text-sm transition-colors',
                             isActive
-                              ? "border-foreground text-foreground bg-muted/50"
-                              : "text-muted-foreground hover:text-foreground border-transparent",
-                          ].join(" ")
+                              ? 'border-foreground text-foreground bg-muted/50'
+                              : 'text-muted-foreground hover:text-foreground border-transparent',
+                          ].join(' ')
                         }
                       >
                         {item.label}
@@ -330,6 +325,7 @@ git commit -m "feat(app): add SiteLayout chrome with sidebar nav"
 ### Task 5: Create `app/components/demo-card.tsx` and `app/components/drop-in-page.tsx`
 
 **Files:**
+
 - Create: `app/components/demo-card.tsx`
 - Create: `app/components/drop-in-page.tsx`
 
@@ -338,7 +334,7 @@ Both extracted from the existing `src/App.tsx` (`DemoCard` and `DropIn` helpers,
 - [ ] **Step 1: Create `app/components/demo-card.tsx`**
 
 ```tsx
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export interface DemoCardProps {
   title: string;
@@ -368,7 +364,7 @@ export function DemoCard({ title, description, source, render }: DemoCardProps) 
 - [ ] **Step 2: Create `app/components/drop-in-page.tsx`**
 
 ```tsx
-import { DemoCard, type DemoCardProps } from "./demo-card";
+import { DemoCard, type DemoCardProps } from './demo-card';
 
 export interface DropInPageProps {
   title: string;
@@ -378,33 +374,17 @@ export interface DropInPageProps {
   demos: ReadonlyArray<DemoCardProps>;
 }
 
-export function DropInPage({
-  title,
-  description,
-  sourceHref,
-  readmeHref,
-  demos,
-}: DropInPageProps) {
+export function DropInPage({ title, description, sourceHref, readmeHref, demos }: DropInPageProps) {
   return (
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-          {title}
-        </h1>
-        <p className="text-muted-foreground max-w-2xl text-sm md:text-base">
-          {description}
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
+        <p className="text-muted-foreground max-w-2xl text-sm md:text-base">{description}</p>
         <p className="flex gap-4 text-sm">
-          <a
-            className="text-primary underline-offset-4 hover:underline"
-            href={readmeHref}
-          >
+          <a className="text-primary underline-offset-4 hover:underline" href={readmeHref}>
             README →
           </a>
-          <a
-            className="text-primary underline-offset-4 hover:underline"
-            href={sourceHref}
-          >
+          <a className="text-primary underline-offset-4 hover:underline" href={sourceHref}>
             Source on GitHub →
           </a>
         </p>
@@ -432,6 +412,7 @@ git commit -m "feat(app): add DemoCard and DropInPage building blocks"
 ### Task 6: Create `app/router.tsx` + placeholder routes
 
 **Files:**
+
 - Create: `app/routes/index.tsx`
 - Create: `app/routes/color-scheme.tsx`
 - Create: `app/routes/action-registry.tsx`
@@ -447,38 +428,38 @@ The placeholder routes are stubs that prove the router and layout work. They're 
 
 ```tsx
 // app/routes/index.tsx
-import { NavLink } from "react-router";
+import { NavLink } from 'react-router';
 
 const ENTRIES: ReadonlyArray<{ to: string; label: string; blurb: string }> = [
   {
-    to: "/color-scheme",
-    label: "useColorScheme",
-    blurb: "Light/dark color scheme hook with SSR FOUC blocker.",
+    to: '/color-scheme',
+    label: 'useColorScheme',
+    blurb: 'Light/dark color scheme hook with SSR FOUC blocker.',
   },
   {
-    to: "/action-registry",
-    label: "action-registry",
-    blurb: "Shared registry that the keybinding hook and command palette subscribe to.",
+    to: '/action-registry',
+    label: 'action-registry',
+    blurb: 'Shared registry that the keybinding hook and command palette subscribe to.',
   },
   {
-    to: "/search-facets",
-    label: "SearchFacets",
-    blurb: "Schema-driven faceted search bar with Gmail-flavor grammar.",
+    to: '/search-facets',
+    label: 'SearchFacets',
+    blurb: 'Schema-driven faceted search bar with Gmail-flavor grammar.',
   },
   {
-    to: "/keyboard-shortcuts",
-    label: "KeyboardShortcuts",
-    blurb: "Keybinding layer + cheatsheet that consume the action registry.",
+    to: '/keyboard-shortcuts',
+    label: 'KeyboardShortcuts',
+    blurb: 'Keybinding layer + cheatsheet that consume the action registry.',
   },
   {
-    to: "/command-palette",
-    label: "CommandPalette",
-    blurb: "⌘K launcher built on cmdk with async sources.",
+    to: '/command-palette',
+    label: 'CommandPalette',
+    blurb: '⌘K launcher built on cmdk with async sources.',
   },
   {
-    to: "/integration",
-    label: "Integration demo",
-    blurb: "All three action drop-ins wired together end-to-end.",
+    to: '/integration',
+    label: 'Integration demo',
+    blurb: 'All three action drop-ins wired together end-to-end.',
   },
 ];
 
@@ -486,14 +467,11 @@ export default function IndexRoute() {
   return (
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-          react-kit
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">react-kit</h1>
         <p className="text-muted-foreground max-w-2xl text-sm md:text-base">
-          Lightweight, copy-paste React hooks and components for common
-          frontend patterns. Each entry below is a self-contained drop-in
-          with its own README and verification harness — no npm install,
-          no build step, just copy the folder.
+          Lightweight, copy-paste React hooks and components for common frontend patterns. Each
+          entry below is a self-contained drop-in with its own README and verification harness — no
+          npm install, no build step, just copy the folder.
         </p>
       </header>
 
@@ -505,9 +483,7 @@ export default function IndexRoute() {
               className="border-border bg-card hover:bg-muted/50 block rounded-lg border p-4 transition-colors"
             >
               <h2 className="text-base font-semibold">{entry.label}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                {entry.blurb}
-              </p>
+              <p className="text-muted-foreground mt-1 text-sm">{entry.blurb}</p>
             </NavLink>
           </li>
         ))}
@@ -521,14 +497,14 @@ export default function IndexRoute() {
 
 For each path in this list, create a file with the corresponding stub:
 
-| File | Title shown |
-| --- | --- |
-| `app/routes/color-scheme.tsx` | `useColorScheme` |
-| `app/routes/action-registry.tsx` | `action-registry` |
-| `app/routes/search-facets.tsx` | `SearchFacets` |
+| File                                | Title shown         |
+| ----------------------------------- | ------------------- |
+| `app/routes/color-scheme.tsx`       | `useColorScheme`    |
+| `app/routes/action-registry.tsx`    | `action-registry`   |
+| `app/routes/search-facets.tsx`      | `SearchFacets`      |
 | `app/routes/keyboard-shortcuts.tsx` | `KeyboardShortcuts` |
-| `app/routes/command-palette.tsx` | `CommandPalette` |
-| `app/routes/integration.tsx` | `Integration demo` |
+| `app/routes/command-palette.tsx`    | `CommandPalette`    |
+| `app/routes/integration.tsx`        | `Integration demo`  |
 
 Stub template (replace `TITLE_HERE` with the title for each file):
 
@@ -536,12 +512,8 @@ Stub template (replace `TITLE_HERE` with the title for each file):
 export default function PlaceholderRoute() {
   return (
     <article className="flex flex-col gap-3">
-      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-        TITLE_HERE
-      </h1>
-      <p className="text-muted-foreground text-sm">
-        TODO — wired up in Phase 3.
-      </p>
+      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">TITLE_HERE</h1>
+      <p className="text-muted-foreground text-sm">TODO — wired up in Phase 3.</p>
     </article>
   );
 }
@@ -550,28 +522,28 @@ export default function PlaceholderRoute() {
 - [ ] **Step 3: Create `app/router.tsx`**
 
 ```tsx
-import { createBrowserRouter } from "react-router";
-import { SiteLayout } from "./components/site-layout";
-import IndexRoute from "./routes/index";
-import ColorSchemeRoute from "./routes/color-scheme";
-import ActionRegistryRoute from "./routes/action-registry";
-import SearchFacetsRoute from "./routes/search-facets";
-import KeyboardShortcutsRoute from "./routes/keyboard-shortcuts";
-import CommandPaletteRoute from "./routes/command-palette";
-import IntegrationRoute from "./routes/integration";
+import { createBrowserRouter } from 'react-router';
+import { SiteLayout } from './components/site-layout';
+import IndexRoute from './routes/index';
+import ColorSchemeRoute from './routes/color-scheme';
+import ActionRegistryRoute from './routes/action-registry';
+import SearchFacetsRoute from './routes/search-facets';
+import KeyboardShortcutsRoute from './routes/keyboard-shortcuts';
+import CommandPaletteRoute from './routes/command-palette';
+import IntegrationRoute from './routes/integration';
 
 export const router = createBrowserRouter([
   {
     element: <SiteLayout />,
     children: [
-      { path: "/", element: <IndexRoute /> },
-      { path: "color-scheme", element: <ColorSchemeRoute /> },
-      { path: "action-registry", element: <ActionRegistryRoute /> },
-      { path: "search-facets", element: <SearchFacetsRoute /> },
-      { path: "keyboard-shortcuts", element: <KeyboardShortcutsRoute /> },
-      { path: "command-palette", element: <CommandPaletteRoute /> },
-      { path: "integration", element: <IntegrationRoute /> },
-      { path: "*", element: <IndexRoute /> },
+      { path: '/', element: <IndexRoute /> },
+      { path: 'color-scheme', element: <ColorSchemeRoute /> },
+      { path: 'action-registry', element: <ActionRegistryRoute /> },
+      { path: 'search-facets', element: <SearchFacetsRoute /> },
+      { path: 'keyboard-shortcuts', element: <KeyboardShortcutsRoute /> },
+      { path: 'command-palette', element: <CommandPaletteRoute /> },
+      { path: 'integration', element: <IntegrationRoute /> },
+      { path: '*', element: <IndexRoute /> },
     ],
   },
 ]);
@@ -581,6 +553,7 @@ export const router = createBrowserRouter([
 
 Run: `npm run dev`
 In a browser, visit:
+
 - `http://localhost:5173/` — landing page with 6 cards.
 - Click one of the cards (e.g. "useColorScheme") — URL changes to `/color-scheme`, page shows "TODO — wired up in Phase 3."
 - Click each sidebar link — URL changes, active item gets the left-border highlight.
@@ -604,6 +577,7 @@ Goal: `src/components/ui/` and `src/lib/utils.ts` live under `app/`. After this 
 ### Task 7: Move shadcn ui + `lib/utils.ts` to `app/`
 
 **Files:**
+
 - Move: `src/components/ui/button.tsx` → `app/components/ui/button.tsx`
 - Move: `src/components/ui/toggle.tsx` → `app/components/ui/toggle.tsx`
 - Move: `src/components/ui/toggle-group.tsx` → `app/components/ui/toggle-group.tsx`
@@ -615,7 +589,7 @@ Goal: `src/components/ui/` and `src/lib/utils.ts` live under `app/`. After this 
 
 The moves and import rewrites have to happen together — moving `lib/utils.ts` alone would break the existing `src/components/ui/*.tsx` files that still import from `#lib/utils.ts`. We move the ui files in the same task so the `#`-rooted import becomes a `~`-rooted one in the new location.
 
-`src/components/*-demo.tsx` files (still present until Phase 3) import the ui components via `#components/ui/...`. After this task they'll briefly be broken, but `src/App.tsx` is not the entry point anymore (Task 3 swapped `index.html`), so the dev server doesn't load them. The `tsc` typecheck *will* see the broken imports — Task 7 step 4 below confirms the dev server still boots; the typecheck is deferred until the demos move in Phase 3.
+`src/components/*-demo.tsx` files (still present until Phase 3) import the ui components via `#components/ui/...`. After this task they'll briefly be broken, but `src/App.tsx` is not the entry point anymore (Task 3 swapped `index.html`), so the dev server doesn't load them. The `tsc` typecheck _will_ see the broken imports — Task 7 step 4 below confirms the dev server still boots; the typecheck is deferred until the demos move in Phase 3.
 
 - [ ] **Step 1: Move the files**
 
@@ -640,13 +614,13 @@ Each of the three ui files imports `cn` from `#lib/utils.ts`. Update each:
 In `app/components/ui/button.tsx`, change:
 
 ```ts
-import { cn } from "#lib/utils.ts"
+import { cn } from '#lib/utils.ts';
 ```
 
 to:
 
 ```ts
-import { cn } from "~/lib/utils.ts"
+import { cn } from '~/lib/utils.ts';
 ```
 
 Apply the same edit to `app/components/ui/toggle.tsx` and `app/components/ui/toggle-group.tsx`.
@@ -705,6 +679,7 @@ git commit -m "refactor: move shadcn ui and lib/utils from src/ to app/"
 ## Phase 3 — Migrate demo wrappers one drop-in at a time
 
 Each task in this phase:
+
 1. Moves one drop-in's demo wrapper file(s) from `src/components/` to `app/components/demos/`.
 2. Drops the `-demo` suffix.
 3. Rewrites `#components/ui/...` → `~/components/ui/...` and `#lib/utils.ts` → `~/lib/utils.ts` inside the moved file(s). Drop-in imports (`#hooks/<name>/...`, `#components/<name>/...`) are left alone.
@@ -717,6 +692,7 @@ The order is least-coupled-first so a regression early on is easy to bisect.
 ### Task 8: Migrate `color-scheme`
 
 **Files:**
+
 - Move: `src/components/mode-toggle-button-demo.tsx` → `app/components/demos/mode-toggle-button.tsx`
 - Move: `src/components/mode-toggle-segmented-demo.tsx` → `app/components/demos/mode-toggle-segmented.tsx`
 - Modify: `app/components/demos/mode-toggle-button.tsx` (rewrite ui import)
@@ -736,31 +712,25 @@ git mv src/components/mode-toggle-segmented-demo.tsx app/components/demos/mode-t
 In `app/components/demos/mode-toggle-button.tsx`, change:
 
 ```ts
-import { Button } from "#components/ui/button.tsx";
+import { Button } from '#components/ui/button.tsx';
 ```
 
 to:
 
 ```ts
-import { Button } from "~/components/ui/button.tsx";
+import { Button } from '~/components/ui/button.tsx';
 ```
 
 In `app/components/demos/mode-toggle-segmented.tsx`, change:
 
 ```ts
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "#components/ui/toggle-group.tsx";
+import { ToggleGroup, ToggleGroupItem } from '#components/ui/toggle-group.tsx';
 ```
 
 to:
 
 ```ts
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "~/components/ui/toggle-group.tsx";
+import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group.tsx';
 ```
 
 The `#hooks/color-scheme/...` import in both files stays unchanged.
@@ -768,11 +738,11 @@ The `#hooks/color-scheme/...` import in both files stays unchanged.
 - [ ] **Step 3: Replace `app/routes/color-scheme.tsx` with the real route**
 
 ```tsx
-import { DropInPage } from "~/components/drop-in-page";
-import { ModeToggleButton } from "~/components/demos/mode-toggle-button";
-import { ModeToggleSegmented } from "~/components/demos/mode-toggle-segmented";
-import buttonSrc from "~/components/demos/mode-toggle-button.tsx?raw";
-import segmentedSrc from "~/components/demos/mode-toggle-segmented.tsx?raw";
+import { DropInPage } from '~/components/drop-in-page';
+import { ModeToggleButton } from '~/components/demos/mode-toggle-button';
+import { ModeToggleSegmented } from '~/components/demos/mode-toggle-segmented';
+import buttonSrc from '~/components/demos/mode-toggle-button.tsx?raw';
+import segmentedSrc from '~/components/demos/mode-toggle-segmented.tsx?raw';
 
 export default function ColorSchemeRoute() {
   return (
@@ -783,14 +753,14 @@ export default function ColorSchemeRoute() {
       readmeHref="https://github.com/osuritz/react-kit/blob/main/src/hooks/color-scheme/README.md"
       demos={[
         {
-          title: "Light / dark button",
+          title: 'Light / dark button',
           description:
             "Two-state icon button. Setting either light or dark is explicit — clicking breaks 'system' tracking.",
           source: buttonSrc,
           render: <ModeToggleButton />,
         },
         {
-          title: "Light / dark / system segmented",
+          title: 'Light / dark / system segmented',
           description:
             "Three-state segmented control bound to the user choice. When 'system' is selected, the resolved scheme is shown below.",
           source: segmentedSrc,
@@ -807,6 +777,7 @@ export default function ColorSchemeRoute() {
 Run: `npm run dev`
 Visit `http://localhost:5173/color-scheme`.
 Expected:
+
 - Page header shows `useColorScheme` + description + README/Source links.
 - Two demo cards rendered. Each card shows: title, description, the rendered toggle component, the file's source code below.
 - Clicking the icon button in the first demo toggles the color scheme of the page.
@@ -827,6 +798,7 @@ git commit -m "refactor(app): migrate color-scheme demo to its own route"
 ### Task 9: Migrate `search-facets`
 
 **Files:**
+
 - Move: `src/components/search-facets-demo.tsx` → `app/components/demos/search-facets.tsx`
 - Modify: `app/routes/search-facets.tsx` (replace placeholder)
 
@@ -841,9 +813,9 @@ git mv src/components/search-facets-demo.tsx app/components/demos/search-facets.
 - [ ] **Step 2: Replace `app/routes/search-facets.tsx`**
 
 ```tsx
-import { DropInPage } from "~/components/drop-in-page";
-import { SearchFacetsDemo } from "~/components/demos/search-facets";
-import searchFacetsSrc from "~/components/demos/search-facets.tsx?raw";
+import { DropInPage } from '~/components/drop-in-page';
+import { SearchFacetsDemo } from '~/components/demos/search-facets';
+import searchFacetsSrc from '~/components/demos/search-facets.tsx?raw';
 
 export default function SearchFacetsRoute() {
   return (
@@ -854,7 +826,7 @@ export default function SearchFacetsRoute() {
       readmeHref="https://github.com/osuritz/react-kit/blob/main/src/components/search-facets/README.md"
       demos={[
         {
-          title: "Faceted search",
+          title: 'Faceted search',
           description:
             "Type 'from:bob' + space to commit a chip. Click a chip to edit it. Click '+ Add filter' for the schema-driven builder form.",
           source: searchFacetsSrc,
@@ -871,6 +843,7 @@ export default function SearchFacetsRoute() {
 Run: `npm run dev`
 Visit `http://localhost:5173/search-facets`.
 Expected:
+
 - Header + one demo card.
 - Type `from:bob` + space — a chip appears.
 - Click the `+ Add filter` button — the builder popover opens with the schema fields.
@@ -890,6 +863,7 @@ git commit -m "refactor(app): migrate search-facets demo to its own route"
 ### Task 10: Migrate `action-registry`
 
 **Files:**
+
 - Move: `src/components/action-registry-demo.tsx` → `app/components/demos/action-registry.tsx`
 - Modify: `app/routes/action-registry.tsx` (replace placeholder)
 
@@ -904,9 +878,9 @@ git mv src/components/action-registry-demo.tsx app/components/demos/action-regis
 - [ ] **Step 2: Replace `app/routes/action-registry.tsx`**
 
 ```tsx
-import { DropInPage } from "~/components/drop-in-page";
-import { ActionRegistryDemo } from "~/components/demos/action-registry";
-import actionRegistrySrc from "~/components/demos/action-registry.tsx?raw";
+import { DropInPage } from '~/components/drop-in-page';
+import { ActionRegistryDemo } from '~/components/demos/action-registry';
+import actionRegistrySrc from '~/components/demos/action-registry.tsx?raw';
 
 export default function ActionRegistryRoute() {
   return (
@@ -917,9 +891,9 @@ export default function ActionRegistryRoute() {
       readmeHref="https://github.com/osuritz/react-kit/blob/main/src/hooks/action-registry/README.md"
       demos={[
         {
-          title: "Register and observe",
+          title: 'Register and observe',
           description:
-            "Three components register actions on mount; a sibling subscribes via useSyncExternalStore and renders the list. Toggle the checkbox to mount/unmount nav.search and watch the list react.",
+            'Three components register actions on mount; a sibling subscribes via useSyncExternalStore and renders the list. Toggle the checkbox to mount/unmount nav.search and watch the list react.',
           source: actionRegistrySrc,
           render: <ActionRegistryDemo />,
         },
@@ -934,6 +908,7 @@ export default function ActionRegistryRoute() {
 Run: `npm run dev`
 Visit `http://localhost:5173/action-registry`.
 Expected:
+
 - Header + one demo card.
 - Four actions listed inside the demo (Open Settings, Show keyboard shortcuts, Refresh data, Search…).
 - Uncheck the "Mount nav.search" checkbox — the list drops to three. Re-check — it goes back to four.
@@ -952,6 +927,7 @@ git commit -m "refactor(app): migrate action-registry demo to its own route"
 ### Task 11: Migrate `keyboard-shortcuts`
 
 **Files:**
+
 - Move: `src/components/keyboard-shortcuts-demo.tsx` → `app/components/demos/keyboard-shortcuts.tsx`
 - Modify: `app/components/demos/keyboard-shortcuts.tsx` (rewrite ui import)
 - Modify: `app/routes/keyboard-shortcuts.tsx` (replace placeholder)
@@ -967,13 +943,13 @@ git mv src/components/keyboard-shortcuts-demo.tsx app/components/demos/keyboard-
 In `app/components/demos/keyboard-shortcuts.tsx`, change:
 
 ```ts
-import { Button } from "#components/ui/button.tsx";
+import { Button } from '#components/ui/button.tsx';
 ```
 
 to:
 
 ```ts
-import { Button } from "~/components/ui/button.tsx";
+import { Button } from '~/components/ui/button.tsx';
 ```
 
 The `#hooks/action-registry/...` and `#components/keyboard-shortcuts/...` imports stay unchanged.
@@ -981,9 +957,9 @@ The `#hooks/action-registry/...` and `#components/keyboard-shortcuts/...` import
 - [ ] **Step 3: Replace `app/routes/keyboard-shortcuts.tsx`**
 
 ```tsx
-import { DropInPage } from "~/components/drop-in-page";
-import { KeyboardShortcutsDemo } from "~/components/demos/keyboard-shortcuts";
-import keyboardShortcutsSrc from "~/components/demos/keyboard-shortcuts.tsx?raw";
+import { DropInPage } from '~/components/drop-in-page';
+import { KeyboardShortcutsDemo } from '~/components/demos/keyboard-shortcuts';
+import keyboardShortcutsSrc from '~/components/demos/keyboard-shortcuts.tsx?raw';
 
 export default function KeyboardShortcutsRoute() {
   return (
@@ -994,9 +970,9 @@ export default function KeyboardShortcutsRoute() {
       readmeHref="https://github.com/osuritz/react-kit/blob/main/src/components/keyboard-shortcuts/README.md"
       demos={[
         {
-          title: "Shortcut bindings + cheatsheet",
+          title: 'Shortcut bindings + cheatsheet',
           description:
-            "Try ⌘K, ⌘S, the g-i sequence, or / from anywhere on the page. Press ? to open the cheatsheet.",
+            'Try ⌘K, ⌘S, the g-i sequence, or / from anywhere on the page. Press ? to open the cheatsheet.',
           source: keyboardShortcutsSrc,
           render: <KeyboardShortcutsDemo />,
         },
@@ -1011,6 +987,7 @@ export default function KeyboardShortcutsRoute() {
 Run: `npm run dev`
 Visit `http://localhost:5173/keyboard-shortcuts`.
 Expected:
+
 - Header + one demo card.
 - Pressing `?` opens the cheatsheet listing the four registered shortcuts.
 - Pressing ⌘K (or Ctrl-K) appends "mod+k → palette open" to the activity log.
@@ -1030,6 +1007,7 @@ git commit -m "refactor(app): migrate keyboard-shortcuts demo to its own route"
 ### Task 12: Migrate `command-palette`
 
 **Files:**
+
 - Move: `src/components/command-palette-demo.tsx` → `app/components/demos/command-palette.tsx`
 - Modify: `app/components/demos/command-palette.tsx` (rewrite ui import)
 - Modify: `app/routes/command-palette.tsx` (replace placeholder)
@@ -1045,21 +1023,21 @@ git mv src/components/command-palette-demo.tsx app/components/demos/command-pale
 In `app/components/demos/command-palette.tsx`, change:
 
 ```ts
-import { Button } from "#components/ui/button.tsx";
+import { Button } from '#components/ui/button.tsx';
 ```
 
 to:
 
 ```ts
-import { Button } from "~/components/ui/button.tsx";
+import { Button } from '~/components/ui/button.tsx';
 ```
 
 - [ ] **Step 3: Replace `app/routes/command-palette.tsx`**
 
 ```tsx
-import { DropInPage } from "~/components/drop-in-page";
-import { CommandPaletteDemo } from "~/components/demos/command-palette";
-import commandPaletteSrc from "~/components/demos/command-palette.tsx?raw";
+import { DropInPage } from '~/components/drop-in-page';
+import { CommandPaletteDemo } from '~/components/demos/command-palette';
+import commandPaletteSrc from '~/components/demos/command-palette.tsx?raw';
 
 export default function CommandPaletteRoute() {
   return (
@@ -1070,7 +1048,7 @@ export default function CommandPaletteRoute() {
       readmeHref="https://github.com/osuritz/react-kit/blob/main/src/components/command-palette/README.md"
       demos={[
         {
-          title: "Palette + async source",
+          title: 'Palette + async source',
           description:
             "Press ⌘K (or click the button) to open. Try 'theme', 'sign', or 'onboarding' (the last hits a fake async docs source). Recents persist across reloads in localStorage.",
           source: commandPaletteSrc,
@@ -1087,6 +1065,7 @@ export default function CommandPaletteRoute() {
 Run: `npm run dev`
 Visit `http://localhost:5173/command-palette`.
 Expected:
+
 - Header + one demo card.
 - Pressing ⌘K (or clicking "Open palette") opens the palette.
 - Typing "theme" matches the theme-toggle row.
@@ -1106,6 +1085,7 @@ git commit -m "refactor(app): migrate command-palette demo to its own route"
 ### Task 13: Migrate `integration` (special case — no `DropInPage` template)
 
 **Files:**
+
 - Move: `src/components/integration-demo.tsx` → `app/components/demos/integration.tsx`
 - Modify: `app/components/demos/integration.tsx` (rewrite ui import)
 - Modify: `app/routes/integration.tsx` (replace placeholder)
@@ -1123,13 +1103,13 @@ git mv src/components/integration-demo.tsx app/components/demos/integration.tsx
 In `app/components/demos/integration.tsx`, change:
 
 ```ts
-import { Button } from "#components/ui/button.tsx";
+import { Button } from '#components/ui/button.tsx';
 ```
 
 to:
 
 ```ts
-import { Button } from "~/components/ui/button.tsx";
+import { Button } from '~/components/ui/button.tsx';
 ```
 
 The other `#hooks/...` and `#components/...` imports stay unchanged.
@@ -1137,21 +1117,18 @@ The other `#hooks/...` and `#components/...` imports stay unchanged.
 - [ ] **Step 3: Replace `app/routes/integration.tsx`**
 
 ```tsx
-import { IntegrationDemo } from "~/components/demos/integration";
+import { IntegrationDemo } from '~/components/demos/integration';
 
 export default function IntegrationRoute() {
   return (
     <article className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-          Integration
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Integration</h1>
         <p className="text-muted-foreground max-w-2xl text-sm md:text-base">
-          All three action drop-ins wired together. Exercises the seams
-          between action-registry, keyboard-shortcuts, and command-palette —
-          surface attribution via <code>ctx.source</code>, live disable,
-          mount/unmount cleanup, <code>allowInInput</code> suppression,
-          async sources, and the <code>palette.open</code> action.
+          All three action drop-ins wired together. Exercises the seams between action-registry,
+          keyboard-shortcuts, and command-palette — surface attribution via <code>ctx.source</code>,
+          live disable, mount/unmount cleanup, <code>allowInInput</code> suppression, async sources,
+          and the <code>palette.open</code> action.
         </p>
         <p className="text-sm">
           <a
@@ -1174,6 +1151,7 @@ export default function IntegrationRoute() {
 Run: `npm run dev`
 Visit `http://localhost:5173/integration`.
 Expected:
+
 - Header + the seams-checklist UI + controls panel + registered-actions panel + event log.
 - Pressing `g h` appends `nav.home fired (source=shortcut)` to the event log.
 - Clicking "Open palette" appends `palette.open fired (source=click)` and opens the palette.
@@ -1197,6 +1175,7 @@ git commit -m "refactor(app): migrate integration demo to its own route"
 After Phase 3, `src/components/` should contain only drop-in subdirectories. `src/main.tsx`, `src/App.tsx`, `src/index.css`, and `src/README.md` are now unreferenced — `index.html` points at `app/main.tsx`, and `App.tsx`'s contents are spread across the routes.
 
 **Files:**
+
 - Delete: `src/App.tsx`
 - Delete: `src/main.tsx`
 - Delete: `src/index.css`
@@ -1241,6 +1220,7 @@ git commit -m "refactor: remove obsolete single-page entry point"
 ### Task 15: Add base path and router basename
 
 **Files:**
+
 - Modify: `vite.config.ts` (add `base`)
 - Modify: `app/router.tsx` (add `basename`)
 
@@ -1249,10 +1229,10 @@ git commit -m "refactor: remove obsolete single-page entry point"
 Edit `vite.config.ts` to add `base: "/react-kit/"` after the `plugins` line. The full file should read:
 
 ```ts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { fileURLToPath, URL } from 'node:url';
 
 // Each drop-in folder under src/{hooks,components}/<name>/ ships its own
 // isolated test harness (its own package.json with React 18 in devDeps), so
@@ -1267,19 +1247,13 @@ import { fileURLToPath, URL } from "node:url";
 // root, popovers would not anchor, route navigation would not propagate — so
 // dedupe them too.
 export default defineConfig({
-  base: "/react-kit/",
+  base: '/react-kit/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "~": fileURLToPath(new URL("./app", import.meta.url)),
+      '~': fileURLToPath(new URL('./app', import.meta.url)),
     },
-    dedupe: [
-      "react",
-      "react-dom",
-      "@base-ui/react",
-      "react-day-picker",
-      "react-router",
-    ],
+    dedupe: ['react', 'react-dom', '@base-ui/react', 'react-day-picker', 'react-router'],
   },
 });
 ```
@@ -1294,18 +1268,18 @@ export const router = createBrowserRouter(
     {
       element: <SiteLayout />,
       children: [
-        { path: "/", element: <IndexRoute /> },
-        { path: "color-scheme", element: <ColorSchemeRoute /> },
-        { path: "action-registry", element: <ActionRegistryRoute /> },
-        { path: "search-facets", element: <SearchFacetsRoute /> },
-        { path: "keyboard-shortcuts", element: <KeyboardShortcutsRoute /> },
-        { path: "command-palette", element: <CommandPaletteRoute /> },
-        { path: "integration", element: <IntegrationRoute /> },
-        { path: "*", element: <IndexRoute /> },
+        { path: '/', element: <IndexRoute /> },
+        { path: 'color-scheme', element: <ColorSchemeRoute /> },
+        { path: 'action-registry', element: <ActionRegistryRoute /> },
+        { path: 'search-facets', element: <SearchFacetsRoute /> },
+        { path: 'keyboard-shortcuts', element: <KeyboardShortcutsRoute /> },
+        { path: 'command-palette', element: <CommandPaletteRoute /> },
+        { path: 'integration', element: <IntegrationRoute /> },
+        { path: '*', element: <IndexRoute /> },
       ],
     },
   ],
-  { basename: "/react-kit" },
+  { basename: '/react-kit' }
 );
 ```
 
@@ -1330,6 +1304,7 @@ git commit -m "build: serve under /react-kit/ for GitHub Pages"
 ### Task 16: Add the `404.html` SPA shim and inline restore script
 
 **Files:**
+
 - Create: `public/404.html`
 - Modify: `index.html` (add restore script)
 
@@ -1353,22 +1328,22 @@ This is the standard [spa-github-pages](https://github.com/rafgraph/spa-github-p
       var l = window.location;
       l.replace(
         l.protocol +
-          "//" +
+          '//' +
           l.hostname +
-          (l.port ? ":" + l.port : "") +
+          (l.port ? ':' + l.port : '') +
           l.pathname
-            .split("/")
+            .split('/')
             .slice(0, 1 + pathSegmentsToKeep)
-            .join("/") +
-          "/?/" +
+            .join('/') +
+          '/?/' +
           l.pathname
             .slice(1)
-            .split("/")
+            .split('/')
             .slice(pathSegmentsToKeep)
-            .join("/")
-            .replace(/&/g, "~and~") +
-          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
-          l.hash,
+            .join('/')
+            .replace(/&/g, '~and~') +
+          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash
       );
     </script>
   </head>
@@ -1388,19 +1363,15 @@ Insert the SPA-restore script as the first child of `<head>` (so it runs before 
       // Companion to public/404.html — restores the original path before the
       // app boots. From https://github.com/rafgraph/spa-github-pages (MIT).
       (function (l) {
-        if (l.search[1] === "/") {
+        if (l.search[1] === '/') {
           var decoded = l.search
             .slice(1)
-            .split("&")
+            .split('&')
             .map(function (s) {
-              return s.replace(/~and~/g, "&");
+              return s.replace(/~and~/g, '&');
             })
-            .join("?");
-          window.history.replaceState(
-            null,
-            "",
-            l.pathname.slice(0, -1) + decoded + l.hash,
-          );
+            .join('?');
+          window.history.replaceState(null, '', l.pathname.slice(0, -1) + decoded + l.hash);
         }
       })(window.location);
     </script>
@@ -1421,7 +1392,7 @@ Insert the SPA-restore script as the first child of `<head>` (so it runs before 
 Run: `npm run build && npm run preview`
 Expected: preview at `http://localhost:4173/react-kit/`.
 
-This step verifies what we *can* verify locally — the restore script's `~and~` decoding doesn't fire on direct visits because `vite preview` serves `index.html` for SPA routes natively. The `404.html` round-trip is exercised on the deployed GH Pages site (Task 18). For now, confirm:
+This step verifies what we _can_ verify locally — the restore script's `~and~` decoding doesn't fire on direct visits because `vite preview` serves `index.html` for SPA routes natively. The `404.html` round-trip is exercised on the deployed GH Pages site (Task 18). For now, confirm:
 
 - `http://localhost:4173/react-kit/` — landing page renders.
 - `http://localhost:4173/react-kit/color-scheme` — page renders directly (preview's SPA fallback covers this).
@@ -1441,6 +1412,7 @@ git commit -m "build: add SPA-routing shim for GitHub Pages"
 ### Task 17: Add the GitHub Actions deploy workflow
 
 **Files:**
+
 - Create: `.github/workflows/deploy.yml`
 
 - [ ] **Step 1: Create the workflow file**
@@ -1471,8 +1443,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
       - run: npm ci
       - run: npm run build
       - uses: actions/configure-pages@v5
@@ -1519,6 +1491,7 @@ Tell the user, verbatim:
 ### Task 19: Write `app/README.md`
 
 **Files:**
+
 - Create: `app/README.md`
 
 Replaces the deleted `src/README.md` with a "two buckets" framing focused on the demo site.
@@ -1534,9 +1507,9 @@ project — when consuming a drop-in, work from `src/<path>/` instead.
 
 ## Two buckets
 
-| Path | Purpose |
-| --- | --- |
-| `routes/<name>.tsx` | One file per drop-in. Declarative metadata: title, description, GitHub links, list of demos to render. The router maps URL paths to these. |
+| Path                               | Purpose                                                                                                                                                                                                                           |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `routes/<name>.tsx`                | One file per drop-in. Declarative metadata: title, description, GitHub links, list of demos to render. The router maps URL paths to these.                                                                                        |
 | `components/`, `lib/`, `index.css` | Demo glue: the `SiteLayout` chrome, the shared `DropInPage` and `DemoCard` primitives, the `*-demo` wrappers under `components/demos/`, vendored shadcn primitives under `components/ui/`, the `cn()` helper, and the global CSS. |
 
 `main.tsx` is the Vite entry point. `router.tsx` is the route table.
@@ -1581,6 +1554,7 @@ git commit -m "docs(app): add README for the demo-site directory"
 ### Task 20: Update root `README.md`
 
 **Files:**
+
 - Modify: `README.md`
 
 Add a live-demo link near the top and a "Repo layout" paragraph explaining `src/` vs `app/`. The existing per-drop-in bullets stay as-is.
@@ -1630,7 +1604,7 @@ git commit -m "docs: add live-demo link and repo-layout overview to README"
 - Goal 1 (`src/` is drop-ins only): Tasks 7, 8–13, 14.
 - Goal 2 (one page per drop-in): Tasks 6, 8–13.
 - Goal 3 (deploy on push to `main`): Tasks 15–18.
-- Goal 4 (drop-ins + harnesses + `#*` paths unchanged): enforced by *not* touching `src/{hooks,components}/<name>/` anywhere; verified by build passing in Task 14.
+- Goal 4 (drop-ins + harnesses + `#*` paths unchanged): enforced by _not_ touching `src/{hooks,components}/<name>/` anywhere; verified by build passing in Task 14.
 - Architecture: filesystem-only split (no workspaces) — reflected throughout.
 - Folder layout: Tasks 3–13 produce exactly the layout the spec describes.
 - Aliases: Task 2 (`~/*`); `#*` left alone.

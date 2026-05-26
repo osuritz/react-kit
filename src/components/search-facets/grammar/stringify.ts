@@ -1,4 +1,4 @@
-import type { Clause, Query, Value } from "./types";
+import type { Clause, Query, Value } from './types';
 
 const QUOTE = '"';
 
@@ -18,29 +18,29 @@ export function queryToString(ast: Query): string {
   if (ast.freeText.trim().length > 0) {
     parts.push(ast.freeText.trim());
   }
-  return parts.join(" ");
+  return parts.join(' ');
 }
 
 export function clauseToString(clause: Clause): string {
-  const prefix = clause.negated ? "-" : "";
+  const prefix = clause.negated ? '-' : '';
   return `${prefix}${clause.facet}:${valueToString(clause.value)}`;
 }
 
 export function valueToString(value: Value): string {
   switch (value.kind) {
-    case "literal":
+    case 'literal':
       return quoteIfNeeded(value.raw);
-    case "compare":
+    case 'compare':
       return `${opToString(value.op)}${quoteIfNeeded(value.raw)}`;
-    case "range":
+    case 'range':
       return `${quoteIfNeeded(value.from)}..${quoteIfNeeded(value.to)}`;
   }
 }
 
-function opToString(op: "eq" | "gte" | "lte"): string {
-  if (op === "eq") return "=";
-  if (op === "gte") return ">=";
-  return "<=";
+function opToString(op: 'eq' | 'gte' | 'lte'): string {
+  if (op === 'eq') return '=';
+  if (op === 'gte') return '>=';
+  return '<=';
 }
 
 function quoteIfNeeded(raw: string): string {
@@ -48,18 +48,12 @@ function quoteIfNeeded(raw: string): string {
   let needs = false;
   for (let i = 0; i < raw.length; i++) {
     const ch = raw[i]!;
-    if (
-      ch === " " ||
-      ch === "\t" ||
-      ch === "\n" ||
-      ch === QUOTE ||
-      ch === "\\"
-    ) {
+    if (ch === ' ' || ch === '\t' || ch === '\n' || ch === QUOTE || ch === '\\') {
       needs = true;
       break;
     }
   }
   if (!needs) return raw;
-  const escaped = raw.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const escaped = raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   return `${QUOTE}${escaped}${QUOTE}`;
 }

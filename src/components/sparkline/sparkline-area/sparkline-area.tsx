@@ -2,8 +2,8 @@
 // Pure presentational SVG. Both the line and its fill use `currentColor` (the
 // fill is drawn at a low opacity), so set the hue with a text-* class on the
 // element or a wrapping container.
-import { cn } from "./lib/cn";
-import { areaPath, linePath, toPoints } from "./lib/scale";
+import { cn } from './lib/cn';
+import { areaPath, linePath, toPoints } from './lib/scale';
 
 export interface SparklineAreaProps {
   /** The series to plot, oldest → newest. */
@@ -45,8 +45,8 @@ export function SparklineArea({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block overflow-visible", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block overflow-visible', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >
@@ -61,9 +61,7 @@ export function SparklineArea({
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
-      {showLast && last ? (
-        <circle cx={last.x} cy={last.y} r={r} fill="currentColor" />
-      ) : null}
+      {showLast && last ? <circle cx={last.x} cy={last.y} r={r} fill="currentColor" /> : null}
     </svg>
   );
 }

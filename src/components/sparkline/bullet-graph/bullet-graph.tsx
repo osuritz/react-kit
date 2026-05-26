@@ -3,7 +3,7 @@
 // bands (poor → good, drawn darkest-on-the-left via decreasing currentColor
 // opacity), a measure bar for the actual value, and a tick for the target. The
 // single most "enterprise KPI" micro-chart — actual vs target at a glance.
-import { cn } from "./lib/cn";
+import { cn } from './lib/cn';
 
 export interface BulletGraphProps {
   /** The actual measured value. */
@@ -56,8 +56,8 @@ export function BulletGraph({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block overflow-visible", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block overflow-visible', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >

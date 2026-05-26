@@ -1,6 +1,6 @@
-import "@testing-library/jest-dom/vitest";
-import { afterEach, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
+import '@testing-library/jest-dom/vitest';
+import { afterEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 class MemoryStorage implements Storage {
   private data = new Map<string, string>();
@@ -25,12 +25,12 @@ class MemoryStorage implements Storage {
 }
 
 const memoryLocalStorage = new MemoryStorage();
-Object.defineProperty(window, "localStorage", {
+Object.defineProperty(window, 'localStorage', {
   value: memoryLocalStorage,
   writable: true,
   configurable: true,
 });
-Object.defineProperty(globalThis, "localStorage", {
+Object.defineProperty(globalThis, 'localStorage', {
   value: memoryLocalStorage,
   writable: true,
   configurable: true,
@@ -38,8 +38,8 @@ Object.defineProperty(globalThis, "localStorage", {
 
 afterEach(() => {
   cleanup();
-  document.documentElement.removeAttribute("data-theme");
-  document.documentElement.removeAttribute("class");
+  document.documentElement.removeAttribute('data-theme');
+  document.documentElement.removeAttribute('class');
   memoryLocalStorage.clear();
   vi.restoreAllMocks();
 });
@@ -59,7 +59,7 @@ export function mockMatchMedia(initialMatches: boolean): MockMediaQueryList {
   const listeners = new Set<(e: { matches: boolean }) => void>();
   const mql: MockMediaQueryList = {
     matches: initialMatches,
-    media: "(prefers-color-scheme: dark)",
+    media: '(prefers-color-scheme: dark)',
     onchange: null,
     addEventListener: vi.fn((_evt: string, cb: (e: { matches: boolean }) => void) => {
       listeners.add(cb);
@@ -75,7 +75,7 @@ export function mockMatchMedia(initialMatches: boolean): MockMediaQueryList {
     addListener: vi.fn(),
     removeListener: vi.fn(),
   };
-  Object.defineProperty(window, "matchMedia", {
+  Object.defineProperty(window, 'matchMedia', {
     value: vi.fn(() => mql),
     writable: true,
     configurable: true,

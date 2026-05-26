@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import { parseQuery } from "./grammar/parse";
-import { queryToString } from "./grammar/stringify";
-import type { Clause, FacetSchema, Query, Value } from "./grammar/types";
+import { useEffect, useRef } from 'react';
+import { parseQuery } from './grammar/parse';
+import { queryToString } from './grammar/stringify';
+import type { Clause, FacetSchema, Query, Value } from './grammar/types';
 
 export interface UseQueryParamSyncOptions {
   /** URL search-param key. Default: "q". */
@@ -12,7 +12,7 @@ export interface UseQueryParamSyncOptions {
    * Strategy for writing the URL: "push" appends to history, "replace" overwrites
    * the current entry. Default: "replace" (avoids history pollution while typing).
    */
-  history?: "push" | "replace";
+  history?: 'push' | 'replace';
 }
 
 /**
@@ -35,9 +35,9 @@ export interface UseQueryParamSyncOptions {
 export function useQueryParamSync(
   value: Query,
   onChange: (next: Query) => void,
-  options: UseQueryParamSyncOptions,
+  options: UseQueryParamSyncOptions
 ): void {
-  const { paramKey = "q", schema, history: historyMode = "replace" } = options;
+  const { paramKey = 'q', schema, history: historyMode = 'replace' } = options;
 
   // Keep latest closures in refs so the popstate listener doesn't need to
   // re-bind on every render.
@@ -61,9 +61,9 @@ export function useQueryParamSync(
 
   // 1. Mount: hydrate from URL.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get(paramKeyRef.current) ?? "";
+    const raw = params.get(paramKeyRef.current) ?? '';
     const { ast } = parseQuery(raw, schemaRef.current);
     if (!queriesEqual(ast, valueRef.current)) {
       onChangeRef.current(ast);
@@ -74,25 +74,25 @@ export function useQueryParamSync(
 
   // 2. popstate: re-hydrate when the user navigates the history stack.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const handler = () => {
       const params = new URLSearchParams(window.location.search);
-      const raw = params.get(paramKeyRef.current) ?? "";
+      const raw = params.get(paramKeyRef.current) ?? '';
       const { ast } = parseQuery(raw, schemaRef.current);
       if (!queriesEqual(ast, valueRef.current)) {
         onChangeRef.current(ast);
       }
     };
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
   }, []);
 
   // 3. Value change: write to URL if it differs from what's already there.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     const serialized = queryToString(value);
     const params = new URLSearchParams(window.location.search);
-    const current = params.get(paramKey) ?? "";
+    const current = params.get(paramKey) ?? '';
     if (current === serialized) return;
     if (serialized.length === 0) {
       params.delete(paramKey);
@@ -101,13 +101,11 @@ export function useQueryParamSync(
     }
     const search = params.toString();
     const url =
-      window.location.pathname +
-      (search.length > 0 ? `?${search}` : "") +
-      window.location.hash;
-    if (historyMode === "push") {
-      window.history.pushState(window.history.state, "", url);
+      window.location.pathname + (search.length > 0 ? `?${search}` : '') + window.location.hash;
+    if (historyMode === 'push') {
+      window.history.pushState(window.history.state, '', url);
     } else {
-      window.history.replaceState(window.history.state, "", url);
+      window.history.replaceState(window.history.state, '', url);
     }
   }, [value, paramKey, historyMode]);
 }
@@ -131,13 +129,13 @@ function clausesEqual(a: Clause, b: Clause): boolean {
 
 function valuesEqual(a: Value, b: Value): boolean {
   if (a.kind !== b.kind) return false;
-  if (a.kind === "literal" && b.kind === "literal") {
+  if (a.kind === 'literal' && b.kind === 'literal') {
     return a.raw === b.raw;
   }
-  if (a.kind === "compare" && b.kind === "compare") {
+  if (a.kind === 'compare' && b.kind === 'compare') {
     return a.op === b.op && a.raw === b.raw;
   }
-  if (a.kind === "range" && b.kind === "range") {
+  if (a.kind === 'range' && b.kind === 'range') {
     return a.from === b.from && a.to === b.to;
   }
   return false;

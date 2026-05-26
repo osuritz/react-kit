@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef } from "react";
-import { Popover } from "@base-ui/react/popover";
-import { Checkbox } from "@base-ui/react/checkbox";
+import { useEffect, useId, useRef } from 'react';
+import { Popover } from '@base-ui/react/popover';
+import { Checkbox } from '@base-ui/react/checkbox';
 import {
   type Clause,
   type EditorProps,
@@ -8,13 +8,13 @@ import {
   type FacetSchema,
   type Query,
   type Value,
-} from "./grammar/types";
-import { BooleanEditor } from "./editors/boolean-editor";
-import { EnumEditor } from "./editors/enum-editor";
-import { StringEditor } from "./editors/string-editor";
-import { NumberEditor } from "./editors/number-editor";
-import { DateEditor } from "./editors/date-editor";
-import { cn } from "./lib/cn";
+} from './grammar/types';
+import { BooleanEditor } from './editors/boolean-editor';
+import { EnumEditor } from './editors/enum-editor';
+import { StringEditor } from './editors/string-editor';
+import { NumberEditor } from './editors/number-editor';
+import { DateEditor } from './editors/date-editor';
+import { cn } from './lib/cn';
 
 export interface BuilderPopoverProps {
   schema: FacetSchema;
@@ -40,15 +40,15 @@ export interface BuilderPopoverProps {
 function renderEditor(def: FacetDef, editorProps: EditorProps) {
   if (def.renderEditor) return def.renderEditor(editorProps);
   switch (def.type) {
-    case "boolean":
+    case 'boolean':
       return <BooleanEditor {...editorProps} facet={def} />;
-    case "enum":
+    case 'enum':
       return <EnumEditor {...editorProps} facet={def} />;
-    case "string":
+    case 'string':
       return <StringEditor {...editorProps} facet={def} />;
-    case "number":
+    case 'number':
       return <NumberEditor {...editorProps} facet={def} />;
-    case "date":
+    case 'date':
       return <DateEditor {...editorProps} />;
   }
 }
@@ -83,11 +83,11 @@ function Row(props: RowProps) {
     if (!open || !isEditingTarget) return;
     const node = rowRef.current;
     if (!node) return;
-    if (typeof node.scrollIntoView === "function") {
-      node.scrollIntoView({ block: "nearest" });
+    if (typeof node.scrollIntoView === 'function') {
+      node.scrollIntoView({ block: 'nearest' });
     }
     const focusable = node.querySelector<HTMLElement>(
-      'input, select, textarea, button, [tabindex]:not([tabindex="-1"])',
+      'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
     );
     focusable?.focus();
   }, [open, isEditingTarget]);
@@ -99,7 +99,7 @@ function Row(props: RowProps) {
       ref={rowRef}
       data-slot="search-facets-builder-row"
       data-facet-name={def.name}
-      data-editing={isEditingTarget ? "true" : undefined}
+      data-editing={isEditingTarget ? 'true' : undefined}
       className="flex items-start gap-3 border-b border-border/50 py-2 last:border-b-0"
     >
       <div
@@ -126,10 +126,10 @@ function Row(props: RowProps) {
             checked={initialNegated}
             onCheckedChange={(c) => onToggleRowNegate(Boolean(c))}
             className={cn(
-              "peer flex size-4 shrink-0 items-center justify-center rounded-sm border border-input bg-background shadow-xs",
-              "hover:border-ring",
-              "data-[checked]:bg-primary data-[checked]:border-primary data-[checked]:text-primary-foreground",
-              "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+              'peer flex size-4 shrink-0 items-center justify-center rounded-sm border border-input bg-background shadow-xs',
+              'hover:border-ring',
+              'data-[checked]:bg-primary data-[checked]:border-primary data-[checked]:text-primary-foreground',
+              'focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none'
             )}
           >
             <Checkbox.Indicator className="text-current">
@@ -161,16 +161,7 @@ function Row(props: RowProps) {
  * appending a new clause, then closes.
  */
 export function BuilderPopover(props: BuilderPopoverProps) {
-  const {
-    schema,
-    value,
-    onChange,
-    editingIndex,
-    open,
-    onOpenChange,
-    anchor,
-    className,
-  } = props;
+  const { schema, value, onChange, editingIndex, open, onOpenChange, anchor, className } = props;
 
   // Resolve the clause currently being edited (if any) so each row can
   // pre-populate its editor.
@@ -192,17 +183,14 @@ export function BuilderPopover(props: BuilderPopoverProps) {
     // Defer to next frame so Base UI's focus management runs first.
     const id = requestAnimationFrame(() => {
       const focusable = node.querySelector<HTMLElement>(
-        'input:not([type="hidden"]), select, textarea, [role="radio"], [role="checkbox"], button',
+        'input:not([type="hidden"]), select, textarea, [role="radio"], [role="checkbox"], button'
       );
       focusable?.focus();
     });
     return () => cancelAnimationFrame(id);
   }, [open, editingIndex]);
 
-  function commitForFacet(
-    def: FacetDef,
-    next: { value: Value; negated: boolean },
-  ) {
+  function commitForFacet(def: FacetDef, next: { value: Value; negated: boolean }) {
     const negatable = def.negatable !== false;
     const clause: Clause = {
       facet: def.name,
@@ -238,27 +226,20 @@ export function BuilderPopover(props: BuilderPopoverProps) {
             data-slot="search-facets-builder-popup"
             aria-labelledby={titleId}
             className={cn(
-              "z-50 w-[min(calc(100vw-2rem),28rem)] rounded-md border bg-popover p-3 text-popover-foreground shadow-md outline-hidden",
-              "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 transition-[opacity,scale] duration-150",
-              className,
+              'z-50 w-[min(calc(100vw-2rem),28rem)] rounded-md border bg-popover p-3 text-popover-foreground shadow-md outline-hidden',
+              'data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 transition-[opacity,scale] duration-150',
+              className
             )}
           >
             <h2 id={titleId} className="sr-only">
-              {editingIndex !== null ? "Edit filter" : "Add filter"}
+              {editingIndex !== null ? 'Edit filter' : 'Add filter'}
             </h2>
             <div role="group" aria-labelledby={titleId}>
               {schema.map((def) => {
-                const isEditingTarget =
-                  editingIndex !== null &&
-                  editingClause?.facet === def.name;
-                const initialValue =
-                  isEditingTarget && editingClause
-                    ? editingClause.value
-                    : null;
+                const isEditingTarget = editingIndex !== null && editingClause?.facet === def.name;
+                const initialValue = isEditingTarget && editingClause ? editingClause.value : null;
                 const initialNegated =
-                  isEditingTarget && editingClause
-                    ? editingClause.negated
-                    : false;
+                  isEditingTarget && editingClause ? editingClause.negated : false;
                 return (
                   <Row
                     key={def.name}

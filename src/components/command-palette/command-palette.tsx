@@ -10,16 +10,13 @@
 // — that's the keyboard-shortcuts drop-in's job. The palette only owns
 // its own open-hotkey listener.
 
-import * as React from "react";
-import { Combobox } from "@base-ui/react/combobox";
-import { Dialog } from "@base-ui/react/dialog";
-import {
-  type Action,
-  useActions,
-} from "../../hooks/action-registry/actions";
-import { commandScore } from "./lib/command-score";
-import { cn } from "./lib/cn";
-import { formatShortcutCaps, isMacLike, type KeyCap } from "./format-shortcut";
+import * as React from 'react';
+import { Combobox } from '@base-ui/react/combobox';
+import { Dialog } from '@base-ui/react/dialog';
+import { type Action, useActions } from '../../hooks/action-registry/actions';
+import { commandScore } from './lib/command-score';
+import { cn } from './lib/cn';
+import { formatShortcutCaps, isMacLike, type KeyCap } from './format-shortcut';
 
 /* -------------------------------------------------------------------------- */
 /*  Public API                                                                */
@@ -113,23 +110,24 @@ interface ParsedChord {
  * modifiers, no sequences. Sequences for opening a palette would feel
  * weird (`g i` to go to inbox, sure; `g k` to open the palette, no).
  */
-function parseHotkey(
-  hotkey: string | string[],
-  mac: boolean,
-): ParsedChord[] {
+function parseHotkey(hotkey: string | string[], mac: boolean): ParsedChord[] {
   const list = Array.isArray(hotkey) ? hotkey : [hotkey];
   const out: ParsedChord[] = [];
   for (const raw of list) {
-    const parts = raw.split("+").map((p) => p.trim().toLowerCase()).filter(Boolean);
-    const chord: ParsedChord = { ctrl: false, meta: false, alt: false, shift: false, key: "" };
+    const parts = raw
+      .split('+')
+      .map((p) => p.trim().toLowerCase())
+      .filter(Boolean);
+    const chord: ParsedChord = { ctrl: false, meta: false, alt: false, shift: false, key: '' };
     for (const p of parts) {
-      if (p === "mod") {
+      if (p === 'mod') {
         if (mac) chord.meta = true;
         else chord.ctrl = true;
-      } else if (p === "ctrl" || p === "control") chord.ctrl = true;
-      else if (p === "meta" || p === "cmd" || p === "command" || p === "super" || p === "win") chord.meta = true;
-      else if (p === "alt" || p === "option" || p === "opt") chord.alt = true;
-      else if (p === "shift") chord.shift = true;
+      } else if (p === 'ctrl' || p === 'control') chord.ctrl = true;
+      else if (p === 'meta' || p === 'cmd' || p === 'command' || p === 'super' || p === 'win')
+        chord.meta = true;
+      else if (p === 'alt' || p === 'option' || p === 'opt') chord.alt = true;
+      else if (p === 'shift') chord.shift = true;
       else chord.key = p;
     }
     if (chord.key) out.push(chord);
@@ -160,13 +158,13 @@ function chordMatches(chord: ParsedChord, event: KeyboardEvent): boolean {
 
 function readRecents(key: string | null): string[] {
   if (!key) return [];
-  if (typeof window === "undefined") return [];
+  if (typeof window === 'undefined') return [];
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((x): x is string => typeof x === "string");
+    return parsed.filter((x): x is string => typeof x === 'string');
   } catch {
     // Bad JSON / quota / disabled storage — silently fall back to no recents.
     return [];
@@ -174,7 +172,7 @@ function readRecents(key: string | null): string[] {
 }
 
 function writeRecents(key: string | null, ids: string[]): void {
-  if (!key || typeof window === "undefined") return;
+  if (!key || typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(key, JSON.stringify(ids));
   } catch {
@@ -199,7 +197,7 @@ interface SourceState {
 
 const EMPTY_SOURCE_STATE: SourceState = {
   loading: false,
-  query: "",
+  query: '',
   results: [],
   error: null,
 };
@@ -207,7 +205,7 @@ const EMPTY_SOURCE_STATE: SourceState = {
 function useSourceResults(
   sources: CommandSource[],
   query: string,
-  debounceMs: number,
+  debounceMs: number
 ): Record<string, SourceState> {
   const [state, setState] = React.useState<Record<string, SourceState>>({});
 
@@ -244,40 +242,43 @@ function useSourceResults(
     });
 
     const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      for (const source of sourcesRef.current) {
-        const promise = source.search(query, controller.signal);
-        promise
-          .then((results) => {
-            if (controller.signal.aborted) return;
-            setState((prev) => ({
-              ...prev,
-              [source.id]: {
-                loading: false,
-                query,
-                results,
-                error: null,
-              },
-            }));
-          })
-          .catch((err: unknown) => {
-            if (controller.signal.aborted) return;
-            // Sources can decide to reject with the AbortError they got
-            // from us; treat that as a no-op rather than a user-facing
-            // error.
-            const name = (err as { name?: string } | null)?.name;
-            if (name === "AbortError") return;
-            setState((prev) => ({
-              ...prev,
-              [source.id]: {
-                ...(prev[source.id] ?? EMPTY_SOURCE_STATE),
-                loading: false,
-                error: (err as Error)?.message ?? "Source failed",
-              },
-            }));
-          });
-      }
-    }, Math.max(0, debounceMs));
+    const timer = window.setTimeout(
+      () => {
+        for (const source of sourcesRef.current) {
+          const promise = source.search(query, controller.signal);
+          promise
+            .then((results) => {
+              if (controller.signal.aborted) return;
+              setState((prev) => ({
+                ...prev,
+                [source.id]: {
+                  loading: false,
+                  query,
+                  results,
+                  error: null,
+                },
+              }));
+            })
+            .catch((err: unknown) => {
+              if (controller.signal.aborted) return;
+              // Sources can decide to reject with the AbortError they got
+              // from us; treat that as a no-op rather than a user-facing
+              // error.
+              const name = (err as { name?: string } | null)?.name;
+              if (name === 'AbortError') return;
+              setState((prev) => ({
+                ...prev,
+                [source.id]: {
+                  ...(prev[source.id] ?? EMPTY_SOURCE_STATE),
+                  loading: false,
+                  error: (err as Error)?.message ?? 'Source failed',
+                },
+              }));
+            });
+        }
+      },
+      Math.max(0, debounceMs)
+    );
 
     return () => {
       window.clearTimeout(timer);
@@ -305,8 +306,8 @@ function useSourceResults(
  * navigation or recent storage.
  */
 type Row =
-  | { kind: "registry"; bucket: "recent" | string; action: Action; value: string }
-  | { kind: "source"; sourceId: string; action: Action; value: string };
+  | { kind: 'registry'; bucket: 'recent' | string; action: Action; value: string }
+  | { kind: 'source'; sourceId: string; action: Action; value: string };
 
 interface VisibleGroup {
   /** Stable React key; not user-visible. */
@@ -326,12 +327,12 @@ interface VisibleRowsResult {
 function scoreRegistryRows(
   actions: Action[],
   query: string | null,
-  bucket: "recent" | string,
+  bucket: 'recent' | string
 ): Row[] {
   if (query === null) {
     // Empty query: pass through in registration order, no scoring.
     return actions.map<Row>((a) => ({
-      kind: "registry",
+      kind: 'registry',
       bucket,
       action: a,
       value: a.id,
@@ -345,7 +346,7 @@ function scoreRegistryRows(
     const score = commandScore(a.label, query, aliases);
     if (score > 0) {
       scored.push({
-        row: { kind: "registry", bucket, action: a, value: a.id },
+        row: { kind: 'registry', bucket, action: a, value: a.id },
         score,
         idx,
       });
@@ -369,9 +370,9 @@ function buildVisibleRows(args: {
   const flat: Row[] = [];
 
   if (recents.length > 0) {
-    const rows = scoreRegistryRows(recents, filterQuery, "recent");
+    const rows = scoreRegistryRows(recents, filterQuery, 'recent');
     if (rows.length > 0) {
-      groups.push({ id: "__recent__", heading: "Recent", rows, error: null });
+      groups.push({ id: '__recent__', heading: 'Recent', rows, error: null });
       flat.push(...rows);
     }
   }
@@ -393,7 +394,7 @@ function buildVisibleRows(args: {
       // results or an error to surface; loading-only groups are folded
       // into the global Status row instead of a per-source affordance.
       const rows: Row[] = s.state.results.map((a) => ({
-        kind: "source",
+        kind: 'source',
         sourceId: s.id,
         action: a,
         value: `${s.id}:${a.id}`,
@@ -416,18 +417,18 @@ function buildVisibleRows(args: {
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
-const DEFAULT_RECENTS_KEY = "command-palette:recents";
-const DEFAULT_GROUP_NAME = "Other";
+const DEFAULT_RECENTS_KEY = 'command-palette:recents';
+const DEFAULT_GROUP_NAME = 'Other';
 
 export function CommandPalette({
-  hotkey = "mod+k",
+  hotkey = 'mod+k',
   sources,
   sourceDebounceMs = 150,
   maxRecents = 5,
   recentsStorageKey = DEFAULT_RECENTS_KEY,
   open: controlledOpen,
   onOpenChange,
-  placeholder = "Search…",
+  placeholder = 'Search…',
   className,
   mac,
 }: CommandPaletteProps) {
@@ -435,7 +436,7 @@ export function CommandPalette({
   const [internalOpen, setInternalOpen] = React.useState(false);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
-  const [query, setQuery] = React.useState("");
+  const [query, setQuery] = React.useState('');
 
   const setOpen = React.useCallback(
     (next: boolean) => {
@@ -444,9 +445,9 @@ export function CommandPalette({
       // Reset the search field whenever the palette closes — escape,
       // backdrop click, or `runAction` all converge here. Reopen always
       // starts blank, matching the macOS / VSCode cmd+k mental model.
-      if (!next) setQuery("");
+      if (!next) setQuery('');
     },
-    [isControlled, onOpenChange],
+    [isControlled, onOpenChange]
   );
 
   // Hotkey listener — owned by the palette, not the action registry. We
@@ -467,8 +468,8 @@ export function CommandPalette({
         }
       }
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, [hotkey, macResolved, open, setOpen]);
 
   // Subscribe to the registry. Subscribers don't fire on field-level
@@ -489,9 +490,7 @@ export function CommandPalette({
   // Recents are seeded from storage once and updated via `pushRecent`.
   // We rehydrate on mount only — subsequent reads come from React state
   // so the palette can echo the change without a storage round-trip.
-  const [recents, setRecents] = React.useState<string[]>(() =>
-    readRecents(recentsStorageKey),
-  );
+  const [recents, setRecents] = React.useState<string[]>(() => readRecents(recentsStorageKey));
 
   const pushRecent = React.useCallback(
     (id: string) => {
@@ -501,7 +500,7 @@ export function CommandPalette({
         return next;
       });
     },
-    [maxRecents, recentsStorageKey],
+    [maxRecents, recentsStorageKey]
   );
 
   // Resolve recent ids to live Action records. Stale ids (the action was
@@ -520,10 +519,7 @@ export function CommandPalette({
 
   // Recent ids form a Set so we can suppress duplicates from the main
   // groups when the recents bucket is showing them.
-  const recentIdSet = React.useMemo(
-    () => new Set(recentActions.map((a) => a.id)),
-    [recentActions],
-  );
+  const recentIdSet = React.useMemo(() => new Set(recentActions.map((a) => a.id)), [recentActions]);
 
   // Group registered actions by Action.group, with "Other" pinned last.
   const registryGroups = React.useMemo<Array<[string, Action[]]>>(() => {
@@ -552,7 +548,7 @@ export function CommandPalette({
         heading: s.heading ?? s.id,
         state: sourceState[s.id] ?? EMPTY_SOURCE_STATE,
       })),
-    [sourceList, sourceState],
+    [sourceList, sourceState]
   );
 
   const { flat, groups, anySourceLoading } = React.useMemo(
@@ -563,7 +559,7 @@ export function CommandPalette({
         registryGroups,
         sources: sourcesForBuild,
       }),
-    [query, recentActions, registryGroups, sourcesForBuild],
+    [query, recentActions, registryGroups, sourcesForBuild]
   );
 
   const runAction = React.useCallback(
@@ -581,32 +577,26 @@ export function CommandPalette({
       // `action.id` (or a source row colliding with a registered one)
       // don't fight for the same recent slot.
       try {
-        const result = action.run({ source: "palette" });
+        const result = action.run({ source: 'palette' });
         if (result instanceof Promise) {
           result.then(
             () => pushRecent(recentId),
             (err) => {
-              if (typeof console !== "undefined") {
-                console.error(
-                  `command-palette: action "${action.id}" failed:`,
-                  err,
-                );
+              if (typeof console !== 'undefined') {
+                console.error(`command-palette: action "${action.id}" failed:`, err);
               }
-            },
+            }
           );
         } else {
           pushRecent(recentId);
         }
       } catch (err) {
-        if (typeof console !== "undefined") {
-          console.error(
-            `command-palette: action "${action.id}" threw:`,
-            err,
-          );
+        if (typeof console !== 'undefined') {
+          console.error(`command-palette: action "${action.id}" threw:`, err);
         }
       }
     },
-    [setOpen, pushRecent],
+    [setOpen, pushRecent]
   );
 
   return (
@@ -614,21 +604,21 @@ export function CommandPalette({
       <Dialog.Portal>
         <Dialog.Backdrop
           className={cn(
-            "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
-            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-            "transition-opacity duration-150",
+            'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm',
+            'data-[starting-style]:opacity-0 data-[ending-style]:opacity-0',
+            'transition-opacity duration-150'
           )}
         />
         <Dialog.Popup
           aria-label="Command palette"
           className={cn(
-            "fixed top-[12vh] left-1/2 z-50 -translate-x-1/2",
-            "w-full max-w-xl rounded-lg border border-border bg-popover text-popover-foreground shadow-lg",
-            "outline-none",
-            "data-[starting-style]:opacity-0 data-[starting-style]:scale-95",
-            "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",
-            "transition-all duration-150",
-            className,
+            'fixed top-[12vh] left-1/2 z-50 -translate-x-1/2',
+            'w-full max-w-xl rounded-lg border border-border bg-popover text-popover-foreground shadow-lg',
+            'outline-none',
+            'data-[starting-style]:opacity-0 data-[starting-style]:scale-95',
+            'data-[ending-style]:opacity-0 data-[ending-style]:scale-95',
+            'transition-all duration-150',
+            className
           )}
         >
           {/*
@@ -673,9 +663,9 @@ export function CommandPalette({
               <Combobox.Input
                 placeholder={placeholder}
                 className={cn(
-                  "flex h-11 w-full bg-transparent py-3 pl-2 text-sm outline-none",
-                  "placeholder:text-muted-foreground",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
+                  'flex h-11 w-full bg-transparent py-3 pl-2 text-sm outline-none',
+                  'placeholder:text-muted-foreground',
+                  'disabled:cursor-not-allowed disabled:opacity-50'
                 )}
               />
             </div>
@@ -696,17 +686,13 @@ export function CommandPalette({
               */}
               <Combobox.Status>
                 {anySourceLoading ? (
-                  <div className="px-3 py-2 text-xs text-muted-foreground">
-                    Searching…
-                  </div>
+                  <div className="px-3 py-2 text-xs text-muted-foreground">Searching…</div>
                 ) : null}
               </Combobox.Status>
 
               <Combobox.Empty>
                 {anySourceLoading ? null : (
-                  <div className="py-6 text-center text-sm text-muted-foreground">
-                    No results.
-                  </div>
+                  <div className="py-6 text-center text-sm text-muted-foreground">No results.</div>
                 )}
               </Combobox.Empty>
 
@@ -720,10 +706,10 @@ export function CommandPalette({
                       key={row.value}
                       value={row}
                       className={cn(
-                        "flex cursor-default items-center gap-2 rounded-md px-3 py-2 text-sm",
-                        "outline-none select-none",
-                        "data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
-                        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                        'flex cursor-default items-center gap-2 rounded-md px-3 py-2 text-sm',
+                        'outline-none select-none',
+                        'data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground',
+                        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
                       )}
                     >
                       {row.action.icon ? (
@@ -738,9 +724,7 @@ export function CommandPalette({
                     </Combobox.Item>
                   ))}
                   {group.error ? (
-                    <div className="px-3 py-2 text-xs text-destructive">
-                      {group.error}
-                    </div>
+                    <div className="px-3 py-2 text-xs text-destructive">{group.error}</div>
                   ) : null}
                 </Combobox.Group>
               ))}
@@ -758,32 +742,21 @@ const EMPTY_SOURCES: CommandSource[] = [];
 /*  Shortcut glyph row                                                        */
 /* -------------------------------------------------------------------------- */
 
-function ShortcutCaps({
-  shortcut,
-  mac,
-}: {
-  shortcut: string | string[];
-  mac: boolean;
-}) {
-  const chords = React.useMemo(
-    () => formatShortcutCaps(shortcut, mac),
-    [shortcut, mac],
-  );
+function ShortcutCaps({ shortcut, mac }: { shortcut: string | string[]; mac: boolean }) {
+  const chords = React.useMemo(() => formatShortcutCaps(shortcut, mac), [shortcut, mac]);
   if (chords.length === 0) return null;
   return (
     <span className="ml-auto flex items-center gap-1">
       {chords.map((caps, i) => (
         <React.Fragment key={i}>
-          {i > 0 ? (
-            <span className="text-[10px] text-muted-foreground">then</span>
-          ) : null}
+          {i > 0 ? <span className="text-[10px] text-muted-foreground">then</span> : null}
           <span className="flex items-center gap-0.5">
             {caps.map((cap: KeyCap) => (
               <kbd
                 key={cap.id}
                 className={cn(
-                  "inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1.5",
-                  "font-mono text-[10px] font-medium text-foreground shadow-xs",
+                  'inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1.5',
+                  'font-mono text-[10px] font-medium text-foreground shadow-xs'
                 )}
               >
                 {cap.label}
@@ -819,5 +792,5 @@ function SearchIcon({ className }: { className?: string }) {
 /*  Re-exports                                                                */
 /* -------------------------------------------------------------------------- */
 
-export { formatShortcutCaps, isMacLike } from "./format-shortcut";
-export type { KeyCap } from "./format-shortcut";
+export { formatShortcutCaps, isMacLike } from './format-shortcut';
+export type { KeyCap } from './format-shortcut';

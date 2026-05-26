@@ -1,5 +1,5 @@
-const REPO = "osuritz/react-kit";
-const BRANCH = "main";
+const REPO = 'osuritz/react-kit';
+const BRANCH = 'main';
 
 export const repoRootUrl = `https://github.com/${REPO}`;
 

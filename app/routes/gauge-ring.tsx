@@ -1,9 +1,9 @@
-import { DropInPage } from "~/components/drop-in-page";
-import { GaugeRingDemo } from "~/components/demos/gauge-ring";
-import gaugeRingSrc from "~/components/demos/gauge-ring.tsx?shiki";
-import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
+import { DropInPage } from '~/components/drop-in-page';
+import { GaugeRingDemo } from '~/components/demos/gauge-ring';
+import gaugeRingSrc from '~/components/demos/gauge-ring.tsx?shiki';
+import { repoBlobUrl, repoTreeUrl } from '~/lib/github';
 
-const DROP_IN_PATH = "src/components/sparkline/gauge-ring";
+const DROP_IN_PATH = 'src/components/sparkline/gauge-ring';
 
 export default function GaugeRingRoute() {
   return (
@@ -14,9 +14,9 @@ export default function GaugeRingRoute() {
       readmeHref={repoBlobUrl(`${DROP_IN_PATH}/README.md`)}
       demos={[
         {
-          title: "Usage rings",
+          title: 'Usage rings',
           description:
-            "Four quota/completion rings, each colored via a text-* class on its wrapper, with a percentage in the middle.",
+            'Four quota/completion rings, each colored via a text-* class on its wrapper, with a percentage in the middle.',
           source: gaugeRingSrc,
           render: <GaugeRingDemo />,
         },

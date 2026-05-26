@@ -1,27 +1,23 @@
-import { parseFacetValue, splitFacetToken } from "./parse";
-import {
-  type Clause,
-  type FacetSchema,
-  findFacet,
-} from "./types";
+import { parseFacetValue, splitFacetToken } from './parse';
+import { type Clause, type FacetSchema, findFacet } from './types';
 
 export type PartialToken =
-  | { kind: "empty" }
-  | { kind: "free"; text: string }
+  | { kind: 'empty' }
+  | { kind: 'free'; text: string }
   | {
-      kind: "facet-name";
+      kind: 'facet-name';
       negated: boolean;
       partial: string;
     }
   | {
-      kind: "facet-value";
+      kind: 'facet-value';
       negated: boolean;
       facet: string;
       facetKnown: boolean;
       valuePartial: string;
     }
   | {
-      kind: "complete";
+      kind: 'complete';
       clause: Clause;
       facetKnown: boolean;
     };
@@ -44,42 +40,39 @@ export type PartialToken =
  * span spaces should be detected by the caller via balanced-quote checking
  * before calling this function.
  */
-export function classifyPartialToken(
-  text: string,
-  schema: FacetSchema,
-): PartialToken {
+export function classifyPartialToken(text: string, schema: FacetSchema): PartialToken {
   const trimmed = text.trim();
-  if (trimmed.length === 0) return { kind: "empty" };
+  if (trimmed.length === 0) return { kind: 'empty' };
 
   const split = splitFacetToken(trimmed);
   if (!split) {
-    if (trimmed.startsWith("-")) {
+    if (trimmed.startsWith('-')) {
       const partial = trimmed.slice(1);
       if (looksLikeFacetNameStart(partial)) {
-        return { kind: "facet-name", negated: true, partial };
+        return { kind: 'facet-name', negated: true, partial };
       }
     }
     if (looksLikeFacetNameStart(trimmed)) {
-      return { kind: "facet-name", negated: false, partial: trimmed };
+      return { kind: 'facet-name', negated: false, partial: trimmed };
     }
-    return { kind: "free", text: trimmed };
+    return { kind: 'free', text: trimmed };
   }
 
   const def = findFacet(schema, split.facet);
   if (split.rest.length === 0) {
     return {
-      kind: "facet-value",
+      kind: 'facet-value',
       negated: split.negated,
       facet: split.facet,
       facetKnown: def != null,
-      valuePartial: "",
+      valuePartial: '',
     };
   }
 
   const value = parseFacetValue(split.rest);
   if (!value) {
     return {
-      kind: "facet-value",
+      kind: 'facet-value',
       negated: split.negated,
       facet: split.facet,
       facetKnown: def != null,
@@ -88,7 +81,7 @@ export function classifyPartialToken(
   }
 
   return {
-    kind: "complete",
+    kind: 'complete',
     clause: {
       facet: split.facet,
       negated: split.negated,

@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   // The action-registry source lives outside this drop-in's directory and
@@ -8,20 +8,16 @@ export default defineConfig({
   // the moment a context-using component renders. Same fix the root
   // `vite.config.ts` applies for the same reason.
   resolve: {
-    dedupe: ["react", "react-dom", "@base-ui/react"],
+    dedupe: ['react', 'react-dom', '@base-ui/react'],
   },
   test: {
-    environment: "jsdom",
+    environment: 'jsdom',
     globals: true,
-    setupFiles: ["./vitest.setup.ts"],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
-      provider: "v8",
-      include: [
-        "keyboard-shortcuts.tsx",
-        "parse.ts",
-        "format.ts",
-      ],
-      reporter: ["text", "json-summary"],
+      provider: 'v8',
+      include: ['keyboard-shortcuts.tsx', 'parse.ts', 'format.ts'],
+      reporter: ['text', 'json-summary'],
     },
   },
 });

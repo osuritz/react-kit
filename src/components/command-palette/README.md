@@ -15,7 +15,7 @@ your app.
 > are the [keyboard-shortcuts](../keyboard-shortcuts/README.md)
 > drop-in's job. The palette and the shortcut hook both consume the
 > same registry, so an action's `shortcut` field can fire it from a
-> key *and* show its glyphs in the palette row — no extra wiring.
+> key _and_ show its glyphs in the palette row — no extra wiring.
 
 ## What to copy
 
@@ -27,7 +27,7 @@ Copy these files into your project (e.g. `src/components/command-palette/`):
 - `lib/cn.ts` — local class-name composer (shadcn idiom)
 - `lib/command-score.ts` — vendored MIT fuzzy-match scorer (same
   algorithm `cmdk` uses; ~50 LOC, pure function)
-- *(optional)* this README
+- _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
 `vitest.config.ts`, `vitest.setup.ts`, `command-palette.test.tsx`) are
@@ -35,7 +35,7 @@ the **verification harness** — they live alongside the drop-in so
 `npm test` works here, but they're not part of what you copy into your
 app.
 
-This drop-in *consumes* the action-registry drop-in — it does not
+This drop-in _consumes_ the action-registry drop-in — it does not
 redefine the `Action` contract. Make sure
 [`src/hooks/action-registry/`](../../hooks/action-registry/README.md)
 is in your project too (or wired to wherever you're keeping the
@@ -61,8 +61,8 @@ Peer requirements:
    confuse the hotkey.
 
    ```tsx
-   import { ActionsProvider } from "./hooks/action-registry/actions";
-   import { CommandPalette } from "./components/command-palette/command-palette";
+   import { ActionsProvider } from './hooks/action-registry/actions';
+   import { CommandPalette } from './components/command-palette/command-palette';
 
    export function App() {
      return (
@@ -81,20 +81,20 @@ Peer requirements:
    `enabled() === false` actions are filtered out.
 
    ```tsx
-   import { useAction } from "./hooks/action-registry/actions";
-   import { useNavigate } from "react-router";
-   import { Cog } from "lucide-react";
+   import { useAction } from './hooks/action-registry/actions';
+   import { useNavigate } from 'react-router';
+   import { Cog } from 'lucide-react';
 
    export function NavRegisters() {
      const navigate = useNavigate();
      useAction({
-       id: "nav.settings",
-       label: "Open Settings",
-       group: "Navigation",
-       shortcut: "mod+,",
-       keywords: ["preferences", "config"],
+       id: 'nav.settings',
+       label: 'Open Settings',
+       group: 'Navigation',
+       shortcut: 'mod+,',
+       keywords: ['preferences', 'config'],
        icon: <Cog />,
-       run: () => navigate("/settings"),
+       run: () => navigate('/settings'),
      });
      return null;
    }
@@ -106,11 +106,11 @@ Peer requirements:
    the `AbortSignal` if your search hits the network.
 
    ```tsx
-   import type { CommandSource } from "./components/command-palette/command-palette";
+   import type { CommandSource } from './components/command-palette/command-palette';
 
    const docsSource: CommandSource = {
-     id: "docs",
-     heading: "Search docs",
+     id: 'docs',
+     heading: 'Search docs',
      async search(query, signal) {
        const res = await fetch(`/api/docs?q=${encodeURIComponent(query)}`, { signal });
        const docs: { id: string; title: string; href: string }[] = await res.json();
@@ -122,7 +122,7 @@ Peer requirements:
      },
    };
 
-   <CommandPalette sources={[docsSource]} />
+   <CommandPalette sources={[docsSource]} />;
    ```
 
 ## Recents
@@ -184,18 +184,18 @@ one.
 
 ### `<CommandPalette>`
 
-| Prop                | Type                                 | Default                          |
-|---------------------|--------------------------------------|----------------------------------|
-| `hotkey`            | `string \| string[] \| false`        | `"mod+k"`                        |
-| `sources`           | `CommandSource[]`                    | `[]`                             |
-| `sourceDebounceMs`  | `number`                             | `150`                            |
-| `maxRecents`        | `number`                             | `5`                              |
-| `recentsStorageKey` | `string \| null`                     | `"command-palette:recents"`      |
-| `open`              | `boolean`                            | uncontrolled                     |
-| `onOpenChange`      | `(open: boolean) => void`            | —                                |
-| `placeholder`       | `string`                             | `"Search…"`                      |
-| `className`         | `string`                             | —                                |
-| `mac`               | `boolean`                            | autodetected                     |
+| Prop                | Type                          | Default                     |
+| ------------------- | ----------------------------- | --------------------------- |
+| `hotkey`            | `string \| string[] \| false` | `"mod+k"`                   |
+| `sources`           | `CommandSource[]`             | `[]`                        |
+| `sourceDebounceMs`  | `number`                      | `150`                       |
+| `maxRecents`        | `number`                      | `5`                         |
+| `recentsStorageKey` | `string \| null`              | `"command-palette:recents"` |
+| `open`              | `boolean`                     | uncontrolled                |
+| `onOpenChange`      | `(open: boolean) => void`     | —                           |
+| `placeholder`       | `string`                      | `"Search…"`                 |
+| `className`         | `string`                      | —                           |
+| `mac`               | `boolean`                     | autodetected                |
 
 Must be mounted inside an `<ActionsProvider>`. The modal is a Base UI
 `Dialog.Popup` — focus trap, scroll lock, and ARIA labelling are
@@ -232,7 +232,7 @@ for the full convention.
 ### Re-exports
 
 ```ts
-import { formatShortcutCaps, isMacLike, type KeyCap } from "./command-palette";
+import { formatShortcutCaps, isMacLike, type KeyCap } from './command-palette';
 ```
 
 `formatShortcutCaps(shortcut, mac?)` returns
@@ -261,7 +261,7 @@ npm test -- --coverage
   the group-hiding rule (a group with no rows passing the filter is
   omitted). We add the registry adapter, the recents bucket, the
   async-source plumbing, and the row layout.
-- **Palette owns *only* its open hotkey.** Per-action shortcuts are
+- **Palette owns _only_ its open hotkey.** Per-action shortcuts are
   the keyboard-shortcuts drop-in's responsibility. The palette
   deliberately does not register itself in the action registry — that
   would conflict with apps that bind a `system.palette` action to the
@@ -280,7 +280,7 @@ npm test -- --coverage
   that opens its own dialog/route doesn't fight the palette for focus.
 - **Source results bypass the local filter.** Source rows are
   force-included regardless of `command-score`. The source returned
-  them for *this* query; double-filtering on top of the source's own
+  them for _this_ query; double-filtering on top of the source's own
   ranking would occasionally hide a relevant result with low character
   overlap. Registered actions still go through `command-score` against
   `label`, `keywords`, and `group` so the usual fuzzy match works as

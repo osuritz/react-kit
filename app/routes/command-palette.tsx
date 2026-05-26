@@ -1,9 +1,9 @@
-import { DropInPage } from "~/components/drop-in-page";
-import { CommandPaletteDemo } from "~/components/demos/command-palette";
-import commandPaletteSrc from "~/components/demos/command-palette.tsx?shiki";
-import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
+import { DropInPage } from '~/components/drop-in-page';
+import { CommandPaletteDemo } from '~/components/demos/command-palette';
+import commandPaletteSrc from '~/components/demos/command-palette.tsx?shiki';
+import { repoBlobUrl, repoTreeUrl } from '~/lib/github';
 
-const DROP_IN_PATH = "src/components/command-palette";
+const DROP_IN_PATH = 'src/components/command-palette';
 
 export default function CommandPaletteRoute() {
   return (
@@ -14,7 +14,7 @@ export default function CommandPaletteRoute() {
       readmeHref={repoBlobUrl(`${DROP_IN_PATH}/README.md`)}
       demos={[
         {
-          title: "Palette + async source",
+          title: 'Palette + async source',
           description:
             "Press ⌘K (or click the button) to open. Try 'theme', 'sign', or 'onboarding' (the last hits a fake async docs source). Recents persist across reloads in localStorage.",
           source: commandPaletteSrc,

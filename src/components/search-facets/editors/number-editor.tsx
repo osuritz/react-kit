@@ -1,26 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Checkbox } from "@base-ui/react/checkbox";
-import type {
-  CompareOp,
-  EditorProps,
-  NumberFacet,
-  Value,
-} from "../grammar/types";
-import { cn, editorStyles } from "../lib/cn";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Checkbox } from '@base-ui/react/checkbox';
+import type { CompareOp, EditorProps, NumberFacet, Value } from '../grammar/types';
+import { cn, editorStyles } from '../lib/cn';
 
 export interface NumberEditorProps extends EditorProps {
   facet: NumberFacet;
 }
 
-type Op = "eq" | "gte" | "lte" | "range";
+type Op = 'eq' | 'gte' | 'lte' | 'range';
 
-const DEFAULT_OPS: Op[] = ["eq", "gte", "lte", "range"];
+const DEFAULT_OPS: Op[] = ['eq', 'gte', 'lte', 'range'];
 
 const OP_LABEL: Record<Op, string> = {
-  eq: "=",
-  gte: ">=",
-  lte: "<=",
-  range: "between",
+  eq: '=',
+  gte: '>=',
+  lte: '<=',
+  range: 'between',
 };
 
 /**
@@ -35,19 +30,19 @@ export function NumberEditor(props: NumberEditorProps) {
 
   const ops: Op[] = useMemo(
     () => (facet.ops && facet.ops.length > 0 ? facet.ops : DEFAULT_OPS),
-    [facet.ops],
+    [facet.ops]
   );
-  const eqOnly = ops.length === 1 && ops[0] === "eq";
+  const eqOnly = ops.length === 1 && ops[0] === 'eq';
 
   const initial = useMemo(() => {
-    if (!value) return { op: ops[0]!, raw: "", from: "", to: "" };
-    if (value.kind === "literal") {
-      return { op: "eq" as Op, raw: value.raw, from: "", to: "" };
+    if (!value) return { op: ops[0]!, raw: '', from: '', to: '' };
+    if (value.kind === 'literal') {
+      return { op: 'eq' as Op, raw: value.raw, from: '', to: '' };
     }
-    if (value.kind === "compare") {
-      return { op: value.op as Op, raw: value.raw, from: "", to: "" };
+    if (value.kind === 'compare') {
+      return { op: value.op as Op, raw: value.raw, from: '', to: '' };
     }
-    return { op: "range" as Op, raw: "", from: value.from, to: value.to };
+    return { op: 'range' as Op, raw: '', from: value.from, to: value.to };
   }, [value, ops]);
 
   const [op, setOp] = useState<Op>(initial.op);
@@ -69,13 +64,13 @@ export function NumberEditor(props: NumberEditorProps) {
   const negatable = facet.negatable !== false;
 
   function buildValue(): Value | null {
-    if (op === "range") {
+    if (op === 'range') {
       if (from.length === 0 || to.length === 0) return null;
-      return { kind: "range", from, to };
+      return { kind: 'range', from, to };
     }
     if (raw.length === 0) return null;
-    if (eqOnly) return { kind: "literal", raw };
-    return { kind: "compare", op: op as CompareOp, raw };
+    if (eqOnly) return { kind: 'literal', raw };
+    return { kind: 'compare', op: op as CompareOp, raw };
   }
 
   function handleApply() {
@@ -85,18 +80,14 @@ export function NumberEditor(props: NumberEditorProps) {
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleApply();
     }
   }
 
   return (
-    <div
-      data-facet-type="number"
-      onKeyDown={handleKeyDown}
-      className={editorStyles.row}
-    >
+    <div data-facet-type="number" onKeyDown={handleKeyDown} className={editorStyles.row}>
       {!eqOnly ? (
         <select
           value={op}
@@ -112,7 +103,7 @@ export function NumberEditor(props: NumberEditorProps) {
         </select>
       ) : null}
 
-      {op === "range" ? (
+      {op === 'range' ? (
         <>
           <input
             ref={firstRef}
@@ -121,7 +112,7 @@ export function NumberEditor(props: NumberEditorProps) {
             onChange={(e) => setFrom(e.target.value)}
             placeholder="from"
             aria-label="from"
-            className={cn(editorStyles.input, "w-24 flex-none")}
+            className={cn(editorStyles.input, 'w-24 flex-none')}
           />
           <span className="text-xs text-muted-foreground">–</span>
           <input
@@ -130,7 +121,7 @@ export function NumberEditor(props: NumberEditorProps) {
             onChange={(e) => setTo(e.target.value)}
             placeholder="to"
             aria-label="to"
-            className={cn(editorStyles.input, "w-24 flex-none")}
+            className={cn(editorStyles.input, 'w-24 flex-none')}
           />
         </>
       ) : (
@@ -141,13 +132,11 @@ export function NumberEditor(props: NumberEditorProps) {
           onChange={(e) => setRaw(e.target.value)}
           aria-label={facet.label ?? facet.name}
           placeholder={facet.unit ?? facet.label ?? facet.name}
-          className={cn(editorStyles.input, "w-32 flex-none")}
+          className={cn(editorStyles.input, 'w-32 flex-none')}
         />
       )}
 
-      {facet.unit ? (
-        <span className="text-xs text-muted-foreground">{facet.unit}</span>
-      ) : null}
+      {facet.unit ? <span className="text-xs text-muted-foreground">{facet.unit}</span> : null}
 
       {negatable ? (
         <label className={editorStyles.checkboxLabel}>
@@ -176,7 +165,7 @@ export function NumberEditor(props: NumberEditorProps) {
       <button
         type="button"
         onClick={handleApply}
-        className={cn(editorStyles.primaryButton, "ml-auto")}
+        className={cn(editorStyles.primaryButton, 'ml-auto')}
       >
         Apply
       </button>

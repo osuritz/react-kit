@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { RadioGroup } from "@base-ui/react/radio-group";
-import { Radio } from "@base-ui/react/radio";
-import { Checkbox } from "@base-ui/react/checkbox";
-import type { EditorProps, EnumFacet, Value } from "../grammar/types";
-import { cn, editorStyles } from "../lib/cn";
+import { useEffect, useRef, useState } from 'react';
+import { RadioGroup } from '@base-ui/react/radio-group';
+import { Radio } from '@base-ui/react/radio';
+import { Checkbox } from '@base-ui/react/checkbox';
+import type { EditorProps, EnumFacet, Value } from '../grammar/types';
+import { cn, editorStyles } from '../lib/cn';
 
 export interface EnumEditorProps extends EditorProps {
   facet: EnumFacet;
@@ -16,10 +16,7 @@ export interface EnumEditorProps extends EditorProps {
 export function EnumEditor(props: EnumEditorProps) {
   const { facet, value, negated, onCommit } = props;
 
-  const initialRaw =
-    value && value.kind === "literal"
-      ? value.raw
-      : (facet.values[0]?.value ?? "");
+  const initialRaw = value && value.kind === 'literal' ? value.raw : (facet.values[0]?.value ?? '');
   const [selected, setSelected] = useState<string>(initialRaw);
   const [neg, setNeg] = useState<boolean>(negated);
   const firstRef = useRef<HTMLInputElement | null>(null);
@@ -33,23 +30,19 @@ export function EnumEditor(props: EnumEditorProps) {
   const negatable = facet.negatable !== false;
 
   function handleApply() {
-    const next: Value = { kind: "literal", raw: selected };
+    const next: Value = { kind: 'literal', raw: selected };
     onCommit({ value: next, negated: negatable ? neg : false });
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleApply();
     }
   }
 
   return (
-    <div
-      data-facet-type="enum"
-      onKeyDown={handleKeyDown}
-      className={editorStyles.row}
-    >
+    <div data-facet-type="enum" onKeyDown={handleKeyDown} className={editorStyles.row}>
       <RadioGroup
         value={selected}
         onValueChange={(v) => setSelected(String(v))}
@@ -95,7 +88,7 @@ export function EnumEditor(props: EnumEditorProps) {
       <button
         type="button"
         onClick={handleApply}
-        className={cn(editorStyles.primaryButton, "ml-auto")}
+        className={cn(editorStyles.primaryButton, 'ml-auto')}
       >
         Apply
       </button>

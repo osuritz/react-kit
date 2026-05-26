@@ -3,8 +3,8 @@
 // band and/or a dashed limit line — for monitoring a metric against a target
 // (p95 latency vs SLO, error rate vs budget). Points that breach the threshold
 // or fall outside the band are marked with the `text-destructive` token.
-import { cn } from "./lib/cn";
-import { extent, linePath, toPoints } from "./lib/scale";
+import { cn } from './lib/cn';
+import { extent, linePath, toPoints } from './lib/scale';
 
 export interface SparklineThresholdProps {
   /** The series to plot, oldest → newest. */
@@ -26,7 +26,7 @@ export interface SparklineThresholdProps {
 function isBreach(
   v: number,
   threshold: number | undefined,
-  band: [number, number] | undefined,
+  band: [number, number] | undefined
 ): boolean {
   if (threshold !== undefined && v > threshold) return true;
   if (band && (v < band[0] || v > band[1])) return true;
@@ -56,10 +56,7 @@ export function SparklineThreshold({
     : undefined;
   // Domain spans the data *and* any reference lines so the band/limit stay
   // visible even when they sit outside the data's own range.
-  const refs = [
-    ...(nBand ?? []),
-    ...(threshold !== undefined ? [threshold] : []),
-  ];
+  const refs = [...(nBand ?? []), ...(threshold !== undefined ? [threshold] : [])];
   const domain = extent([...values, ...refs], { min, max });
   const points = toPoints(values, {
     width,
@@ -79,8 +76,8 @@ export function SparklineThreshold({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block overflow-visible", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block overflow-visible', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >
@@ -129,11 +126,9 @@ export function SparklineThreshold({
             fill="currentColor"
             className="text-destructive"
           />
-        ) : null,
+        ) : null
       )}
-      {showLast && last ? (
-        <circle cx={last.x} cy={last.y} r={r} fill="currentColor" />
-      ) : null}
+      {showLast && last ? <circle cx={last.x} cy={last.y} r={r} fill="currentColor" /> : null}
     </svg>
   );
 }

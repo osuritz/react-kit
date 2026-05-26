@@ -23,9 +23,9 @@ Copy these files into your project (e.g. `src/components/search-facets/`):
 - `editors/{boolean,enum,string,number,date}-editor.tsx` — per-type value editors
 - `grammar/{types.ts,parse.ts,stringify.ts,partial.ts}` — pure grammar layer
 - `use-search-facets.ts` — internal state hook
-- `use-query-param-sync.ts` — *(optional)* URL persistence helper
+- `use-query-param-sync.ts` — _(optional)_ URL persistence helper
 - `lib/cn.ts` — local class-name composer (shadcn idiom)
-- *(optional)* this README
+- _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
 `vitest.config.ts`, `vitest.setup.ts`, `*.test.tsx`, `grammar/*.test.ts`) are
@@ -55,56 +55,50 @@ Peer requirements:
 ## Quick start
 
 ```tsx
-import "react-day-picker/style.css"; // only if you use date facets
-import { useState } from "react";
-import { SearchFacets } from "./components/search-facets/search-facets";
-import type { FacetSchema, Query } from "./components/search-facets/grammar/types";
+import 'react-day-picker/style.css'; // only if you use date facets
+import { useState } from 'react';
+import { SearchFacets } from './components/search-facets/search-facets';
+import type { FacetSchema, Query } from './components/search-facets/grammar/types';
 
 const schema: FacetSchema = [
-  { name: "from",    type: "string", label: "From" },
-  { name: "to",      type: "string", label: "To" },
-  { name: "subject", type: "string", label: "Subject", allowWildcard: true },
-  { name: "has",     type: "boolean", values: ["attachment", "star"] },
-  { name: "label",   type: "enum",
-    values: [{ value: "spam" }, { value: "inbox" }] },
-  { name: "size",    type: "number", ops: ["gte", "lte", "range"] },
-  { name: "after",   type: "date",   ops: ["gte"] },
+  { name: 'from', type: 'string', label: 'From' },
+  { name: 'to', type: 'string', label: 'To' },
+  { name: 'subject', type: 'string', label: 'Subject', allowWildcard: true },
+  { name: 'has', type: 'boolean', values: ['attachment', 'star'] },
+  { name: 'label', type: 'enum', values: [{ value: 'spam' }, { value: 'inbox' }] },
+  { name: 'size', type: 'number', ops: ['gte', 'lte', 'range'] },
+  { name: 'after', type: 'date', ops: ['gte'] },
 ];
 
 export function MailFilter() {
-  const [query, setQuery] = useState<Query>({ clauses: [], freeText: "" });
+  const [query, setQuery] = useState<Query>({ clauses: [], freeText: '' });
   return (
-    <SearchFacets
-      schema={schema}
-      value={query}
-      onChange={setQuery}
-      placeholder="Search mail..."
-    />
+    <SearchFacets schema={schema} value={query} onChange={setQuery} placeholder="Search mail..." />
   );
 }
 ```
 
 ## Grammar (v1)
 
-| Form                          | Example                              | AST                                                          |
-| ----------------------------- | ------------------------------------ | ------------------------------------------------------------ |
-| `field:value`                 | `from:bob`                           | `{ facet:"from", negated:false, value:{kind:"literal",raw:"bob"} }` |
-| `-field:value` (negation)     | `-label:spam`                        | `{ ..., negated:true }`                                      |
-| `field:"with spaces"`         | `from:"alice cooper"`                | `{ ..., value:{kind:"literal",raw:"alice cooper"} }`         |
-| `field:>=N` / `<=N` / `=N`    | `size:>=1024`                        | `{ ..., value:{kind:"compare",op:"gte",raw:"1024"} }`        |
-| `field:from..to` (range)      | `size:100..500`                      | `{ ..., value:{kind:"range",from:"100",to:"500"} }`          |
-| Free text                     | `urgent`                             | added to `Query.freeText`                                    |
-| Implicit AND                  | `from:bob has:attachment`            | two clauses; consumer ANDs them                              |
+| Form                       | Example                   | AST                                                                 |
+| -------------------------- | ------------------------- | ------------------------------------------------------------------- |
+| `field:value`              | `from:bob`                | `{ facet:"from", negated:false, value:{kind:"literal",raw:"bob"} }` |
+| `-field:value` (negation)  | `-label:spam`             | `{ ..., negated:true }`                                             |
+| `field:"with spaces"`      | `from:"alice cooper"`     | `{ ..., value:{kind:"literal",raw:"alice cooper"} }`                |
+| `field:>=N` / `<=N` / `=N` | `size:>=1024`             | `{ ..., value:{kind:"compare",op:"gte",raw:"1024"} }`               |
+| `field:from..to` (range)   | `size:100..500`           | `{ ..., value:{kind:"range",from:"100",to:"500"} }`                 |
+| Free text                  | `urgent`                  | added to `Query.freeText`                                           |
+| Implicit AND               | `from:bob has:attachment` | two clauses; consumer ANDs them                                     |
 
 Facet types and the values they accept:
 
-| Type      | Value shape on AST                                     | Notes                                                  |
-| --------- | ------------------------------------------------------ | ------------------------------------------------------ |
-| `boolean` | `{kind:"literal",raw:<one of facet.values>}`           | renders `has:attachment`                               |
-| `enum`    | `{kind:"literal",raw:<one of facet.values[].value>}`   | each entry can carry an optional `label`               |
-| `string`  | `{kind:"literal",raw:<text>}`                          | `allowWildcard` enables `*`; consumer interprets       |
-| `number`  | `literal`/`compare`/`range`, gated by `facet.ops`      | `eq` is omitted when `ops === ["eq"]` (uses `literal`) |
-| `date`    | same shape as `number`; values are ISO `YYYY-MM-DD`    | requires the `react-day-picker` peer                   |
+| Type      | Value shape on AST                                   | Notes                                                  |
+| --------- | ---------------------------------------------------- | ------------------------------------------------------ |
+| `boolean` | `{kind:"literal",raw:<one of facet.values>}`         | renders `has:attachment`                               |
+| `enum`    | `{kind:"literal",raw:<one of facet.values[].value>}` | each entry can carry an optional `label`               |
+| `string`  | `{kind:"literal",raw:<text>}`                        | `allowWildcard` enables `*`; consumer interprets       |
+| `number`  | `literal`/`compare`/`range`, gated by `facet.ops`    | `eq` is omitted when `ops === ["eq"]` (uses `literal`) |
+| `date`    | same shape as `number`; values are ISO `YYYY-MM-DD`  | requires the `react-day-picker` peer                   |
 
 What's **out** of v1 (and why):
 
@@ -120,15 +114,15 @@ What's **out** of v1 (and why):
 
 ### `<SearchFacets>` props
 
-| Prop                  | Type                                    | Required | Default        |
-| --------------------- | --------------------------------------- | -------- | -------------- |
-| `schema`              | `FacetSchema`                           | yes      | —              |
-| `value`               | `Query`                                 | yes      | —              |
-| `onChange`            | `(next: Query) => void`                 | yes      | —              |
-| `placeholder`         | `string`                                | no       | —              |
-| `className`           | `string`                                | no       | —              |
-| `onSubmit`            | `(q: Query) => void`                    | no       | —              |
-| `renderBuilderTrigger`| `(api: BuilderTriggerApi) => ReactNode` | no       | default button |
+| Prop                   | Type                                    | Required | Default        |
+| ---------------------- | --------------------------------------- | -------- | -------------- |
+| `schema`               | `FacetSchema`                           | yes      | —              |
+| `value`                | `Query`                                 | yes      | —              |
+| `onChange`             | `(next: Query) => void`                 | yes      | —              |
+| `placeholder`          | `string`                                | no       | —              |
+| `className`            | `string`                                | no       | —              |
+| `onSubmit`             | `(q: Query) => void`                    | no       | —              |
+| `renderBuilderTrigger` | `(api: BuilderTriggerApi) => ReactNode` | no       | default button |
 
 `className` is merged with the component's defaults via `tailwind-merge`,
 so caller-provided classes win. For deeper restyling, the component
@@ -159,7 +153,7 @@ re-syncs from the URL. Defaults to `history.replaceState` to avoid history
 pollution while typing; pass `history: "push"` to opt into push semantics.
 
 ```ts
-useQueryParamSync(value, setValue, { schema, paramKey: "q" });
+useQueryParamSync(value, setValue, { schema, paramKey: 'q' });
 ```
 
 ## Customizing editors

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Checkbox } from "@base-ui/react/checkbox";
-import type { EditorProps, StringFacet, Value } from "../grammar/types";
-import { cn, editorStyles } from "../lib/cn";
+import { useEffect, useRef, useState } from 'react';
+import { Checkbox } from '@base-ui/react/checkbox';
+import type { EditorProps, StringFacet, Value } from '../grammar/types';
+import { cn, editorStyles } from '../lib/cn';
 
 export interface StringEditorProps extends EditorProps {
   facet: StringFacet;
@@ -15,7 +15,7 @@ export interface StringEditorProps extends EditorProps {
 export function StringEditor(props: StringEditorProps) {
   const { facet, value, negated, onCommit } = props;
 
-  const initialRaw = value && value.kind === "literal" ? value.raw : "";
+  const initialRaw = value && value.kind === 'literal' ? value.raw : '';
   const [text, setText] = useState<string>(initialRaw);
   const [neg, setNeg] = useState<boolean>(negated);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -30,12 +30,12 @@ export function StringEditor(props: StringEditorProps) {
 
   function handleApply() {
     if (text.length === 0) return;
-    const next: Value = { kind: "literal", raw: text };
+    const next: Value = { kind: 'literal', raw: text };
     onCommit({ value: next, negated: negatable ? neg : false });
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleApply();
     }
@@ -84,7 +84,7 @@ export function StringEditor(props: StringEditorProps) {
       <button
         type="button"
         onClick={handleApply}
-        className={cn(editorStyles.primaryButton, "ml-auto")}
+        className={cn(editorStyles.primaryButton, 'ml-auto')}
       >
         Apply
       </button>

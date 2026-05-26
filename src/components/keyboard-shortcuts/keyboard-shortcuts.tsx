@@ -8,12 +8,9 @@
 // folder `src/hooks/action-registry/`). It does not redefine the `Action`
 // contract.
 
-import * as React from "react";
-import { Dialog } from "@base-ui/react/dialog";
-import {
-  type Action,
-  useActions,
-} from "../../hooks/action-registry/actions";
+import * as React from 'react';
+import { Dialog } from '@base-ui/react/dialog';
+import { type Action, useActions } from '../../hooks/action-registry/actions';
 import {
   type Chord,
   type ParsedShortcut,
@@ -21,9 +18,9 @@ import {
   isMacLike,
   isModifierOnly,
   parseShortcut,
-} from "./parse";
-import { formatShortcut, type FormattedSequence } from "./format";
-import { cn } from "./lib/cn";
+} from './parse';
+import { formatShortcut, type FormattedSequence } from './format';
+import { cn } from './lib/cn';
 
 /* -------------------------------------------------------------------------- */
 /*  Public API                                                                */
@@ -95,7 +92,7 @@ interface ScopeStore {
 }
 
 const ScopesContext = React.createContext<ScopeStore | null>(null);
-ScopesContext.displayName = "ShortcutScopesContext";
+ScopesContext.displayName = 'ShortcutScopesContext';
 
 function createScopeStore(): ScopeStore {
   // Reference-counted set: a scope is active while ≥1 consumer holds it.
@@ -105,7 +102,7 @@ function createScopeStore(): ScopeStore {
   const counts = new Map<string, number>();
   return {
     isActive: (scope) => {
-      if (scope === undefined || scope === "" || scope === "global") return true;
+      if (scope === undefined || scope === '' || scope === 'global') return true;
       return (counts.get(scope) ?? 0) > 0;
     },
     activate: (scope) => {
@@ -132,7 +129,7 @@ function createScopeStore(): ScopeStore {
 export function useShortcutScope(scope: string | undefined): void {
   const store = React.useContext(ScopesContext);
   React.useEffect(() => {
-    if (!scope || scope === "global" || !store) return;
+    if (!scope || scope === 'global' || !store) return;
     return store.activate(scope);
   }, [scope, store]);
 }
@@ -145,27 +142,27 @@ export function useShortcutScope(scope: string | undefined): void {
 function isEditableTarget(target: EventTarget | null): boolean {
   if (!target || !(target instanceof Element)) return false;
   const tag = target.tagName;
-  if (tag === "INPUT") {
+  if (tag === 'INPUT') {
     // Some <input> types are pseudo-buttons — checkboxes, radios, etc. —
     // and shouldn't suppress shortcuts. We special-case those because
     // most apps want `space` and `enter` to pass through, but `?` to fire.
     const type = (target as HTMLInputElement).type?.toLowerCase();
     if (
-      type === "checkbox" ||
-      type === "radio" ||
-      type === "button" ||
-      type === "submit" ||
-      type === "reset" ||
-      type === "file" ||
-      type === "image" ||
-      type === "color" ||
-      type === "range"
+      type === 'checkbox' ||
+      type === 'radio' ||
+      type === 'button' ||
+      type === 'submit' ||
+      type === 'reset' ||
+      type === 'file' ||
+      type === 'image' ||
+      type === 'color' ||
+      type === 'range'
     ) {
       return false;
     }
     return true;
   }
-  if (tag === "TEXTAREA" || tag === "SELECT") return true;
+  if (tag === 'TEXTAREA' || tag === 'SELECT') return true;
   if (target instanceof HTMLElement && target.isContentEditable) return true;
   return false;
 }
@@ -192,7 +189,7 @@ function collectBindings(actions: Action[], mac: boolean): BoundAction[] {
   const out: BoundAction[] = [];
   for (const action of actions) {
     const sc = action.shortcut;
-    if (sc === undefined || sc === "" || (Array.isArray(sc) && sc.length === 0)) {
+    if (sc === undefined || sc === '' || (Array.isArray(sc) && sc.length === 0)) {
       continue;
     }
     try {
@@ -201,9 +198,9 @@ function collectBindings(actions: Action[], mac: boolean): BoundAction[] {
       // Bad shortcut strings are author bugs — surface them in dev without
       // blowing up production. The action stays in the registry, just
       // unbound.
-      if (typeof console !== "undefined") {
+      if (typeof console !== 'undefined') {
         console.warn(
-          `keyboard-shortcuts: failed to parse shortcut for action "${action.id}": ${(err as Error).message}`,
+          `keyboard-shortcuts: failed to parse shortcut for action "${action.id}": ${(err as Error).message}`
         );
       }
     }
@@ -226,7 +223,7 @@ export function ShortcutsProvider({
   const actions = React.useSyncExternalStore(subscribe, getAll, getAll);
   const bindings = React.useMemo(
     () => collectBindings(actions, macResolved),
-    [actions, macResolved],
+    [actions, macResolved]
   );
 
   const scopeStore = React.useMemo(createScopeStore, []);
@@ -249,7 +246,7 @@ export function ShortcutsProvider({
   }>({ candidates: [], timer: null });
 
   React.useEffect(() => {
-    const targetEl: EventTarget = target ?? (typeof document !== "undefined" ? document : window);
+    const targetEl: EventTarget = target ?? (typeof document !== 'undefined' ? document : window);
 
     const resetCursor = () => {
       if (cursorRef.current.timer !== null) {
@@ -285,10 +282,7 @@ export function ShortcutsProvider({
       // candidate set.
       const next: Array<{ action: Action; remaining: Chord[] }> = [];
 
-      const tryConsume = (
-        action: Action,
-        seq: Chord[],
-      ) => {
+      const tryConsume = (action: Action, seq: Chord[]) => {
         const head = seq[0];
         if (!head) return;
         if (!chordMatches(head, event)) return;
@@ -338,23 +332,17 @@ export function ShortcutsProvider({
         event.preventDefault();
         resetCursor();
         try {
-          const result = completed.action.run({ event, source: "shortcut" });
+          const result = completed.action.run({ event, source: 'shortcut' });
           if (result instanceof Promise) {
             result.catch((err) => {
-              if (typeof console !== "undefined") {
-                console.error(
-                  `keyboard-shortcuts: action "${completed.action.id}" failed:`,
-                  err,
-                );
+              if (typeof console !== 'undefined') {
+                console.error(`keyboard-shortcuts: action "${completed.action.id}" failed:`, err);
               }
             });
           }
         } catch (err) {
-          if (typeof console !== "undefined") {
-            console.error(
-              `keyboard-shortcuts: action "${completed.action.id}" threw:`,
-              err,
-            );
+          if (typeof console !== 'undefined') {
+            console.error(`keyboard-shortcuts: action "${completed.action.id}" threw:`, err);
           }
         }
         return;
@@ -371,18 +359,14 @@ export function ShortcutsProvider({
     // contenteditable IME composition, etc.) see the event first. The
     // editable check stops us from claiming keystrokes that belong to
     // those handlers.
-    targetEl.addEventListener("keydown", handler as EventListener);
+    targetEl.addEventListener('keydown', handler as EventListener);
     return () => {
-      targetEl.removeEventListener("keydown", handler as EventListener);
+      targetEl.removeEventListener('keydown', handler as EventListener);
       resetCursor();
     };
   }, [target, sequenceTimeoutMs]);
 
-  return (
-    <ScopesContext.Provider value={scopeStore}>
-      {children}
-    </ScopesContext.Provider>
-  );
+  return <ScopesContext.Provider value={scopeStore}>{children}</ScopesContext.Provider>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -397,12 +381,9 @@ interface CheatsheetGroup {
   }>;
 }
 
-const DEFAULT_GROUP_NAME = "Other";
+const DEFAULT_GROUP_NAME = 'Other';
 
-function groupActionsForCheatsheet(
-  actions: Action[],
-  mac: boolean,
-): CheatsheetGroup[] {
+function groupActionsForCheatsheet(actions: Action[], mac: boolean): CheatsheetGroup[] {
   const groups = new Map<string, CheatsheetGroup>();
   for (const action of actions) {
     if (!action.shortcut) continue;
@@ -445,8 +426,8 @@ function groupActionsForCheatsheet(
  * registering your own.
  */
 export function ShortcutCheatsheet({
-  shortcut = "?",
-  title = "Keyboard shortcuts",
+  shortcut = '?',
+  title = 'Keyboard shortcuts',
   description,
   open: controlledOpen,
   onOpenChange,
@@ -462,7 +443,7 @@ export function ShortcutCheatsheet({
       if (!isControlled) setInternalOpen(next);
       onOpenChange?.(next);
     },
-    [isControlled, onOpenChange],
+    [isControlled, onOpenChange]
   );
 
   const toggle = React.useCallback(() => setOpen(!open), [open, setOpen]);
@@ -480,7 +461,7 @@ export function ShortcutCheatsheet({
   const actions = React.useSyncExternalStore(subscribe, getAll, getAll);
   const groups = React.useMemo(
     () => groupActionsForCheatsheet(actions, macResolved),
-    [actions, macResolved],
+    [actions, macResolved]
   );
 
   return (
@@ -488,26 +469,24 @@ export function ShortcutCheatsheet({
       <Dialog.Portal>
         <Dialog.Backdrop
           className={cn(
-            "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
-            "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-            "transition-opacity duration-150",
+            'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm',
+            'data-[starting-style]:opacity-0 data-[ending-style]:opacity-0',
+            'transition-opacity duration-150'
           )}
         />
         <Dialog.Popup
           className={cn(
-            "fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
-            "w-full max-w-lg rounded-lg border border-border bg-popover text-popover-foreground shadow-lg",
-            "outline-none",
-            "data-[starting-style]:opacity-0 data-[starting-style]:scale-95",
-            "data-[ending-style]:opacity-0 data-[ending-style]:scale-95",
-            "transition-all duration-150",
-            className,
+            'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
+            'w-full max-w-lg rounded-lg border border-border bg-popover text-popover-foreground shadow-lg',
+            'outline-none',
+            'data-[starting-style]:opacity-0 data-[starting-style]:scale-95',
+            'data-[ending-style]:opacity-0 data-[ending-style]:scale-95',
+            'transition-all duration-150',
+            className
           )}
         >
           <header className="border-b border-border px-5 py-4">
-            <Dialog.Title className="text-base font-semibold">
-              {title}
-            </Dialog.Title>
+            <Dialog.Title className="text-base font-semibold">{title}</Dialog.Title>
             {description ? (
               <Dialog.Description className="mt-1 text-sm text-muted-foreground">
                 {description}
@@ -516,9 +495,7 @@ export function ShortcutCheatsheet({
           </header>
           <div className="max-h-[60vh] overflow-y-auto px-5 py-4">
             {groups.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No shortcuts registered.
-              </p>
+              <p className="text-sm text-muted-foreground">No shortcuts registered.</p>
             ) : (
               <div className="flex flex-col gap-5">
                 {groups.map((group) => (
@@ -534,8 +511,8 @@ export function ShortcutCheatsheet({
                             key={action.id}
                             aria-disabled={disabled || undefined}
                             className={cn(
-                              "flex items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-muted/40",
-                              disabled && "opacity-50",
+                              'flex items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-muted/40',
+                              disabled && 'opacity-50'
                             )}
                           >
                             <span className="truncate text-sm">{action.label}</span>
@@ -543,9 +520,7 @@ export function ShortcutCheatsheet({
                               {sequences.map((seq, i) => (
                                 <React.Fragment key={i}>
                                   {i > 0 ? (
-                                    <span className="text-xs text-muted-foreground">
-                                      or
-                                    </span>
+                                    <span className="text-xs text-muted-foreground">or</span>
                                   ) : null}
                                   <SequenceCaps sequence={seq} />
                                 </React.Fragment>
@@ -563,9 +538,9 @@ export function ShortcutCheatsheet({
           <footer className="flex items-center justify-end border-t border-border px-5 py-3">
             <Dialog.Close
               className={cn(
-                "inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-3 text-xs font-medium",
-                "shadow-xs transition-colors hover:bg-muted hover:text-foreground",
-                "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                'inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-3 text-xs font-medium',
+                'shadow-xs transition-colors hover:bg-muted hover:text-foreground',
+                'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none'
               )}
             >
               Close
@@ -582,16 +557,14 @@ function SequenceCaps({ sequence }: { sequence: FormattedSequence }) {
     <span className="flex items-center gap-1">
       {sequence.chords.map((chord, ci) => (
         <React.Fragment key={ci}>
-          {ci > 0 ? (
-            <span className="text-[10px] text-muted-foreground">then</span>
-          ) : null}
+          {ci > 0 ? <span className="text-[10px] text-muted-foreground">then</span> : null}
           <span className="flex items-center gap-0.5">
             {chord.caps.map((cap) => (
               <kbd
                 key={cap.id}
                 className={cn(
-                  "inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1.5",
-                  "font-mono text-[10px] font-medium text-foreground shadow-xs",
+                  'inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1.5',
+                  'font-mono text-[10px] font-medium text-foreground shadow-xs'
                 )}
               >
                 {cap.label}
@@ -632,9 +605,9 @@ function useShortcutSelfRegister({
   React.useEffect(() => {
     if (!enabled || shortcut === undefined) return;
     return register({
-      id: "system.cheatsheet",
-      label: "Show keyboard shortcuts",
-      group: "Help",
+      id: 'system.cheatsheet',
+      label: 'Show keyboard shortcuts',
+      group: 'Help',
       shortcut,
       run: () => runRef.current(),
     });
@@ -645,7 +618,7 @@ function useShortcutSelfRegister({
 /*  Re-exports                                                                */
 /* -------------------------------------------------------------------------- */
 
-export { formatShortcut } from "./format";
-export type { FormattedShortcut, FormattedSequence, FormattedChord, KeyCap } from "./format";
-export { isMacLike, parseShortcut } from "./parse";
-export type { Chord, Sequence, ParsedShortcut } from "./parse";
+export { formatShortcut } from './format';
+export type { FormattedShortcut, FormattedSequence, FormattedChord, KeyCap } from './format';
+export { isMacLike, parseShortcut } from './parse';
+export type { Chord, Sequence, ParsedShortcut } from './parse';

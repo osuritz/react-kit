@@ -1,4 +1,4 @@
-import { SparklineArea } from "#components/sparkline/sparkline-area/sparkline-area.tsx";
+import { SparklineArea } from '#components/sparkline/sparkline-area/sparkline-area.tsx';
 
 // Weekly active users over the last 12 weeks.
 const wau = [820, 910, 880, 1010, 960, 1180, 1240, 1190, 1330, 1410, 1380, 1520];
@@ -32,17 +32,20 @@ export function SparklineAreaDemo() {
       {/* Compact area cells side by side. */}
       <div className="flex flex-wrap gap-4">
         {[
-          { label: "Storage", series: [20, 24, 30, 41, 55, 72], tint: "text-violet-600 dark:text-violet-400" },
-          { label: "Egress", series: [60, 58, 51, 44, 39, 33], tint: "text-amber-600 dark:text-amber-400" },
+          {
+            label: 'Storage',
+            series: [20, 24, 30, 41, 55, 72],
+            tint: 'text-violet-600 dark:text-violet-400',
+          },
+          {
+            label: 'Egress',
+            series: [60, 58, 51, 44, 39, 33],
+            tint: 'text-amber-600 dark:text-amber-400',
+          },
         ].map((m) => (
           <div key={m.label} className={`flex flex-col gap-1 ${m.tint}`}>
             <span className="text-muted-foreground text-xs">{m.label}</span>
-            <SparklineArea
-              values={m.series}
-              width={120}
-              height={32}
-              label={`${m.label} trend`}
-            />
+            <SparklineArea values={m.series} width={120} height={32} label={`${m.label} trend`} />
           </div>
         ))}
       </div>

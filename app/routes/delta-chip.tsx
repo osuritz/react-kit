@@ -1,9 +1,9 @@
-import { DropInPage } from "~/components/drop-in-page";
-import { DeltaChipDemo } from "~/components/demos/delta-chip";
-import deltaChipSrc from "~/components/demos/delta-chip.tsx?shiki";
-import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
+import { DropInPage } from '~/components/drop-in-page';
+import { DeltaChipDemo } from '~/components/demos/delta-chip';
+import deltaChipSrc from '~/components/demos/delta-chip.tsx?shiki';
+import { repoBlobUrl, repoTreeUrl } from '~/lib/github';
 
-const DROP_IN_PATH = "src/components/sparkline/delta-chip";
+const DROP_IN_PATH = 'src/components/sparkline/delta-chip';
 
 export default function DeltaChipRoute() {
   return (
@@ -14,9 +14,9 @@ export default function DeltaChipRoute() {
       readmeHref={repoBlobUrl(`${DROP_IN_PATH}/README.md`)}
       demos={[
         {
-          title: "Deltas in a metric list",
+          title: 'Deltas in a metric list',
           description:
-            "A column of metrics with their period-over-period change. Note latency and cost use invert, so an increase reads as destructive rather than success.",
+            'A column of metrics with their period-over-period change. Note latency and cost use invert, so an increase reads as destructive rather than success.',
           source: deltaChipSrc,
           render: <DeltaChipDemo />,
         },

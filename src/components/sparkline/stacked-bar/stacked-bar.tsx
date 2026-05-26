@@ -2,7 +2,7 @@
 // Pure presentational SVG. A single-row part-to-whole bar (status breakdown,
 // budget split, market share). Segments size in proportion to the total and
 // cycle the shadcn `--color-chart-1..5` tokens unless given an explicit color.
-import { cn } from "./lib/cn";
+import { cn } from './lib/cn';
 
 export interface StackedBarSegment {
   value: number;
@@ -24,11 +24,11 @@ export interface StackedBarProps {
 }
 
 const PALETTE = [
-  "var(--color-chart-1)",
-  "var(--color-chart-2)",
-  "var(--color-chart-3)",
-  "var(--color-chart-4)",
-  "var(--color-chart-5)",
+  'var(--color-chart-1)',
+  'var(--color-chart-2)',
+  'var(--color-chart-3)',
+  'var(--color-chart-4)',
+  'var(--color-chart-5)',
 ];
 
 export function StackedBar({
@@ -47,9 +47,7 @@ export function StackedBar({
   const gaps = Math.max(0, segments.length - 1) * gap;
   const track = Math.max(0, width - gaps);
 
-  const widths = segments.map((s) =>
-    total > 0 ? (weight(s.value) / total) * track : 0,
-  );
+  const widths = segments.map((s) => (total > 0 ? (weight(s.value) / total) * track : 0));
   const rects = segments.map((s, i) => ({
     // x = sum of prior widths + the gaps that precede this segment. Computed
     // functionally (no render-time mutation) to satisfy the immutability lint.
@@ -63,8 +61,8 @@ export function StackedBar({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >

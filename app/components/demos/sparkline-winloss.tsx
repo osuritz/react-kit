@@ -1,4 +1,4 @@
-import { SparklineWinLoss } from "#components/sparkline/sparkline-winloss/sparkline-winloss.tsx";
+import { SparklineWinLoss } from '#components/sparkline/sparkline-winloss/sparkline-winloss.tsx';
 
 // +1 = SLA met, -1 = missed, 0 = no traffic — last 20 days.
 const sla = [1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, 0, 1, 1, -1, 1, 1, 1, 1, 1];

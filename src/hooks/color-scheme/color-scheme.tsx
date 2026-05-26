@@ -5,34 +5,32 @@ import {
   useEffect,
   useRef,
   useSyncExternalStore,
-} from "react";
+} from 'react';
 
-export type ColorScheme = "light" | "dark";
-export type UserSpecifiedColorScheme = "light" | "dark" | "system";
+export type ColorScheme = 'light' | 'dark';
+export type UserSpecifiedColorScheme = 'light' | 'dark' | 'system';
 
-const DEFAULT_STORAGE_KEY = "color-scheme";
-const DEFAULT_ATTRIBUTE_NAME = "data-theme";
-const DEFAULT_FALLBACK: ColorScheme = "light";
-const DARK_SCHEME_MEDIA_QUERY = "(prefers-color-scheme: dark)";
+const DEFAULT_STORAGE_KEY = 'color-scheme';
+const DEFAULT_ATTRIBUTE_NAME = 'data-theme';
+const DEFAULT_FALLBACK: ColorScheme = 'light';
+const DARK_SCHEME_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
-const SUPPORTED_USER_VALUES = new Set<string>(["light", "dark", "system"]);
+const SUPPORTED_USER_VALUES = new Set<string>(['light', 'dark', 'system']);
 
 export function getBrowserPreferredColorScheme(): ColorScheme {
   return readSystemScheme() ?? DEFAULT_FALLBACK;
 }
 
 function readSystemScheme(): ColorScheme | null {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
     return null;
   }
-  return window.matchMedia(DARK_SCHEME_MEDIA_QUERY).matches ? "dark" : "light";
+  return window.matchMedia(DARK_SCHEME_MEDIA_QUERY).matches ? 'dark' : 'light';
 }
 
 export interface ColorSchemeResolver {
   getCustomizedColorScheme(): Promise<UserSpecifiedColorScheme | null>;
-  setCustomizedColorScheme(
-    colorScheme: UserSpecifiedColorScheme | null,
-  ): Promise<void>;
+  setCustomizedColorScheme(colorScheme: UserSpecifiedColorScheme | null): Promise<void>;
   /**
    * Optional. Notify the store when the persisted value may have changed
    * outside of `setCustomizedColorScheme` — e.g. another tab writing to the
@@ -55,24 +53,20 @@ export class LocalStorageColorSchemeResolver implements ColorSchemeResolver {
     this.storageKey = options.storageKey ?? DEFAULT_STORAGE_KEY;
     this.storage =
       options.storage ??
-      (typeof globalThis !== "undefined" && "localStorage" in globalThis
-        ? (globalThis as { localStorage?: Storage }).localStorage ?? null
+      (typeof globalThis !== 'undefined' && 'localStorage' in globalThis
+        ? ((globalThis as { localStorage?: Storage }).localStorage ?? null)
         : null);
   }
 
   async getCustomizedColorScheme(): Promise<UserSpecifiedColorScheme | null> {
-    if (!this.storage) return "system";
-    const raw = (this.storage.getItem(this.storageKey) ?? "").toLowerCase();
-    return SUPPORTED_USER_VALUES.has(raw)
-      ? (raw as UserSpecifiedColorScheme)
-      : "system";
+    if (!this.storage) return 'system';
+    const raw = (this.storage.getItem(this.storageKey) ?? '').toLowerCase();
+    return SUPPORTED_USER_VALUES.has(raw) ? (raw as UserSpecifiedColorScheme) : 'system';
   }
 
-  async setCustomizedColorScheme(
-    colorScheme: UserSpecifiedColorScheme | null,
-  ): Promise<void> {
+  async setCustomizedColorScheme(colorScheme: UserSpecifiedColorScheme | null): Promise<void> {
     if (!this.storage) return;
-    if (colorScheme == null || colorScheme === "system") {
+    if (colorScheme == null || colorScheme === 'system') {
       this.storage.removeItem(this.storageKey);
     } else {
       this.storage.setItem(this.storageKey, colorScheme);
@@ -80,23 +74,23 @@ export class LocalStorageColorSchemeResolver implements ColorSchemeResolver {
   }
 
   subscribe(callback: () => void): () => void {
-    if (typeof window === "undefined") return () => {};
+    if (typeof window === 'undefined') return () => {};
     const handler = (event: StorageEvent) => {
       if (event.key === this.storageKey || event.key === null) {
         callback();
       }
     };
-    window.addEventListener("storage", handler);
+    window.addEventListener('storage', handler);
     return () => {
-      window.removeEventListener("storage", handler);
+      window.removeEventListener('storage', handler);
     };
   }
 }
 
 export type ColorSchemeStrategy =
-  | "data-attribute"
-  | "class"
-  | "both"
+  | 'data-attribute'
+  | 'class'
+  | 'both'
   | ((scheme: ColorScheme) => void);
 
 export interface ColorSchemeStoreOptions {
@@ -130,17 +124,17 @@ function applyToDom(
   scheme: ColorScheme,
   strategy: ColorSchemeStrategy,
   target: HTMLElement,
-  attributeName: string,
+  attributeName: string
 ): void {
-  if (typeof strategy === "function") {
+  if (typeof strategy === 'function') {
     strategy(scheme);
     return;
   }
-  if (strategy === "data-attribute" || strategy === "both") {
+  if (strategy === 'data-attribute' || strategy === 'both') {
     target.setAttribute(attributeName, scheme);
   }
-  if (strategy === "class" || strategy === "both") {
-    target.classList.remove("light", "dark");
+  if (strategy === 'class' || strategy === 'both') {
+    target.classList.remove('light', 'dark');
     target.classList.add(scheme);
   }
 }
@@ -161,8 +155,8 @@ class ColorSchemeStore {
   constructor(options: ColorSchemeStoreOptions = {}) {
     this.resolver =
       options.resolver ??
-      (typeof window !== "undefined" ? new LocalStorageColorSchemeResolver() : null);
-    this.strategy = options.strategy ?? "class";
+      (typeof window !== 'undefined' ? new LocalStorageColorSchemeResolver() : null);
+    this.strategy = options.strategy ?? 'class';
     this.target = options.target;
     this.attributeName = options.attributeName ?? DEFAULT_ATTRIBUTE_NAME;
 
@@ -170,7 +164,7 @@ class ColorSchemeStore {
     this.snapshot = {
       colorScheme: system ?? DEFAULT_FALLBACK,
       isLoading: true,
-      userSpecifiedColorScheme: "system",
+      userSpecifiedColorScheme: 'system',
       systemColorScheme: system,
     };
   }
@@ -180,9 +174,7 @@ class ColorSchemeStore {
     this.started = true;
     if (this.snapshot.systemColorScheme == null && !this.warnedMissingSystem) {
       this.warnedMissingSystem = true;
-      console.error(
-        `Unable to determine system color scheme, defaulting to '${DEFAULT_FALLBACK}'`,
-      );
+      console.error(`Unable to determine system color scheme, defaulting to '${DEFAULT_FALLBACK}'`);
     }
     this.applyDom();
     void this.load();
@@ -208,15 +200,13 @@ class ColorSchemeStore {
 
   getSnapshot = (): Snapshot => this.snapshot;
 
-  setColorScheme = async (
-    value: UserSpecifiedColorScheme | null,
-  ): Promise<void> => {
-    const next = value ?? "system";
+  setColorScheme = async (value: UserSpecifiedColorScheme | null): Promise<void> => {
+    const next = value ?? 'system';
     this.update({ userSpecifiedColorScheme: next });
     try {
       await this.resolver?.setCustomizedColorScheme(value);
     } catch (error) {
-      console.error("Failed to persist color scheme", error);
+      console.error('Failed to persist color scheme', error);
     }
   };
 
@@ -224,32 +214,32 @@ class ColorSchemeStore {
     try {
       const stored = await this.resolver?.getCustomizedColorScheme();
       this.update({
-        userSpecifiedColorScheme: stored ?? "system",
+        userSpecifiedColorScheme: stored ?? 'system',
         isLoading: false,
       });
     } catch (error) {
-      console.error("Failed to load user-specified color scheme", error);
+      console.error('Failed to load user-specified color scheme', error);
       this.update({ isLoading: false });
     }
   }
 
   private attachMatchMediaListener(): (() => void) | null {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return null;
     }
     const mql = window.matchMedia(DARK_SCHEME_MEDIA_QUERY);
     const handle = (event: MediaQueryListEvent) => {
-      this.update({ systemColorScheme: event.matches ? "dark" : "light" });
+      this.update({ systemColorScheme: event.matches ? 'dark' : 'light' });
     };
-    mql.addEventListener("change", handle);
-    return () => mql.removeEventListener("change", handle);
+    mql.addEventListener('change', handle);
+    return () => mql.removeEventListener('change', handle);
   }
 
   private update(patch: Partial<Snapshot>): void {
     const merged = { ...this.snapshot, ...patch };
     const resolved =
-      merged.userSpecifiedColorScheme === "system"
-        ? merged.systemColorScheme ?? DEFAULT_FALLBACK
+      merged.userSpecifiedColorScheme === 'system'
+        ? (merged.systemColorScheme ?? DEFAULT_FALLBACK)
         : merged.userSpecifiedColorScheme;
     const next: Snapshot = { ...merged, colorScheme: resolved };
     if (
@@ -267,7 +257,7 @@ class ColorSchemeStore {
   }
 
   private applyDom(): void {
-    if (typeof document === "undefined") return;
+    if (typeof document === 'undefined') return;
     if (this.snapshot.colorScheme == null) return;
     const el = this.target ?? document.documentElement;
     applyToDom(this.snapshot.colorScheme, this.strategy, el, this.attributeName);
@@ -286,7 +276,7 @@ let defaultStoreOptions: ColorSchemeStoreOptions = {};
 export function configureColorScheme(options: ColorSchemeStoreOptions): void {
   if (defaultStore) {
     console.warn(
-      "configureColorScheme: the default store has already been initialized; new options were ignored. Call this once before any useColorScheme() invocation, or use ColorSchemeProvider for scoped configuration.",
+      'configureColorScheme: the default store has already been initialized; new options were ignored. Call this once before any useColorScheme() invocation, or use ColorSchemeProvider for scoped configuration.'
     );
     return;
   }
@@ -309,7 +299,7 @@ export function _resetDefaultColorSchemeStore(): void {
 }
 
 const ColorSchemeContext = createContext<ColorSchemeStore | null>(null);
-ColorSchemeContext.displayName = "ColorSchemeContext";
+ColorSchemeContext.displayName = 'ColorSchemeContext';
 
 export interface ColorSchemeProviderProps {
   colorSchemeResolver?: ColorSchemeResolver;
@@ -344,21 +334,13 @@ export function ColorSchemeProvider({
     return () => store.dispose();
   }, [store]);
 
-  return (
-    <ColorSchemeContext.Provider value={store}>
-      {children}
-    </ColorSchemeContext.Provider>
-  );
+  return <ColorSchemeContext.Provider value={store}>{children}</ColorSchemeContext.Provider>;
 }
 
 export function useColorScheme(): ColorSchemeContextValue {
   const ctxStore = useContext(ColorSchemeContext);
   const store = ctxStore ?? getDefaultStore();
-  const snapshot = useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
-    store.getSnapshot,
-  );
+  const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   return {
     colorScheme: snapshot.colorScheme,
     isLoading: snapshot.isLoading,

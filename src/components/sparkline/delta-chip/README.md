@@ -3,7 +3,7 @@
 A drop-in **delta chip** — the tiny `▲ +12%` / `▼ −4%` change indicator that pairs
 with a sparkline or a metric in a KPI cell. Not a chart: a single colored span.
 Positive is success-toned (emerald), negative is `text-destructive`, no change is
-muted. Pass `invert` for metrics where *down* is good (latency, error rate, cost).
+muted. Pass `invert` for metrics where _down_ is good (latency, error rate, cost).
 Copy the folder into your app.
 
 > Part of the sparkline micro-chart family — the companion that labels the
@@ -15,7 +15,7 @@ Copy into your project (e.g. `src/components/delta-chip/`):
 
 - `delta-chip.tsx` — `<DeltaChip>` + `DeltaChipProps`
 - `lib/cn.ts` — local class-name composer
-- *(optional)* this README
+- _(optional)_ this README
 
 `package.json`, `tsconfig.json`, `vitest.config.ts`, `vitest.setup.ts`, and
 `delta-chip.test.tsx` are the verification harness — not part of the copy.
@@ -39,15 +39,15 @@ import { DeltaChip } from "./components/delta-chip/delta-chip";
 
 ### `<DeltaChip>`
 
-| Prop        | Type                   | Default        | Notes                                            |
-| ----------- | ---------------------- | -------------- | ------------------------------------------------ |
-| `value`     | `number`               | —              | The change; its sign (vs `neutralAt`) drives direction + tone. Non-finite → neutral `—`. |
-| `format`    | `(n: number) => string`| _(see note)_   | Format the text after the arrow. **Default:** signed distance from `neutralAt`, rounded to 2 dp, so the sign always matches the arrow. |
-| `neutralAt` | `number`               | `0`            | The value treated as "no change".                |
-| `invert`    | `boolean`              | `false`        | Down reads as good (latency, errors, cost).      |
-| `showArrow` | `boolean`              | `true`         | Hide the ▲/▼ glyph if false.                     |
-| `label`     | `string`               | —              | Accessible label override (else visible text).   |
-| `className` | `string`               | —              | Merged via `cn()`.                               |
+| Prop        | Type                    | Default      | Notes                                                                                                                                  |
+| ----------- | ----------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`     | `number`                | —            | The change; its sign (vs `neutralAt`) drives direction + tone. Non-finite → neutral `—`.                                               |
+| `format`    | `(n: number) => string` | _(see note)_ | Format the text after the arrow. **Default:** signed distance from `neutralAt`, rounded to 2 dp, so the sign always matches the arrow. |
+| `neutralAt` | `number`                | `0`          | The value treated as "no change".                                                                                                      |
+| `invert`    | `boolean`               | `false`      | Down reads as good (latency, errors, cost).                                                                                            |
+| `showArrow` | `boolean`               | `true`       | Hide the ▲/▼ glyph if false.                                                                                                           |
+| `label`     | `string`                | —            | Accessible label override (else visible text).                                                                                         |
+| `className` | `string`                | —            | Merged via `cn()`.                                                                                                                     |
 
 ## Testing this drop-in
 

@@ -47,6 +47,7 @@ asserting the `.dark`/`.light` class. Tests that explicitly pass
 `strategy: "data-attribute"` are unaffected.
 
 Specifically:
+
 - Tests asserting `documentElement.getAttribute("data-theme")` under the
   default store/provider switch to `documentElement.classList.contains("dark")`
   / `"light"`.
@@ -79,8 +80,14 @@ For Vite, CRA, or any non-SSR React app.
 End with the CSS sketch:
 
 ```css
-:root { --bg: #fff; --fg: #111; }
-.dark { --bg: #111; --fg: #eee; }
+:root {
+  --bg: #fff;
+  --fg: #111;
+}
+.dark {
+  --bg: #111;
+  --fg: #eee;
+}
 ```
 
 (Note the change from `:root[data-theme="dark"]` to `.dark` — this is a
@@ -95,12 +102,12 @@ For Next.js, Remix, Astro, etc.
    Show the Next.js app-router snippet:
 
    ```tsx
-   import { getColorSchemeFoucScript } from "./hooks/color-scheme/fouc-blocker";
+   import { getColorSchemeFoucScript } from './hooks/color-scheme/fouc-blocker';
 
    // app/layout.tsx
    <head>
      <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript() }} />
-   </head>
+   </head>;
    ```
 
 3. Mark the toggle as a client component (`"use client"`).
@@ -152,19 +159,19 @@ or `"dark"` is explicit — the button breaks "system" tracking on first
 click (this is the expected pattern for a binary toggle).
 
 ```tsx
-import { Moon, Sun } from "lucide-react";
-import { Button } from "#components/ui/button.tsx";
-import { useColorScheme } from "#hooks/color-scheme/color-scheme";
+import { Moon, Sun } from 'lucide-react';
+import { Button } from '#components/ui/button.tsx';
+import { useColorScheme } from '#hooks/color-scheme/color-scheme';
 
 export function ModeToggleButton() {
   const { colorScheme, setColorScheme } = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const isDark = colorScheme === 'dark';
   return (
     <Button
       variant="outline"
       size="icon"
-      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      onClick={() => setColorScheme(isDark ? "light" : "dark")}
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      onClick={() => setColorScheme(isDark ? 'light' : 'dark')}
     >
       {isDark ? <Moon /> : <Sun />}
     </Button>
@@ -180,28 +187,31 @@ plus a small caption that shows what `system` resolves to so the user can
 see why the page looks the way it does.
 
 ```tsx
-import { Monitor, Moon, Sun } from "lucide-react";
-import { ToggleGroup, ToggleGroupItem } from "#components/ui/toggle-group.tsx";
-import { useColorScheme } from "#hooks/color-scheme/color-scheme";
+import { Monitor, Moon, Sun } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '#components/ui/toggle-group.tsx';
+import { useColorScheme } from '#hooks/color-scheme/color-scheme';
 
 export function ModeToggleSegmented() {
-  const { userSpecifiedColorScheme, colorScheme, setColorScheme } =
-    useColorScheme();
+  const { userSpecifiedColorScheme, colorScheme, setColorScheme } = useColorScheme();
   return (
     <div className="flex flex-col gap-2">
       <ToggleGroup
         type="single"
         value={userSpecifiedColorScheme}
-        onValueChange={(v) => v && setColorScheme(v as "light" | "dark" | "system")}
+        onValueChange={(v) => v && setColorScheme(v as 'light' | 'dark' | 'system')}
       >
-        <ToggleGroupItem value="light" aria-label="Light"><Sun /></ToggleGroupItem>
-        <ToggleGroupItem value="dark" aria-label="Dark"><Moon /></ToggleGroupItem>
-        <ToggleGroupItem value="system" aria-label="System"><Monitor /></ToggleGroupItem>
+        <ToggleGroupItem value="light" aria-label="Light">
+          <Sun />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="dark" aria-label="Dark">
+          <Moon />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="system" aria-label="System">
+          <Monitor />
+        </ToggleGroupItem>
       </ToggleGroup>
-      {userSpecifiedColorScheme === "system" && (
-        <p className="text-muted-foreground text-xs">
-          System resolves to: {colorScheme}
-        </p>
+      {userSpecifiedColorScheme === 'system' && (
+        <p className="text-muted-foreground text-xs">System resolves to: {colorScheme}</p>
       )}
     </div>
   );
@@ -224,7 +234,7 @@ Structure:
 - Section A: "Light / dark button" — `<ModeToggleButton />` + raw source
   via `import buttonSrc from "#components/mode-toggle-button.tsx?raw"`.
 - Section B: "Light / dark / system segmented" — `<ModeToggleSegmented />`
-  + raw source via `?raw` import.
+  - raw source via `?raw` import.
 
 Code panel styling: bordered, rounded, monospace `text-sm`, `overflow-x-auto`,
 `bg-muted/30`. No syntax highlighting.
@@ -242,6 +252,7 @@ walkthrough in the README is the canonical place for the FOUC-script story.
 ## Files touched
 
 **Modify**
+
 - `src/hooks/color-scheme/color-scheme.tsx`
 - `src/hooks/color-scheme/fouc-blocker.ts`
 - `src/hooks/color-scheme/color-scheme.test.tsx`
@@ -249,10 +260,12 @@ walkthrough in the README is the canonical place for the FOUC-script story.
 - `src/App.tsx`
 
 **Create**
+
 - `src/components/mode-toggle-button.tsx`
 - `src/components/mode-toggle-segmented.tsx`
 
 **Add via shadcn CLI**
+
 - `src/components/ui/toggle-group.tsx`
 
 ## Verification

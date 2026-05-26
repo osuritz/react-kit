@@ -4,7 +4,7 @@
 // mark on the line. Magnitude is ignored — this chart is about the *pattern* of
 // outcomes (SLA met/missed, test pass/fail, gain/loss days). Wins use
 // `currentColor`; losses are tinted `text-destructive`.
-import { cn } from "./lib/cn";
+import { cn } from './lib/cn';
 
 export interface SparklineWinLossProps {
   /** Sign of each value → win (>0) / loss (<0) / tie (0). */
@@ -39,8 +39,8 @@ export function SparklineWinLoss({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block overflow-visible", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block overflow-visible', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >
@@ -60,7 +60,7 @@ export function SparklineWinLoss({
             height={h.toFixed(2)}
             rx={Math.min(1, barW / 2)}
             fill="currentColor"
-            className={loss ? "text-destructive" : !win ? "opacity-40" : undefined}
+            className={loss ? 'text-destructive' : !win ? 'opacity-40' : undefined}
           />
         );
       })}

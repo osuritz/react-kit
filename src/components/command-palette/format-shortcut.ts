@@ -13,96 +13,95 @@
  */
 
 const MAC_GLYPHS: Record<string, string> = {
-  ctrl: "⌃",
-  control: "⌃",
-  meta: "⌘",
-  cmd: "⌘",
-  command: "⌘",
-  super: "⌘",
-  win: "⌘",
-  alt: "⌥",
-  option: "⌥",
-  opt: "⌥",
-  shift: "⇧",
+  ctrl: '⌃',
+  control: '⌃',
+  meta: '⌘',
+  cmd: '⌘',
+  command: '⌘',
+  super: '⌘',
+  win: '⌘',
+  alt: '⌥',
+  option: '⌥',
+  opt: '⌥',
+  shift: '⇧',
 };
 
 const PC_LABELS: Record<string, string> = {
-  ctrl: "Ctrl",
-  control: "Ctrl",
-  meta: "Win",
-  cmd: "Win",
-  command: "Win",
-  super: "Win",
-  win: "Win",
-  alt: "Alt",
-  option: "Alt",
-  opt: "Alt",
-  shift: "Shift",
+  ctrl: 'Ctrl',
+  control: 'Ctrl',
+  meta: 'Win',
+  cmd: 'Win',
+  command: 'Win',
+  super: 'Win',
+  win: 'Win',
+  alt: 'Alt',
+  option: 'Alt',
+  opt: 'Alt',
+  shift: 'Shift',
 };
 
 const SPECIAL_MAC: Record<string, string> = {
-  enter: "↵",
-  return: "↵",
-  escape: "Esc",
-  esc: "Esc",
-  arrowup: "↑",
-  up: "↑",
-  arrowdown: "↓",
-  down: "↓",
-  arrowleft: "←",
-  left: "←",
-  arrowright: "→",
-  right: "→",
-  backspace: "⌫",
-  delete: "⌦",
-  del: "⌦",
-  tab: "⇥",
-  space: "Space",
+  enter: '↵',
+  return: '↵',
+  escape: 'Esc',
+  esc: 'Esc',
+  arrowup: '↑',
+  up: '↑',
+  arrowdown: '↓',
+  down: '↓',
+  arrowleft: '←',
+  left: '←',
+  arrowright: '→',
+  right: '→',
+  backspace: '⌫',
+  delete: '⌦',
+  del: '⌦',
+  tab: '⇥',
+  space: 'Space',
 };
 
 const SPECIAL_PC: Record<string, string> = {
-  enter: "Enter",
-  return: "Enter",
-  escape: "Esc",
-  esc: "Esc",
-  arrowup: "↑",
-  up: "↑",
-  arrowdown: "↓",
-  down: "↓",
-  arrowleft: "←",
-  left: "←",
-  arrowright: "→",
-  right: "→",
-  backspace: "Backspace",
-  delete: "Del",
-  del: "Del",
-  tab: "Tab",
-  space: "Space",
+  enter: 'Enter',
+  return: 'Enter',
+  escape: 'Esc',
+  esc: 'Esc',
+  arrowup: '↑',
+  up: '↑',
+  arrowdown: '↓',
+  down: '↓',
+  arrowleft: '←',
+  left: '←',
+  arrowright: '→',
+  right: '→',
+  backspace: 'Backspace',
+  delete: 'Del',
+  del: 'Del',
+  tab: 'Tab',
+  space: 'Space',
 };
 
 const MODIFIER_NAMES = new Set([
-  "mod",
-  "ctrl",
-  "control",
-  "meta",
-  "cmd",
-  "command",
-  "super",
-  "win",
-  "alt",
-  "option",
-  "opt",
-  "shift",
+  'mod',
+  'ctrl',
+  'control',
+  'meta',
+  'cmd',
+  'command',
+  'super',
+  'win',
+  'alt',
+  'option',
+  'opt',
+  'shift',
 ]);
 
 export function isMacLike(): boolean {
-  if (typeof navigator === "undefined") return false;
+  if (typeof navigator === 'undefined') return false;
   const platform =
-    (navigator as Navigator & { userAgentData?: { platform?: string } })
-      .userAgentData?.platform ??
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
     navigator.platform ??
     navigator.userAgent ??
-    "";
+    '';
   return /Mac|iPhone|iPad|iPod/i.test(platform);
 }
 
@@ -120,25 +119,25 @@ export interface KeyCap {
  */
 export function formatChord(chord: string, mac = isMacLike()): KeyCap[] {
   const parts = chord
-    .split("+")
+    .split('+')
     .map((p) => p.trim())
     .filter((p) => p.length > 0);
   if (parts.length === 0) return [];
 
   const mods = { ctrl: false, alt: false, shift: false, meta: false };
-  let keyPart = "";
+  let keyPart = '';
 
   for (const raw of parts) {
     const lower = raw.toLowerCase();
-    if (lower === "mod") {
+    if (lower === 'mod') {
       if (mac) mods.meta = true;
       else mods.ctrl = true;
       continue;
     }
     if (MODIFIER_NAMES.has(lower)) {
-      if (lower === "ctrl" || lower === "control") mods.ctrl = true;
-      else if (lower === "alt" || lower === "option" || lower === "opt") mods.alt = true;
-      else if (lower === "shift") mods.shift = true;
+      if (lower === 'ctrl' || lower === 'control') mods.ctrl = true;
+      else if (lower === 'alt' || lower === 'option' || lower === 'opt') mods.alt = true;
+      else if (lower === 'shift') mods.shift = true;
       else mods.meta = true; // meta/cmd/command/super/win
       continue;
     }
@@ -146,7 +145,7 @@ export function formatChord(chord: string, mac = isMacLike()): KeyCap[] {
   }
 
   const caps: KeyCap[] = [];
-  const order: Array<keyof typeof mods> = ["ctrl", "alt", "shift", "meta"];
+  const order: Array<keyof typeof mods> = ['ctrl', 'alt', 'shift', 'meta'];
   for (const role of order) {
     if (!mods[role]) continue;
     const label = mac ? MAC_GLYPHS[role] : PC_LABELS[role];
@@ -172,10 +171,7 @@ export function formatChord(chord: string, mac = isMacLike()): KeyCap[] {
  * is a glance, not the cheatsheet. Apps that need richer rendering should
  * import `formatShortcut` from keyboard-shortcuts instead.
  */
-export function formatShortcutCaps(
-  shortcut: string | string[],
-  mac = isMacLike(),
-): KeyCap[][] {
+export function formatShortcutCaps(shortcut: string | string[], mac = isMacLike()): KeyCap[][] {
   const first = Array.isArray(shortcut) ? shortcut[0] : shortcut;
   if (!first) return [];
   // Sequences are whitespace-separated chords ("g i").

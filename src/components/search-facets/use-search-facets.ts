@@ -1,11 +1,7 @@
-import { useCallback, useMemo, useState } from "react";
-import { parseFacetValue, splitFacetToken } from "./grammar/parse";
-import {
-  classifyPartialToken,
-  hasOpenQuote,
-  type PartialToken,
-} from "./grammar/partial";
-import { clauseToString } from "./grammar/stringify";
+import { useCallback, useMemo, useState } from 'react';
+import { parseFacetValue, splitFacetToken } from './grammar/parse';
+import { classifyPartialToken, hasOpenQuote, type PartialToken } from './grammar/partial';
+import { clauseToString } from './grammar/stringify';
 import {
   type ChipModel,
   type Clause,
@@ -13,7 +9,7 @@ import {
   findFacet,
   type Query,
   type Value,
-} from "./grammar/types";
+} from './grammar/types';
 
 export interface UseSearchFacetsOptions {
   schema: FacetSchema;
@@ -77,11 +73,8 @@ function buildChipModels(query: Query, schema: FacetSchema): ChipModel[] {
   }));
 }
 
-function buildFacetSuggestions(
-  partial: PartialToken,
-  schema: FacetSchema,
-): FacetSuggestion[] {
-  if (partial.kind !== "facet-name") return [];
+function buildFacetSuggestions(partial: PartialToken, schema: FacetSchema): FacetSuggestion[] {
+  if (partial.kind !== 'facet-name') return [];
   const needle = partial.partial.toLowerCase();
   return schema
     .filter((f) => f.name.toLowerCase().startsWith(needle))
@@ -109,7 +102,7 @@ function trailingTokenSlice(input: string): {
       inQuote = !inQuote;
       continue;
     }
-    if (!inQuote && (ch === " " || ch === "\t")) {
+    if (!inQuote && (ch === ' ' || ch === '\t')) {
       lastBoundary = i + 1;
     }
   }
@@ -119,33 +112,25 @@ function trailingTokenSlice(input: string): {
   };
 }
 
-export function useSearchFacets(
-  options: UseSearchFacetsOptions,
-): UseSearchFacets {
+export function useSearchFacets(options: UseSearchFacetsOptions): UseSearchFacets {
   const { schema, value, onChange } = options;
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
 
   const chips = useMemo(() => buildChipModels(value, schema), [value, schema]);
-  const chipIds = useMemo(
-    () => value.clauses.map((c, i) => clauseId(c, i)),
-    [value.clauses],
-  );
+  const chipIds = useMemo(() => value.clauses.map((c, i) => clauseId(c, i)), [value.clauses]);
 
   const partial = useMemo<PartialToken>(() => {
     const { trailing } = trailingTokenSlice(inputValue);
     return classifyPartialToken(trailing, schema);
   }, [inputValue, schema]);
 
-  const facetSuggestions = useMemo(
-    () => buildFacetSuggestions(partial, schema),
-    [partial, schema],
-  );
+  const facetSuggestions = useMemo(() => buildFacetSuggestions(partial, schema), [partial, schema]);
 
   const addClause = useCallback(
     (clause: Clause) => {
       onChange({ ...value, clauses: [...value.clauses, clause] });
     },
-    [onChange, value],
+    [onChange, value]
   );
 
   const replaceClause = useCallback(
@@ -154,7 +139,7 @@ export function useSearchFacets(
       next[index] = clause;
       onChange({ ...value, clauses: next });
     },
-    [onChange, value],
+    [onChange, value]
   );
 
   const removeClause = useCallback(
@@ -163,7 +148,7 @@ export function useSearchFacets(
       next.splice(index, 1);
       onChange({ ...value, clauses: next });
     },
-    [onChange, value],
+    [onChange, value]
   );
 
   const toggleNegation = useCallback(
@@ -176,14 +161,14 @@ export function useSearchFacets(
       next[index] = { ...clause, negated: !clause.negated };
       onChange({ ...value, clauses: next });
     },
-    [onChange, schema, value],
+    [onChange, schema, value]
   );
 
   const setFreeText = useCallback(
     (text: string) => {
       onChange({ ...value, freeText: text });
     },
-    [onChange, value],
+    [onChange, value]
   );
 
   const commitTrailingToken = useCallback((): boolean => {
@@ -198,7 +183,7 @@ export function useSearchFacets(
     if (!v) return false;
     if (split.negated && def.negatable === false) return false;
     addClause({ facet: split.facet, negated: split.negated, value: v });
-    setInputValue(before.trimEnd().length === 0 ? "" : before);
+    setInputValue(before.trimEnd().length === 0 ? '' : before);
     return true;
   }, [inputValue, schema, addClause]);
 

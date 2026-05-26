@@ -1,8 +1,8 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { shiki } from "./app/vite-plugins/shiki";
-import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { shiki } from './app/vite-plugins/shiki';
+import { fileURLToPath, URL } from 'node:url';
 
 // Each drop-in folder under src/{hooks,components}/<name>/ ships its own
 // isolated test harness (its own package.json with React 18 in devDeps), so
@@ -17,18 +17,12 @@ import { fileURLToPath, URL } from "node:url";
 // root, popovers would not anchor, route navigation would not propagate — so
 // dedupe them too.
 export default defineConfig({
-  base: "/react-kit/",
+  base: '/react-kit/',
   plugins: [react(), tailwindcss(), shiki()],
   resolve: {
     alias: {
-      "~": fileURLToPath(new URL("./app", import.meta.url)),
+      '~': fileURLToPath(new URL('./app', import.meta.url)),
     },
-    dedupe: [
-      "react",
-      "react-dom",
-      "@base-ui/react",
-      "react-day-picker",
-      "react-router",
-    ],
+    dedupe: ['react', 'react-dom', '@base-ui/react', 'react-day-picker', 'react-router'],
   },
 });

@@ -6,9 +6,9 @@ project — when consuming a drop-in, work from `src/<path>/` instead.
 
 ## Two buckets
 
-| Path | Purpose |
-| --- | --- |
-| `routes/<name>.tsx` | One file per drop-in. Declarative metadata: title, description, GitHub links, list of demos to render. The router maps URL paths to these. |
+| Path                               | Purpose                                                                                                                                                                                                                           |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `routes/<name>.tsx`                | One file per drop-in. Declarative metadata: title, description, GitHub links, list of demos to render. The router maps URL paths to these.                                                                                        |
 | `components/`, `lib/`, `index.css` | Demo glue: the `SiteLayout` chrome, the shared `DropInPage` and `DemoCard` primitives, the `*-demo` wrappers under `components/demos/`, vendored shadcn primitives under `components/ui/`, the `cn()` helper, and the global CSS. |
 
 `main.tsx` is the Vite entry point. `router.tsx` is the route table.

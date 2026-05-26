@@ -75,24 +75,20 @@ per dev/build process (Shiki docs explicitly recommend treating the
 highlighter as a long-lived singleton).
 
 ```ts
-import fs from "node:fs/promises";
-import {
-  createHighlighter,
-  createCssVariablesTheme,
-  type Highlighter,
-} from "shiki";
-import type { Plugin } from "vite";
+import fs from 'node:fs/promises';
+import { createHighlighter, createCssVariablesTheme, type Highlighter } from 'shiki';
+import type { Plugin } from 'vite';
 
-const QUERY = "?shiki";
+const QUERY = '?shiki';
 const theme = createCssVariablesTheme({
-  name: "shadcn",
-  variablePrefix: "--shiki-",
+  name: 'shadcn',
+  variablePrefix: '--shiki-',
 });
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 function getHighlighter() {
   highlighterPromise ??= createHighlighter({
-    langs: ["tsx"],
+    langs: ['tsx'],
     themes: [theme],
   });
   return highlighterPromise;
@@ -100,21 +96,21 @@ function getHighlighter() {
 
 export function shiki(): Plugin {
   return {
-    name: "react-kit:shiki",
+    name: 'react-kit:shiki',
     async load(id) {
       if (!id.endsWith(QUERY)) return null;
       const filepath = id.slice(0, -QUERY.length);
-      const raw = await fs.readFile(filepath, "utf8");
+      const raw = await fs.readFile(filepath, 'utf8');
       const highlighter = await getHighlighter();
       const html = highlighter.codeToHtml(raw, {
-        lang: "tsx",
-        theme: "shadcn",
+        lang: 'tsx',
+        theme: 'shadcn',
       });
       this.addWatchFile(filepath);
       return `export default ${JSON.stringify({
         raw,
         html,
-        lang: "tsx",
+        lang: 'tsx',
       })};`;
     },
   };
@@ -144,30 +140,30 @@ anything not listed falls through to `--shiki-foreground`.
 
 ```css
 :root {
-    --shiki-background: var(--muted);
-    --shiki-foreground: var(--foreground);
+  --shiki-background: var(--muted);
+  --shiki-foreground: var(--foreground);
 
-    --shiki-token-constant:          oklch(0.45 0.13 250);
-    --shiki-token-string:            oklch(0.55 0.13 145);
-    --shiki-token-comment:           var(--muted-foreground);
-    --shiki-token-keyword:           oklch(0.50 0.20 350);
-    --shiki-token-parameter:         oklch(0.50 0.13  60);
-    --shiki-token-function:          oklch(0.50 0.17 285);
-    --shiki-token-string-expression: oklch(0.55 0.13 145);
-    --shiki-token-punctuation:       var(--foreground);
-    --shiki-token-link:              oklch(0.55 0.15 220);
+  --shiki-token-constant: oklch(0.45 0.13 250);
+  --shiki-token-string: oklch(0.55 0.13 145);
+  --shiki-token-comment: var(--muted-foreground);
+  --shiki-token-keyword: oklch(0.5 0.2 350);
+  --shiki-token-parameter: oklch(0.5 0.13 60);
+  --shiki-token-function: oklch(0.5 0.17 285);
+  --shiki-token-string-expression: oklch(0.55 0.13 145);
+  --shiki-token-punctuation: var(--foreground);
+  --shiki-token-link: oklch(0.55 0.15 220);
 }
 
 .dark {
-    --shiki-background: var(--card);
+  --shiki-background: var(--card);
 
-    --shiki-token-constant:          oklch(0.78 0.12 250);
-    --shiki-token-string:            oklch(0.80 0.13 145);
-    --shiki-token-keyword:           oklch(0.78 0.18 350);
-    --shiki-token-parameter:         oklch(0.82 0.13  60);
-    --shiki-token-function:          oklch(0.78 0.15 285);
-    --shiki-token-string-expression: oklch(0.80 0.13 145);
-    --shiki-token-link:              oklch(0.78 0.15 220);
+  --shiki-token-constant: oklch(0.78 0.12 250);
+  --shiki-token-string: oklch(0.8 0.13 145);
+  --shiki-token-keyword: oklch(0.78 0.18 350);
+  --shiki-token-parameter: oklch(0.82 0.13 60);
+  --shiki-token-function: oklch(0.78 0.15 285);
+  --shiki-token-string-expression: oklch(0.8 0.13 145);
+  --shiki-token-link: oklch(0.78 0.15 220);
 }
 ```
 
@@ -189,9 +185,9 @@ wrapper, which target the descendant `<pre>` Shiki produces.
 `app/components/ui/code-block.tsx`:
 
 ```tsx
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
-import { cn } from "~/lib/utils";
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '~/lib/utils';
 
 export interface CodeBlockProps {
   raw: string;
@@ -204,18 +200,18 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
   return (
     <div
       className={cn(
-        "group relative",
+        'group relative',
         // Style the <pre> Shiki emitted, not a wrapper <pre> (would nest).
-        "[&_pre]:bg-[var(--shiki-background)]",
-        "[&_pre]:text-[var(--shiki-foreground)]",
-        "[&_pre]:max-h-80 [&_pre]:overflow-auto",
-        "[&_pre]:rounded-md [&_pre]:p-4",
-        "[&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed",
+        '[&_pre]:bg-[var(--shiki-background)]',
+        '[&_pre]:text-[var(--shiki-foreground)]',
+        '[&_pre]:max-h-80 [&_pre]:overflow-auto',
+        '[&_pre]:rounded-md [&_pre]:p-4',
+        '[&_pre]:font-mono [&_pre]:text-xs [&_pre]:leading-relaxed',
         // Shiki ships inline `background-color` / `color` on the <pre>;
         // override so our CSS-vars win regardless of theme name.
-        "[&_pre]:![background-color:var(--shiki-background)]",
-        "[&_pre]:![color:var(--shiki-foreground)]",
-        className,
+        '[&_pre]:![background-color:var(--shiki-background)]',
+        '[&_pre]:![color:var(--shiki-foreground)]',
+        className
       )}
     >
       <button
@@ -225,7 +221,7 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        aria-label={copied ? "Copied" : "Copy code"}
+        aria-label={copied ? 'Copied' : 'Copy code'}
         className="bg-background/80 text-muted-foreground hover:text-foreground absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded border border-border opacity-0 transition group-hover:opacity-100 focus:opacity-100"
       >
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
@@ -268,8 +264,8 @@ export interface HighlightedSource {
 `app/vite-env.d.ts` (created if absent) types the `?shiki` import:
 
 ```ts
-declare module "*?shiki" {
-  const src: import("~/lib/shiki-source").HighlightedSource;
+declare module '*?shiki' {
+  const src: import('~/lib/shiki-source').HighlightedSource;
   export default src;
 }
 ```
@@ -293,9 +289,9 @@ suffix:
 
 ```ts
 // before
-import src from "~/components/demos/foo.tsx?raw";
+import src from '~/components/demos/foo.tsx?raw';
 // after
-import src from "~/components/demos/foo.tsx?shiki";
+import src from '~/components/demos/foo.tsx?shiki';
 ```
 
 No other route changes are needed.
