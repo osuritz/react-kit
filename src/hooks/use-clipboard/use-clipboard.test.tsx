@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { ClipboardError, useClipboard } from "./use-clipboard";
 
@@ -498,5 +498,41 @@ describe("useClipboard — fallback & error reasons", () => {
     });
 
     expect(result.current.error?.reason).toBe("insecure-context");
+  });
+});
+
+describe("useClipboard — accessibility pattern", () => {
+  function CopyButtonHarness() {
+    const { copy, copied } = useClipboard({ text: "value", timeout: 0 });
+    return (
+      <div>
+        <button
+          type="button"
+          aria-label={copied ? "Copied to clipboard" : "Copy to clipboard"}
+          onClick={() => void copy()}
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+        <span role="status" aria-live="polite">
+          {copied ? "Copied to clipboard" : ""}
+        </span>
+      </div>
+    );
+  }
+
+  test("the trigger has an accessible name and the live region announces copied", async () => {
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    render(<CopyButtonHarness />);
+
+    const button = screen.getByRole("button", { name: "Copy to clipboard" });
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("");
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(screen.getByRole("button", { name: "Copied to clipboard" })).toBeInTheDocument();
+    expect(status).toHaveTextContent("Copied to clipboard");
   });
 });
