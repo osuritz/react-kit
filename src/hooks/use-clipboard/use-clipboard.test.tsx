@@ -105,3 +105,150 @@ describe("useClipboard — success path", () => {
     expect(result.current.reset).toBe(firstReset);
   });
 });
+
+describe("useClipboard — timer & lifecycle", () => {
+  test("copied auto-resets to false after the default 2000ms", async () => {
+    vi.useFakeTimers();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const { result } = renderHook(() => useClipboard({ text: "v" }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    expect(result.current.copied).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(result.current.copied).toBe(false);
+  });
+
+  test("honors a custom timeout", async () => {
+    vi.useFakeTimers();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const { result } = renderHook(() => useClipboard({ text: "v", timeout: 500 }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    act(() => {
+      vi.advanceTimersByTime(499);
+    });
+    expect(result.current.copied).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(result.current.copied).toBe(false);
+  });
+
+  test("a second copy before elapse re-arms the timer (no early flip)", async () => {
+    vi.useFakeTimers();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const { result } = renderHook(() => useClipboard({ text: "v", timeout: 1000 }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    await act(async () => {
+      await result.current.copy();
+    });
+    // 800ms after the first copy / 0ms after the second: the original timer
+    // must have been cleared, so copied is still true here.
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current.copied).toBe(true);
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    expect(result.current.copied).toBe(false);
+  });
+
+  test("timeout <= 0 disables auto-reset", async () => {
+    vi.useFakeTimers();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const { result } = renderHook(() => useClipboard({ text: "v", timeout: 0 }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+    expect(result.current.copied).toBe(true);
+  });
+
+  test("reset() clears copied, error, and the pending timer", async () => {
+    vi.useFakeTimers();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const { result } = renderHook(() => useClipboard({ text: "v" }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    act(() => {
+      result.current.reset();
+    });
+    expect(result.current.copied).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+
+  test("unmounting clears the timer and does not set state after unmount", async () => {
+    vi.useFakeTimers();
+    let resolveWrite!: () => void;
+    const writeText = vi.fn(
+      () => new Promise<void>((resolve) => (resolveWrite = resolve)),
+    );
+    setClipboard(writeText);
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { result, unmount } = renderHook(() => useClipboard({ text: "v" }));
+
+    let copyPromise!: Promise<boolean>;
+    act(() => {
+      copyPromise = result.current.copy();
+    });
+    unmount();
+    await act(async () => {
+      resolveWrite();
+      await copyPromise;
+    });
+
+    // No "set state on unmounted component" error was logged.
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  test("an earlier in-flight write does not clobber a later copy", async () => {
+    // First copy resolves slowly; second resolves fast. The first's late
+    // resolution must NOT re-set copied/restart its timer.
+    let resolveFirst!: () => void;
+    const writeText = vi
+      .fn()
+      .mockImplementationOnce(
+        () => new Promise<void>((r) => (resolveFirst = r)),
+      )
+      .mockImplementationOnce(() => Promise.resolve());
+    setClipboard(writeText);
+    const onCopied = vi.fn();
+    const { result } = renderHook(() => useClipboard({ text: "v", onCopied }));
+
+    let firstPromise!: Promise<boolean>;
+    act(() => {
+      firstPromise = result.current.copy("first");
+    });
+    await act(async () => {
+      await result.current.copy("second");
+    });
+    expect(onCopied).toHaveBeenLastCalledWith("second");
+
+    await act(async () => {
+      resolveFirst();
+      await firstPromise;
+    });
+    // The stale first copy resolved last but must not have fired its callback.
+    expect(onCopied).toHaveBeenCalledTimes(1);
+  });
+});

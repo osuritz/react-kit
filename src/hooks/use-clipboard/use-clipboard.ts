@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type ClipboardErrorReason =
   | "not-supported"
@@ -50,8 +50,7 @@ export interface UseClipboardResult {
   reset: () => void;
 }
 
-/** @internal – used by the timeout reset logic added in a later task */
-export const DEFAULT_TIMEOUT = 2000;
+const DEFAULT_TIMEOUT = 2000;
 
 // Minimal write path — async Clipboard API only. Task 5 adds the execCommand
 // fallback and the full reason logic.
@@ -74,35 +73,77 @@ export function useClipboard(
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<ClipboardError | null>(null);
 
-  // Live ref written synchronously in render so the stable `copy` always sees
-  // the latest props (the action-registry live-getter pattern).
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  const reset = useCallback(() => {
-    setCopied(false);
-    setError(null);
-  }, []);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+  const generationRef = useRef(0);
 
-  const copy = useCallback(async (override?: string): Promise<boolean> => {
-    const { text, onCopied, onError } = optionsRef.current;
-    setError(null);
-    try {
-      const payload = override ?? text ?? "";
-      await writeClipboard(payload);
-      setCopied(true);
-      onCopied?.(payload);
-      return true;
-    } catch (raw) {
-      const err =
-        raw instanceof ClipboardError
-          ? raw
-          : new ClipboardError("write-failed", "Failed to copy.", { cause: raw });
-      setError(err);
-      onError?.(err);
-      return false;
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
   }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  const reset = useCallback(() => {
+    // Supersede any in-flight copy so its late resolution can't re-flip state.
+    generationRef.current++;
+    clearTimer();
+    setCopied(false);
+    setError(null);
+  }, [clearTimer]);
+
+  const copy = useCallback(
+    async (override?: string): Promise<boolean> => {
+      const { text, timeout, onCopied, onError } = optionsRef.current;
+      const generation = ++generationRef.current;
+      const isCurrent = () =>
+        mountedRef.current && generation === generationRef.current;
+
+      if (mountedRef.current) setError(null);
+      try {
+        const payload = override ?? text ?? "";
+        await writeClipboard(payload);
+
+        if (!isCurrent()) return true;
+        clearTimer();
+        const ms = timeout ?? DEFAULT_TIMEOUT;
+        if (ms > 0) {
+          timerRef.current = setTimeout(() => {
+            if (mountedRef.current) setCopied(false);
+            timerRef.current = null;
+          }, ms);
+        }
+        setCopied(true);
+        onCopied?.(payload);
+        return true;
+      } catch (raw) {
+        const err =
+          raw instanceof ClipboardError
+            ? raw
+            : new ClipboardError("write-failed", "Failed to copy.", { cause: raw });
+        if (isCurrent()) {
+          setError(err);
+          onError?.(err);
+        }
+        return false;
+      }
+    },
+    [clearTimer],
+  );
 
   return { copy, copied, error, reset };
 }
