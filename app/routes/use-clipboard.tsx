@@ -16,7 +16,7 @@ export default function UseClipboardRoute() {
         {
           title: "Copy button",
           description:
-            "A declarative <CopyButton text={value} /> with a 2s copied state and an aria-live announcement for screen readers.",
+            "A copy button wired to useClipboard, with a 2s copied state and an aria-live announcement for screen readers.",
           source: copyButtonSrc,
           render: <CopyButton />,
         },
