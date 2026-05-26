@@ -73,14 +73,14 @@ function execCommandCopy(text: string): boolean {
   textarea.select();
   // iOS Safari needs an explicit range.
   textarea.setSelectionRange(0, text.length);
-  let ok = false;
   try {
-    ok = document.execCommand("copy");
+    return document.execCommand("copy");
   } finally {
+    // Runs before the value is returned (and before a throw propagates), so the
+    // textarea is always removed and prior focus restored.
     document.body.removeChild(textarea);
     previouslyFocused?.focus?.();
   }
-  return ok;
 }
 
 /**
