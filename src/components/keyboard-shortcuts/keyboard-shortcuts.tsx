@@ -226,7 +226,7 @@ export function ShortcutsProvider({
     [actions, macResolved]
   );
 
-  const scopeStore = React.useMemo(createScopeStore, []);
+  const scopeStore = React.useMemo(() => createScopeStore(), []);
 
   // Mutable per-listener state — kept in refs so the listener doesn't
   // re-attach when `bindings` changes (the ref read picks the new list up

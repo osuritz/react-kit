@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Checkbox } from '@base-ui/react/checkbox';
 import type { CompareOp, EditorProps, NumberFacet, Value } from '../grammar/types';
 import { cn, editorStyles } from '../lib/cn';
@@ -52,14 +52,20 @@ export function NumberEditor(props: NumberEditorProps) {
   const [neg, setNeg] = useState<boolean>(negated);
   const firstRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
+  // Resync the draft when the incoming value/negated identity changes by
+  // adjusting state during render rather than in an effect — this avoids the
+  // extra commit + cascading render. See react.dev "You Might Not Need an Effect".
+  const [prevValue, setPrevValue] = useState(value);
+  const [prevNegated, setPrevNegated] = useState(negated);
+  if (value !== prevValue || negated !== prevNegated) {
+    setPrevValue(value);
+    setPrevNegated(negated);
     setOp(initial.op);
     setRaw(initial.raw);
     setFrom(initial.from);
     setTo(initial.to);
     setNeg(negated);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, negated]);
+  }
 
   const negatable = facet.negatable !== false;
 
