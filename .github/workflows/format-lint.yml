@@ -1,0 +1,32 @@
+name: Format & Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  format-lint:
+    name: Format & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format
+
+      # Placeholder — oxlint is introduced in a follow-up PR. This step keeps
+      # a slot in the pipeline so wiring it up later is a one-line change.
+      - name: Lint
+        run: echo 'Linter not configured yet; oxlint will be added in a follow-up PR.'
