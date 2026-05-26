@@ -32,6 +32,11 @@ export const NAV_GROUPS: ReadonlyArray<NavGroup> = [
         blurb: 'Light/dark color scheme hook with SSR FOUC blocker.',
       },
       {
+        to: '/use-clipboard',
+        label: 'useClipboard',
+        blurb: 'Copy-to-clipboard hook with auto-resetting copied state and execCommand fallback.',
+      },
+      {
         to: '/action-registry',
         label: 'action-registry',
         blurb: 'Shared registry that the keybinding hook and command palette subscribe to.',

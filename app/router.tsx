@@ -3,6 +3,7 @@ import { SiteLayout } from './components/site-layout';
 import { RouteErrorPanel } from './components/route-error';
 import IndexRoute from './routes/index';
 import ColorSchemeRoute from './routes/color-scheme';
+import UseClipboardRoute from './routes/use-clipboard';
 import ActionRegistryRoute from './routes/action-registry';
 import SearchFacetsRoute from './routes/search-facets';
 import KeyboardShortcutsRoute from './routes/keyboard-shortcuts';
@@ -33,6 +34,7 @@ export const router = createBrowserRouter(
           children: [
             { path: '/', element: <IndexRoute /> },
             { path: 'color-scheme', element: <ColorSchemeRoute /> },
+            { path: 'use-clipboard', element: <UseClipboardRoute /> },
             { path: 'action-registry', element: <ActionRegistryRoute /> },
             { path: 'search-facets', element: <SearchFacetsRoute /> },
             { path: 'keyboard-shortcuts', element: <KeyboardShortcutsRoute /> },
