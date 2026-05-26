@@ -1,14 +1,20 @@
 {
   "plugins": ["react", "unicorn", "typescript", "oxc"],
+  "jsPlugins": [{ "name": "react-hooks-js", "specifier": "eslint-plugin-react-hooks" }],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/exhaustive-deps": "error"
+    "react/exhaustive-deps": "error",
+    "react-hooks-js/refs": "warn",
+    "react-hooks-js/set-state-in-effect": "warn",
+    "react-hooks-js/globals": "warn",
+    "react-hooks-js/use-memo": "warn"
   },
   "overrides": [
     {
       "files": ["**/*.test.{ts,tsx}"],
       "rules": {
-        "no-eval": "off"
+        "no-eval": "off",
+        "react-hooks-js/globals": "off"
       }
     }
   ]

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { RadioGroup } from '@base-ui/react/radio-group';
 import { Radio } from '@base-ui/react/radio';
 import { Checkbox } from '@base-ui/react/checkbox';
@@ -21,11 +21,17 @@ export function EnumEditor(props: EnumEditorProps) {
   const [neg, setNeg] = useState<boolean>(negated);
   const firstRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
+  // Resync the draft when the incoming value/negated identity changes by
+  // adjusting state during render rather than in an effect — this avoids the
+  // extra commit + cascading render. See react.dev "You Might Not Need an Effect".
+  const [prevValue, setPrevValue] = useState(value);
+  const [prevNegated, setPrevNegated] = useState(negated);
+  if (value !== prevValue || negated !== prevNegated) {
+    setPrevValue(value);
+    setPrevNegated(negated);
     setSelected(initialRaw);
     setNeg(negated);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, negated]);
+  }
 
   const negatable = facet.negatable !== false;
 

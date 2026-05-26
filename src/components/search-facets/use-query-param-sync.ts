@@ -69,7 +69,6 @@ export function useQueryParamSync(
       onChangeRef.current(ast);
     }
     // Run once on mount only — re-running on prop changes is handled below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 2. popstate: re-hydrate when the user navigates the history stack.
