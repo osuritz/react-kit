@@ -195,6 +195,10 @@ export function useClipboard(
 
         await writeClipboard(payload);
 
+        // The write succeeded, so we resolve `true` even if a newer copy/reset
+        // or an unmount superseded this call — the bytes did reach the
+        // clipboard. We just skip the state/callback/timer side effects, which
+        // belong to whichever call is current now.
         if (!isCurrent()) return true;
         clearTimer();
         const ms = timeout ?? DEFAULT_TIMEOUT;

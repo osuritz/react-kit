@@ -252,6 +252,42 @@ describe("useClipboard — timer & lifecycle", () => {
     expect(onCopied).toHaveBeenCalledTimes(1);
   });
 
+  test("an earlier in-flight write that fails late does not surface its error", async () => {
+    // Symmetric to the clobber test, on the failure side: the first copy's
+    // write rejects *after* a later copy succeeded. The stale rejection must
+    // not set `error` or call `onError`.
+    let rejectFirst!: (reason: unknown) => void;
+    const writeText = vi
+      .fn()
+      .mockImplementationOnce(
+        () => new Promise<void>((_resolve, reject) => (rejectFirst = reject)),
+      )
+      .mockImplementationOnce(() => Promise.resolve());
+    setClipboard(writeText);
+    // No async-reject fallback should rescue the first write: execCommand fails.
+    vi.spyOn(document, "execCommand").mockReturnValue(false);
+    const onError = vi.fn();
+    const { result } = renderHook(() => useClipboard({ text: "v", onError }));
+
+    let firstPromise!: Promise<boolean>;
+    act(() => {
+      firstPromise = result.current.copy("first");
+    });
+    await act(async () => {
+      await result.current.copy("second");
+    });
+    expect(result.current.copied).toBe(true);
+
+    await act(async () => {
+      rejectFirst(new DOMException("late", "NotAllowedError"));
+      await firstPromise;
+    });
+    // The superseded first copy failed late — its error is swallowed.
+    expect(onError).not.toHaveBeenCalled();
+    expect(result.current.error).toBeNull();
+    expect(result.current.copied).toBe(true);
+  });
+
   test("a pending auto-reset timer does not fire after unmount", async () => {
     vi.useFakeTimers();
     setClipboard(vi.fn().mockResolvedValue(undefined));
