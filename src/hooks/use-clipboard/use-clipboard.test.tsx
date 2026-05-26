@@ -391,3 +391,112 @@ describe("useClipboard — onBeforeCopy", () => {
     expect(order).toEqual(["before", "write", "after"]);
   });
 });
+
+describe("useClipboard — fallback & error reasons", () => {
+  test("falls back to execCommand when the async API is absent", async () => {
+    setClipboard(undefined); // no navigator.clipboard
+    const exec = vi.spyOn(document, "execCommand").mockReturnValue(true);
+    const { result } = renderHook(() => useClipboard({ text: "hi" }));
+
+    let ok!: boolean;
+    await act(async () => {
+      ok = await result.current.copy();
+    });
+
+    expect(ok).toBe(true);
+    expect(exec).toHaveBeenCalledWith("copy");
+    expect(result.current.copied).toBe(true);
+    // The temporary textarea must be cleaned up.
+    expect(document.querySelector("textarea")).toBeNull();
+  });
+
+  test("the fallback textarea is readonly and restores prior focus", async () => {
+    setClipboard(undefined);
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    expect(document.activeElement).toBe(input);
+
+    vi.spyOn(document, "execCommand").mockImplementation(() => {
+      const ta = document.querySelector("textarea");
+      expect(ta).not.toBeNull();
+      expect(ta!.hasAttribute("readonly")).toBe(true);
+      return true;
+    });
+
+    const { result } = renderHook(() => useClipboard({ text: "hi" }));
+    await act(async () => {
+      await result.current.copy();
+    });
+
+    expect(document.activeElement).toBe(input);
+    document.body.removeChild(input);
+  });
+
+  test("falls back to execCommand after the async write rejects", async () => {
+    setClipboard(vi.fn().mockRejectedValue(new DOMException("no", "NotAllowedError")));
+    const exec = vi.spyOn(document, "execCommand").mockReturnValue(true);
+    const { result } = renderHook(() => useClipboard({ text: "hi" }));
+
+    let ok!: boolean;
+    await act(async () => {
+      ok = await result.current.copy();
+    });
+
+    expect(ok).toBe(true);
+    expect(exec).toHaveBeenCalledWith("copy");
+    expect(result.current.error).toBeNull();
+  });
+
+  test("reason 'not-supported' when no clipboard mechanism exists", async () => {
+    setClipboard(undefined);
+    // Make execCommand non-callable so no fallback exists.
+    Object.defineProperty(document, "execCommand", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+    const onError = vi.fn();
+    const { result } = renderHook(() => useClipboard({ text: "v", onError }));
+
+    let ok!: boolean;
+    await act(async () => {
+      ok = await result.current.copy();
+    });
+
+    expect(ok).toBe(false);
+    expect((onError.mock.calls[0][0] as ClipboardError).reason).toBe("not-supported");
+    expect(result.current.error?.reason).toBe("not-supported");
+  });
+
+  test("reason 'write-failed' (with DOMException cause) when async rejects and fallback fails", async () => {
+    const cause = new DOMException("denied", "NotAllowedError");
+    setClipboard(vi.fn().mockRejectedValue(cause));
+    vi.spyOn(document, "execCommand").mockReturnValue(false);
+    const { result } = renderHook(() => useClipboard({ text: "v" }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+
+    expect(result.current.error?.reason).toBe("write-failed");
+    expect(result.current.error?.cause).toBe(cause);
+    expect(result.current.copied).toBe(false);
+  });
+
+  test("reason 'insecure-context' when async API absent, insecure, and fallback fails", async () => {
+    setClipboard(undefined);
+    Object.defineProperty(window, "isSecureContext", {
+      value: false,
+      configurable: true,
+    });
+    vi.spyOn(document, "execCommand").mockReturnValue(false);
+    const { result } = renderHook(() => useClipboard({ text: "v" }));
+
+    await act(async () => {
+      await result.current.copy();
+    });
+
+    expect(result.current.error?.reason).toBe("insecure-context");
+  });
+});

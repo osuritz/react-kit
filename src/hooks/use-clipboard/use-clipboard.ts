@@ -52,19 +52,85 @@ export interface UseClipboardResult {
 
 const DEFAULT_TIMEOUT = 2000;
 
-// Minimal write path — async Clipboard API only. Task 5 adds the execCommand
-// fallback and the full reason logic.
+/** Hardened legacy fallback: hidden readonly textarea + document.execCommand("copy"). */
+function execCommandCopy(text: string): boolean {
+  if (
+    typeof document === "undefined" ||
+    typeof document.execCommand !== "function"
+  ) {
+    return false;
+  }
+  const previouslyFocused = document.activeElement as HTMLElement | null;
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  // readonly stops the iOS soft keyboard from opening on focus.
+  textarea.setAttribute("readonly", "");
+  // Rendered but out of the way (display:none can't be selected).
+  textarea.style.cssText =
+    "position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;margin:0;opacity:0;";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  // iOS Safari needs an explicit range.
+  textarea.setSelectionRange(0, text.length);
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } finally {
+    document.body.removeChild(textarea);
+    previouslyFocused?.focus?.();
+  }
+  return ok;
+}
+
+/**
+ * Writes `text` to the clipboard, preferring the async API and degrading to
+ * execCommand. Throws a ClipboardError on total failure, always preserving the
+ * underlying DOMException on `.cause`. `insecure-context` is best-effort: it
+ * fires only when the async API was entirely absent and the page is not a
+ * secure context.
+ */
 async function writeClipboard(text: string): Promise<void> {
   const asyncAvailable =
     typeof navigator !== "undefined" &&
     typeof navigator.clipboard?.writeText === "function";
-  if (!asyncAvailable) {
+  const fallbackAvailable =
+    typeof document !== "undefined" &&
+    typeof document.execCommand === "function";
+  const insecure =
+    typeof window !== "undefined" && window.isSecureContext === false;
+
+  if (!asyncAvailable && !fallbackAvailable) {
     throw new ClipboardError(
       "not-supported",
       "Clipboard is not available in this environment.",
     );
   }
-  await navigator.clipboard.writeText(text);
+
+  let firstError: unknown;
+  if (asyncAvailable) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (e) {
+      firstError = e;
+    }
+  }
+
+  if (fallbackAvailable && execCommandCopy(text)) {
+    return;
+  }
+
+  if (!asyncAvailable && insecure) {
+    throw new ClipboardError(
+      "insecure-context",
+      "Clipboard write requires a secure context (HTTPS).",
+      { cause: firstError },
+    );
+  }
+  throw new ClipboardError("write-failed", "Failed to write to the clipboard.", {
+    cause: firstError,
+  });
 }
 
 export function useClipboard(
