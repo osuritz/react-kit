@@ -272,3 +272,122 @@ describe("useClipboard — timer & lifecycle", () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 });
+
+describe("useClipboard — onBeforeCopy", () => {
+  test("returning a string transforms the payload", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    setClipboard(writeText);
+    const { result } = renderHook(() =>
+      useClipboard({ text: "raw", onBeforeCopy: (t) => `${t}!` }),
+    );
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    expect(writeText).toHaveBeenCalledWith("raw!");
+  });
+
+  test("returning an empty string copies '' (not treated as cancel)", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    setClipboard(writeText);
+    const { result } = renderHook(() =>
+      useClipboard({ text: "raw", onBeforeCopy: () => "" }),
+    );
+
+    let ok!: boolean;
+    await act(async () => {
+      ok = await result.current.copy();
+    });
+    expect(writeText).toHaveBeenCalledWith("");
+    expect(ok).toBe(true);
+  });
+
+  test("returning false aborts: no write, no onCopied, no error", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    setClipboard(writeText);
+    const onCopied = vi.fn();
+    const onError = vi.fn();
+    const { result } = renderHook(() =>
+      useClipboard({ text: "v", onBeforeCopy: () => false, onCopied, onError }),
+    );
+
+    let ok!: boolean;
+    await act(async () => {
+      ok = await result.current.copy();
+    });
+    expect(ok).toBe(false);
+    expect(writeText).not.toHaveBeenCalled();
+    expect(onCopied).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+    expect(result.current.copied).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+
+  test("awaits an async onBeforeCopy before writing", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    setClipboard(writeText);
+    const { result } = renderHook(() =>
+      useClipboard({
+        text: "raw",
+        onBeforeCopy: async (t) => `${t}-async`,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    expect(writeText).toHaveBeenCalledWith("raw-async");
+  });
+
+  test("a throwing onBeforeCopy routes to onError and never throws", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    setClipboard(writeText);
+    const boom = new Error("boom");
+    const onError = vi.fn();
+    const { result } = renderHook(() =>
+      useClipboard({
+        text: "v",
+        onBeforeCopy: () => {
+          throw boom;
+        },
+        onError,
+      }),
+    );
+
+    let ok!: boolean;
+    await act(async () => {
+      ok = await result.current.copy();
+    });
+    expect(ok).toBe(false);
+    expect(writeText).not.toHaveBeenCalled();
+    expect(onError).toHaveBeenCalledTimes(1);
+    const err = onError.mock.calls[0][0] as ClipboardError;
+    expect(err.reason).toBe("write-failed");
+    expect(err.cause).toBe(boom);
+    expect(result.current.error).toBe(err);
+  });
+
+  test("onBeforeCopy runs before the write and onCopied after", async () => {
+    const order: string[] = [];
+    const writeText = vi.fn(async () => {
+      order.push("write");
+    });
+    setClipboard(writeText);
+    const { result } = renderHook(() =>
+      useClipboard({
+        text: "v",
+        onBeforeCopy: () => {
+          order.push("before");
+        },
+        onCopied: () => {
+          order.push("after");
+        },
+      }),
+    );
+
+    await act(async () => {
+      await result.current.copy();
+    });
+    expect(order).toEqual(["before", "write", "after"]);
+  });
+});

@@ -108,14 +108,25 @@ export function useClipboard(
 
   const copy = useCallback(
     async (override?: string): Promise<boolean> => {
-      const { text, timeout, onCopied, onError } = optionsRef.current;
+      const { text, timeout, onBeforeCopy, onCopied, onError } = optionsRef.current;
       const generation = ++generationRef.current;
       const isCurrent = () =>
         mountedRef.current && generation === generationRef.current;
 
       if (mountedRef.current) setError(null);
       try {
-        const payload = override ?? text ?? "";
+        let payload = override ?? text ?? "";
+
+        if (onBeforeCopy) {
+          const transformed = await onBeforeCopy(payload);
+          if (transformed === false) {
+            return false;
+          }
+          if (typeof transformed === "string") {
+            payload = transformed;
+          }
+        }
+
         await writeClipboard(payload);
 
         if (!isCurrent()) return true;
