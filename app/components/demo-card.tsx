@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { CodeBlock } from "./ui/code-block";
-import type { HighlightedSource } from "~/lib/shiki-source";
+import type { ReactNode } from 'react';
+import { CodeBlock } from './ui/code-block';
+import type { HighlightedSource } from '~/lib/shiki-source';
 
 export interface DemoCardProps {
   title: string;

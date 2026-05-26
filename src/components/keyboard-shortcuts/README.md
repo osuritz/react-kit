@@ -24,14 +24,14 @@ Copy these files into your project (e.g. `src/components/keyboard-shortcuts/`):
 - `format.ts` — display helpers (`formatChord`, `formatSequence`,
   `formatShortcut`)
 - `lib/cn.ts` — local class-name composer (shadcn idiom)
-- *(optional)* this README
+- _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
 `vitest.config.ts`, `vitest.setup.ts`, `keyboard-shortcuts.test.tsx`) are
 the **verification harness** — they live alongside the drop-in so
 `npm test` works here, but they're not part of what you copy into your app.
 
-This drop-in *consumes* the action-registry drop-in — it does not redefine
+This drop-in _consumes_ the action-registry drop-in — it does not redefine
 the `Action` contract. Make sure
 [`src/hooks/action-registry/`](../../hooks/action-registry/README.md) is in
 your project too (or wired to wherever you're keeping the registry).
@@ -53,8 +53,11 @@ Peer requirements:
 1. **Wrap your app** in both providers, in this order:
 
    ```tsx
-   import { ActionsProvider } from "./hooks/action-registry/actions";
-   import { ShortcutsProvider, ShortcutCheatsheet } from "./components/keyboard-shortcuts/keyboard-shortcuts";
+   import { ActionsProvider } from './hooks/action-registry/actions';
+   import {
+     ShortcutsProvider,
+     ShortcutCheatsheet,
+   } from './components/keyboard-shortcuts/keyboard-shortcuts';
 
    export function App() {
      return (
@@ -76,24 +79,24 @@ Peer requirements:
    provider. Add a `shortcut` field and the binding lights up:
 
    ```tsx
-   import { useAction } from "./hooks/action-registry/actions";
-   import { useNavigate } from "react-router";
+   import { useAction } from './hooks/action-registry/actions';
+   import { useNavigate } from 'react-router';
 
    export function NavShortcuts() {
      const navigate = useNavigate();
      useAction({
-       id: "nav.settings",
-       label: "Open Settings",
-       group: "Navigation",
-       shortcut: "mod+,",
-       run: () => navigate("/settings"),
+       id: 'nav.settings',
+       label: 'Open Settings',
+       group: 'Navigation',
+       shortcut: 'mod+,',
+       run: () => navigate('/settings'),
      });
      useAction({
-       id: "nav.inbox",
-       label: "Go to inbox",
-       group: "Navigation",
-       shortcut: "g i", // two-key sequence
-       run: () => navigate("/inbox"),
+       id: 'nav.inbox',
+       label: 'Go to inbox',
+       group: 'Navigation',
+       shortcut: 'g i', // two-key sequence
+       run: () => navigate('/inbox'),
      });
      return null;
    }
@@ -136,7 +139,7 @@ Punctuation like `?`, `!`, `@` requires Shift on most keyboards, but the
 browser delivers them as `event.key === "?"` (already shifted). The
 matcher relaxes its shift comparison for those: a chord that says `"?"`
 matches whether or not `shiftKey` is reported. Uppercase ASCII letters
-keep strict semantics — `"k"` will *not* fire on Shift+K. Write
+keep strict semantics — `"k"` will _not_ fire on Shift+K. Write
 `"shift+k"` (or `"K"`, which parses to the same thing after lowercasing)
 when you actually want the shift-modifier form.
 
@@ -160,18 +163,18 @@ Every action has an optional `scope` field. `undefined`, `""`, and
 scope, gated by `useShortcutScope`:
 
 ```tsx
-import { useShortcutScope } from "./components/keyboard-shortcuts/keyboard-shortcuts";
+import { useShortcutScope } from './components/keyboard-shortcuts/keyboard-shortcuts';
 
 function EditorRoute() {
-  useShortcutScope("editor"); // active for the lifetime of this component
+  useShortcutScope('editor'); // active for the lifetime of this component
   // …
 }
 
 useAction({
-  id: "editor.save",
-  label: "Save",
-  scope: "editor",
-  shortcut: "mod+s",
+  id: 'editor.save',
+  label: 'Save',
+  scope: 'editor',
+  shortcut: 'mod+s',
   run: save,
 });
 ```
@@ -186,11 +189,11 @@ API break.
 
 ### `<ShortcutsProvider>`
 
-| Prop                | Type                       | Default      |
-|---------------------|----------------------------|--------------|
-| `target`            | `Document \| HTMLElement`  | `document`   |
-| `sequenceTimeoutMs` | `number`                   | `1000`       |
-| `mac`               | `boolean`                  | autodetected |
+| Prop                | Type                      | Default      |
+| ------------------- | ------------------------- | ------------ |
+| `target`            | `Document \| HTMLElement` | `document`   |
+| `sequenceTimeoutMs` | `number`                  | `1000`       |
+| `mac`               | `boolean`                 | autodetected |
 
 Must be inside an `<ActionsProvider>`. Attaches one `keydown` listener,
 ignores `event.repeat`, calls `preventDefault()` only when a chord
@@ -200,15 +203,15 @@ in-progress sequences.
 
 ### `<ShortcutCheatsheet>`
 
-| Prop           | Type                                    | Default                |
-|----------------|-----------------------------------------|------------------------|
-| `shortcut`     | `string \| string[] \| false`           | `"?"`                  |
-| `title`        | `ReactNode`                             | `"Keyboard shortcuts"` |
-| `description`  | `ReactNode`                             | —                      |
-| `open`         | `boolean`                               | uncontrolled           |
-| `onOpenChange` | `(open: boolean) => void`               | —                      |
-| `className`    | `string`                                | —                      |
-| `mac`          | `boolean`                               | autodetected           |
+| Prop           | Type                          | Default                |
+| -------------- | ----------------------------- | ---------------------- |
+| `shortcut`     | `string \| string[] \| false` | `"?"`                  |
+| `title`        | `ReactNode`                   | `"Keyboard shortcuts"` |
+| `description`  | `ReactNode`                   | —                      |
+| `open`         | `boolean`                     | uncontrolled           |
+| `onOpenChange` | `(open: boolean) => void`     | —                      |
+| `className`    | `string`                      | —                      |
+| `mac`          | `boolean`                     | autodetected           |
 
 Lists every registered action with a `shortcut`, grouped by
 `Action.group` (with an "Other" bucket for ungrouped actions, pinned
@@ -218,7 +221,7 @@ the "Help" group so its own binding shows up in the listing — pass
 
 Disabled rows (where `action.enabled?.() === false` at the time the
 cheatsheet renders) get `aria-disabled` and `opacity-50`. They're still
-listed — the cheatsheet is a *reference*, not an *invoker*; users still
+listed — the cheatsheet is a _reference_, not an _invoker_; users still
 benefit from seeing what would be available if the action's gate
 flipped on.
 

@@ -4,8 +4,8 @@
 // (e.g. `text-chart-1`, `text-emerald-500`). Tailwind v4 + the standard shadcn
 // theme tokens are expected at the host-app level only if you use token-based
 // utility classes; the component itself needs no tokens to render.
-import { cn } from "./lib/cn";
-import { linePath, toPoints } from "./lib/scale";
+import { cn } from './lib/cn';
+import { linePath, toPoints } from './lib/scale';
 
 export interface SparklineLineProps {
   /** The series to plot, oldest → newest. */
@@ -53,7 +53,7 @@ export function SparklineLine({
             hi: p.y < acc.hi.y ? p : acc.hi,
             lo: p.y > acc.lo.y ? p : acc.lo,
           }),
-          { hi: points[0], lo: points[0] },
+          { hi: points[0], lo: points[0] }
         )
       : null;
 
@@ -62,8 +62,8 @@ export function SparklineLine({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block overflow-visible", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block overflow-visible', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >
@@ -80,18 +80,10 @@ export function SparklineLine({
       {extremes ? (
         <>
           <circle cx={extremes.hi.x} cy={extremes.hi.y} r={r} fill="currentColor" />
-          <circle
-            cx={extremes.lo.x}
-            cy={extremes.lo.y}
-            r={r}
-            fill="currentColor"
-            opacity={0.4}
-          />
+          <circle cx={extremes.lo.x} cy={extremes.lo.y} r={r} fill="currentColor" opacity={0.4} />
         </>
       ) : null}
-      {showLast && last ? (
-        <circle cx={last.x} cy={last.y} r={r} fill="currentColor" />
-      ) : null}
+      {showLast && last ? <circle cx={last.x} cy={last.y} r={r} fill="currentColor" /> : null}
     </svg>
   );
 }

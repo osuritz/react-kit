@@ -84,7 +84,7 @@ function commandScoreInner(
   lowerAbbreviation: string,
   stringIndex: number,
   abbreviationIndex: number,
-  memoizedResults: Record<string, number>,
+  memoizedResults: Record<string, number>
 ): number {
   if (abbreviationIndex === abbreviation.length) {
     if (stringIndex === string.length) {
@@ -102,7 +102,10 @@ function commandScoreInner(
   var index = lowerString.indexOf(abbreviationChar, stringIndex);
   var highScore = 0;
 
-  var score: number, transposedScore: number, wordBreaks: RegExpMatchArray | null, spaceBreaks: RegExpMatchArray | null;
+  var score: number,
+    transposedScore: number,
+    wordBreaks: RegExpMatchArray | null,
+    spaceBreaks: RegExpMatchArray | null;
 
   while (index >= 0) {
     score = commandScoreInner(
@@ -112,7 +115,7 @@ function commandScoreInner(
       lowerAbbreviation,
       index + 1,
       abbreviationIndex + 1,
-      memoizedResults,
+      memoizedResults
     );
     if (score > highScore) {
       if (index === stringIndex) {
@@ -144,7 +147,8 @@ function commandScoreInner(
     if (
       (score < SCORE_TRANSPOSITION &&
         lowerString.charAt(index - 1) === lowerAbbreviation.charAt(abbreviationIndex + 1)) ||
-      (lowerAbbreviation.charAt(abbreviationIndex + 1) === lowerAbbreviation.charAt(abbreviationIndex) && // allow duplicate letters. Ref #7428
+      (lowerAbbreviation.charAt(abbreviationIndex + 1) ===
+        lowerAbbreviation.charAt(abbreviationIndex) && // allow duplicate letters. Ref #7428
         lowerString.charAt(index - 1) !== lowerAbbreviation.charAt(abbreviationIndex))
     ) {
       transposedScore = commandScoreInner(
@@ -154,7 +158,7 @@ function commandScoreInner(
         lowerAbbreviation,
         index + 1,
         abbreviationIndex + 2,
-        memoizedResults,
+        memoizedResults
       );
 
       if (transposedScore * SCORE_TRANSPOSITION > score) {
@@ -189,5 +193,13 @@ export function commandScore(string: string, abbreviation: string, aliases: stri
    * was the dominating cost in the algorithm, passing both is a little ugly, but considerably faster.
    */
   string = aliases && aliases.length > 0 ? `${string + ' ' + aliases.join(' ')}` : string;
-  return commandScoreInner(string, abbreviation, formatInput(string), formatInput(abbreviation), 0, 0, {});
+  return commandScoreInner(
+    string,
+    abbreviation,
+    formatInput(string),
+    formatInput(abbreviation),
+    0,
+    0,
+    {}
+  );
 }

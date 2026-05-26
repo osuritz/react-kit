@@ -7,7 +7,7 @@ import {
   type ParseError,
   type Query,
   type Value,
-} from "./types";
+} from './types';
 
 export interface ParseResult {
   ast: Query;
@@ -26,7 +26,7 @@ interface RawToken {
 const QUOTE = '"';
 
 function isWhitespace(ch: string): boolean {
-  return ch === " " || ch === "\t" || ch === "\n" || ch === "\r";
+  return ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r';
 }
 
 /**
@@ -45,7 +45,7 @@ export function tokenize(input: string): RawToken[] {
     while (i < input.length && isWhitespace(input[i]!)) i++;
     if (i >= input.length) break;
     const start = i;
-    let buf = "";
+    let buf = '';
     let sawQuote = false;
     while (i < input.length && !isWhitespace(input[i]!)) {
       const ch = input[i]!;
@@ -55,10 +55,10 @@ export function tokenize(input: string): RawToken[] {
         i++;
         while (i < input.length && input[i] !== QUOTE) {
           const c = input[i]!;
-          if (c === "\\" && i + 1 < input.length) {
+          if (c === '\\' && i + 1 < input.length) {
             const next = input[i + 1]!;
-            if (next === QUOTE || next === "\\") {
-              buf += "\\" + next;
+            if (next === QUOTE || next === '\\') {
+              buf += '\\' + next;
               i += 2;
               continue;
             }
@@ -95,7 +95,7 @@ export function splitFacetToken(text: string): {
   if (text.length === 0) return null;
   let i = 0;
   let negated = false;
-  if (text[0] === "-") {
+  if (text[0] === '-') {
     negated = true;
     i = 1;
   }
@@ -108,7 +108,7 @@ export function splitFacetToken(text: string): {
       i++;
       continue;
     }
-    if (!inQuote && ch === ":") {
+    if (!inQuote && ch === ':') {
       const facet = text.slice(facetStart, i);
       if (!isFacetName(facet)) return null;
       return { negated, facet, rest: text.slice(i + 1) };
@@ -122,8 +122,7 @@ function isFacetName(s: string): boolean {
   if (s.length === 0) return false;
   for (let i = 0; i < s.length; i++) {
     const ch = s.charCodeAt(i);
-    const isLetter =
-      (ch >= 0x41 && ch <= 0x5a) || (ch >= 0x61 && ch <= 0x7a);
+    const isLetter = (ch >= 0x41 && ch <= 0x5a) || (ch >= 0x61 && ch <= 0x7a);
     const isDigit = ch >= 0x30 && ch <= 0x39;
     const isAllowed = ch === 0x2d || ch === 0x5f || ch === 0x2e;
     if (!isLetter && !isDigit && !isAllowed) return false;
@@ -148,15 +147,15 @@ export function parseFacetValue(rest: string): Value | null {
     const from = stripQuotes(rest.slice(0, dotIdx));
     const to = stripQuotes(rest.slice(dotIdx + 2));
     if (from.length === 0 || to.length === 0) return null;
-    return { kind: "range", from, to };
+    return { kind: 'range', from, to };
   }
   const op = readCompareOp(rest);
   if (op) {
     const raw = stripQuotes(rest.slice(op.consumed));
     if (raw.length === 0) return null;
-    return { kind: "compare", op: op.op, raw };
+    return { kind: 'compare', op: op.op, raw };
   }
-  return { kind: "literal", raw: stripQuotes(rest) };
+  return { kind: 'literal', raw: stripQuotes(rest) };
 }
 
 function findUnquotedRange(s: string): number {
@@ -167,23 +166,23 @@ function findUnquotedRange(s: string): number {
       inQuote = !inQuote;
       continue;
     }
-    if (!inQuote && ch === "." && s[i + 1] === ".") return i;
+    if (!inQuote && ch === '.' && s[i + 1] === '.') return i;
   }
   return -1;
 }
 
 function readCompareOp(s: string): { op: CompareOp; consumed: number } | null {
-  if (s.startsWith(">=")) return { op: "gte", consumed: 2 };
-  if (s.startsWith("<=")) return { op: "lte", consumed: 2 };
-  if (s.startsWith(">")) return { op: "gte", consumed: 1 };
-  if (s.startsWith("<")) return { op: "lte", consumed: 1 };
-  if (s.startsWith("=")) return { op: "eq", consumed: 1 };
+  if (s.startsWith('>=')) return { op: 'gte', consumed: 2 };
+  if (s.startsWith('<=')) return { op: 'lte', consumed: 2 };
+  if (s.startsWith('>')) return { op: 'gte', consumed: 1 };
+  if (s.startsWith('<')) return { op: 'lte', consumed: 1 };
+  if (s.startsWith('=')) return { op: 'eq', consumed: 1 };
   return null;
 }
 
 function stripQuotes(s: string): string {
   if (s.length >= 2 && s[0] === QUOTE && s[s.length - 1] === QUOTE) {
-    return s.slice(1, -1).replace(/\\(["\\])/g, "$1");
+    return s.slice(1, -1).replace(/\\(["\\])/g, '$1');
   }
   return s;
 }
@@ -242,45 +241,41 @@ export function parseQuery(input: string, schema: FacetSchema): ParseResult {
   }
 
   return {
-    ast: { clauses, freeText: freeParts.join(" ") },
+    ast: { clauses, freeText: freeParts.join(' ') },
     errors,
   };
 }
 
-function validateValueShape(
-  def: FacetDef,
-  value: Value,
-  negated: boolean,
-): string | null {
+function validateValueShape(def: FacetDef, value: Value, negated: boolean): string | null {
   if (negated && def.negatable === false) {
     return `Facet "${def.name}" is not negatable`;
   }
-  if (def.type === "boolean") {
-    if (value.kind !== "literal") {
+  if (def.type === 'boolean') {
+    if (value.kind !== 'literal') {
       return `Facet "${def.name}" expects a literal value`;
     }
     if (def.values.length > 0 && !def.values.includes(value.raw)) {
       return `Facet "${def.name}" does not accept value "${value.raw}"`;
     }
   }
-  if (def.type === "enum") {
-    if (value.kind !== "literal") {
+  if (def.type === 'enum') {
+    if (value.kind !== 'literal') {
       return `Facet "${def.name}" expects a literal value`;
     }
     if (!def.values.some((v) => v.value === value.raw)) {
       return `Facet "${def.name}" does not accept value "${value.raw}"`;
     }
   }
-  if (def.type === "number" || def.type === "date") {
-    if (value.kind === "literal") {
+  if (def.type === 'number' || def.type === 'date') {
+    if (value.kind === 'literal') {
       return null;
     }
-    if (value.kind === "compare" || value.kind === "range") {
-      const ops = def.ops ?? ["eq", "gte", "lte", "range"];
-      if (value.kind === "range" && !ops.includes("range")) {
+    if (value.kind === 'compare' || value.kind === 'range') {
+      const ops = def.ops ?? ['eq', 'gte', 'lte', 'range'];
+      if (value.kind === 'range' && !ops.includes('range')) {
         return `Facet "${def.name}" does not allow range values`;
       }
-      if (value.kind === "compare" && !ops.includes(value.op)) {
+      if (value.kind === 'compare' && !ops.includes(value.op)) {
         return `Facet "${def.name}" does not allow op "${value.op}"`;
       }
     }

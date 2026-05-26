@@ -3,7 +3,7 @@
 // (request volume by hour, activity by day, error density). One color
 // (`currentColor`) ramped by opacity, so it reads as a heat strip without a
 // multi-hue scale. Set the hue with a text-* class.
-import { cn } from "./lib/cn";
+import { cn } from './lib/cn';
 
 export interface HeatStripProps {
   /** The series; each value becomes one cell. */
@@ -45,17 +45,15 @@ export function HeatStrip({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className={cn("block", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >
       {label?.trim() ? <title>{label}</title> : null}
       {values.map((v, i) => {
         // Non-finite cells fall to the opacity floor rather than fill-opacity="NaN".
-        const intensity = Number.isFinite(v)
-          ? Math.max(0, Math.min(1, v / scaleMax))
-          : 0;
+        const intensity = Number.isFinite(v) ? Math.max(0, Math.min(1, v / scaleMax)) : 0;
         const opacity = minOpacity + (1 - minOpacity) * intensity;
         return (
           <rect

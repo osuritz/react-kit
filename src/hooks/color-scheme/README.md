@@ -18,7 +18,7 @@ Copy these three files into your project (e.g. `src/hooks/color-scheme/`):
 - `color-scheme.tsx` — provider, hook, resolver interface, and default
   `LocalStorageColorSchemeResolver`
 - `fouc-blocker.ts` — `getColorSchemeFoucScript()` for SSR FOUC mitigation
-- *(optional)* this README
+- _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
 `vitest.config.ts`, `vitest.setup.ts`, `color-scheme.test.tsx`) are the
@@ -40,10 +40,13 @@ For Vite, CRA, or any non-SSR React app.
 
    ```tsx
    // main.tsx — runs once, before any component renders
-   import { configureColorScheme, LocalStorageColorSchemeResolver } from "./hooks/color-scheme/color-scheme";
+   import {
+     configureColorScheme,
+     LocalStorageColorSchemeResolver,
+   } from './hooks/color-scheme/color-scheme';
 
    configureColorScheme({
-     resolver: new LocalStorageColorSchemeResolver({ storageKey: "my-app:theme" }),
+     resolver: new LocalStorageColorSchemeResolver({ storageKey: 'my-app:theme' }),
      // strategy: "data-attribute", // opt out of class-based theming
    });
    ```
@@ -53,12 +56,12 @@ For Vite, CRA, or any non-SSR React app.
    common; see the demo page for that variant.
 
    ```tsx
-   import { Monitor, Moon, Sun } from "lucide-react";
-   import { ToggleGroup, ToggleGroupItem } from "#components/ui/toggle-group.tsx";
+   import { Monitor, Moon, Sun } from 'lucide-react';
+   import { ToggleGroup, ToggleGroupItem } from '#components/ui/toggle-group.tsx';
    import {
      useColorScheme,
      type UserSpecifiedColorScheme,
-   } from "./hooks/color-scheme/color-scheme";
+   } from './hooks/color-scheme/color-scheme';
 
    export function ModeToggle() {
      const { userSpecifiedColorScheme, colorScheme, setColorScheme } = useColorScheme();
@@ -68,11 +71,17 @@ For Vite, CRA, or any non-SSR React app.
            value={[userSpecifiedColorScheme]}
            onValueChange={([next]) => next && void setColorScheme(next)}
          >
-           <ToggleGroupItem value="light" aria-label="Light"><Sun /></ToggleGroupItem>
-           <ToggleGroupItem value="dark" aria-label="Dark"><Moon /></ToggleGroupItem>
-           <ToggleGroupItem value="system" aria-label="System"><Monitor /></ToggleGroupItem>
+           <ToggleGroupItem value="light" aria-label="Light">
+             <Sun />
+           </ToggleGroupItem>
+           <ToggleGroupItem value="dark" aria-label="Dark">
+             <Moon />
+           </ToggleGroupItem>
+           <ToggleGroupItem value="system" aria-label="System">
+             <Monitor />
+           </ToggleGroupItem>
          </ToggleGroup>
-         {userSpecifiedColorScheme === "system" && (
+         {userSpecifiedColorScheme === 'system' && (
            <p className="text-muted-foreground text-xs">System resolves to: {colorScheme}</p>
          )}
        </div>
@@ -88,8 +97,14 @@ updates in one component re-render the others.
 Style your app to react to the class:
 
 ```css
-:root  { --bg: #fff; --fg: #111; }
-.dark  { --bg: #111; --fg: #eee; }
+:root {
+  --bg: #fff;
+  --fg: #111;
+}
+.dark {
+  --bg: #111;
+  --fg: #eee;
+}
 ```
 
 Or with Tailwind v4, declare the dark variant once in your CSS:
@@ -124,7 +139,7 @@ flash the wrong theme.
 
    ```tsx
    // app/layout.tsx (Next.js app router)
-   import { getColorSchemeFoucScript } from "./hooks/color-scheme/fouc-blocker";
+   import { getColorSchemeFoucScript } from './hooks/color-scheme/fouc-blocker';
 
    export default function RootLayout({ children }: { children: React.ReactNode }) {
      return (
@@ -153,14 +168,14 @@ flash the wrong theme.
 
 4. **(Optional) Configure** any non-default options. If you customize
    `storageKey`, `attributeName`, or `strategy`, pass the same options to
-   `getColorSchemeFoucScript()` *and* `configureColorScheme()` — the
+   `getColorSchemeFoucScript()` _and_ `configureColorScheme()` — the
    pre-paint script and the React-side hook must agree, or hydration will
    show a flash:
 
    ```tsx
-   const opts = { storageKey: "my-app:theme" } as const;
+   const opts = { storageKey: 'my-app:theme' } as const;
    // pre-paint
-   <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript(opts) }} />
+   <script dangerouslySetInnerHTML={{ __html: getColorSchemeFoucScript(opts) }} />;
    // app boot
    configureColorScheme({ resolver: new LocalStorageColorSchemeResolver(opts) });
    ```
@@ -171,15 +186,15 @@ flash the wrong theme.
 
 Both accept the same options:
 
-| Option | Type | Default | Notes |
-|---|---|---|---|
-| `resolver` (provider: `colorSchemeResolver`) | `ColorSchemeResolver` | `new LocalStorageColorSchemeResolver()` (browser only) | Persistence backend. Pass your own to use cookies, IndexedDB, server state, etc. |
-| `strategy` | `"data-attribute" \| "class" \| "both" \| (scheme) => void` | `"class"` | How the resolved scheme is applied to the DOM. |
-| `target` | `HTMLElement` | `document.documentElement` | Target element for `data-attribute`/`class`/`both`. Ignored for the function form. |
-| `attributeName` | `string` | `"data-theme"` | Attribute used by `data-attribute` and `both`. |
+| Option                                       | Type                                                        | Default                                                | Notes                                                                              |
+| -------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `resolver` (provider: `colorSchemeResolver`) | `ColorSchemeResolver`                                       | `new LocalStorageColorSchemeResolver()` (browser only) | Persistence backend. Pass your own to use cookies, IndexedDB, server state, etc.   |
+| `strategy`                                   | `"data-attribute" \| "class" \| "both" \| (scheme) => void` | `"class"`                                              | How the resolved scheme is applied to the DOM.                                     |
+| `target`                                     | `HTMLElement`                                               | `document.documentElement`                             | Target element for `data-attribute`/`class`/`both`. Ignored for the function form. |
+| `attributeName`                              | `string`                                                    | `"data-theme"`                                         | Attribute used by `data-attribute` and `both`.                                     |
 
 `configureColorScheme` mutates the module-scoped default store and only takes
-effect if called *before* any `useColorScheme()` invocation. Subsequent calls
+effect if called _before_ any `useColorScheme()` invocation. Subsequent calls
 warn and are ignored. Use the provider when you need scoped or multiple
 configurations.
 
@@ -191,7 +206,7 @@ configurations.
   strategy unconditionally removes both `light` and `dark` from the target
   before adding the resolved one — don't use those class names on the same
   element for unrelated purposes. Most CSS that branches on `.dark`
-  (Tailwind's `dark:` variants included) targets *descendants* of the
+  (Tailwind's `dark:` variants included) targets _descendants_ of the
   element with the class, so make sure your `target` is an ancestor of
   everything you want to react to it. Default (`<html>`) covers everything.
 - `"data-attribute"`: sets `<html data-theme="dark">`. Works with any CSS that
@@ -204,11 +219,11 @@ configurations.
 
 ```ts
 const {
-  colorScheme,                 // "light" | "dark" | null  (resolved value)
-  isLoading,                   // true only on first render until the persisted choice resolves
-  userSpecifiedColorScheme,    // "light" | "dark" | "system"
-  systemColorScheme,           // "light" | "dark" | null  (OS-level)
-  setColorScheme,              // (value) => Promise<void>; null is treated as "system"
+  colorScheme, // "light" | "dark" | null  (resolved value)
+  isLoading, // true only on first render until the persisted choice resolves
+  userSpecifiedColorScheme, // "light" | "dark" | "system"
+  systemColorScheme, // "light" | "dark" | null  (OS-level)
+  setColorScheme, // (value) => Promise<void>; null is treated as "system"
 } = useColorScheme();
 ```
 
@@ -249,13 +264,13 @@ uses this to pick up cross-tab writes via the `storage` event. If you skip
 
 ```ts
 new LocalStorageColorSchemeResolver({
-  storageKey: "color-scheme",       // default
+  storageKey: 'color-scheme', // default
   storage: globalThis.localStorage, // pass any Storage-shaped object
 });
 ```
 
 Reads are case-insensitive and unrecognized stored values fall back to
-`"system"`. Setting `"system"` or `null` *removes* the key (it does not write
+`"system"`. Setting `"system"` or `null` _removes_ the key (it does not write
 the literal `"system"`). Implements `subscribe` via the `window`
 `storage` event, so a theme change in one tab propagates to other tabs of
 the same origin without a page reload.

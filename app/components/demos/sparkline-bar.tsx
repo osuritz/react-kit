@@ -1,4 +1,4 @@
-import { SparklineBar } from "#components/sparkline/sparkline-bar/sparkline-bar.tsx";
+import { SparklineBar } from '#components/sparkline/sparkline-bar/sparkline-bar.tsx';
 
 // Daily signups over the last 14 days.
 const signups = [12, 18, 9, 22, 16, 25, 30, 21, 28, 33, 19, 27, 35, 31];

@@ -1,6 +1,6 @@
-import { Check, Copy } from "lucide-react";
-import { useState } from "react";
-import { cn } from "~/lib/utils";
+import { Check, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '~/lib/utils';
 
 export interface CodeBlockProps {
   raw: string;
@@ -14,27 +14,27 @@ export function CodeBlock({ raw, html, className }: CodeBlockProps) {
   return (
     <div
       className={cn(
-        "group relative",
-        "[&_pre]:max-h-80 [&_pre]:overflow-auto",
-        "[&_pre]:rounded-md [&_pre]:p-4",
-        "[&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed",
+        'group relative',
+        '[&_pre]:max-h-80 [&_pre]:overflow-auto',
+        '[&_pre]:rounded-md [&_pre]:p-4',
+        '[&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed',
         // Shiki writes inline style="background-color:...; color:..." on
         // the <pre>; force our CSS-vars to win.
-        "[&_pre]:![background-color:var(--shiki-background)]",
-        "[&_pre]:![color:var(--shiki-foreground)]",
-        className,
+        '[&_pre]:![background-color:var(--shiki-background)]',
+        '[&_pre]:![color:var(--shiki-foreground)]',
+        className
       )}
     >
       <button
         type="button"
-        aria-label={copied ? "Copied" : "Copy code"}
+        aria-label={copied ? 'Copied' : 'Copy code'}
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(raw);
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           } catch (err) {
-            console.error("CodeBlock: clipboard write failed", err);
+            console.error('CodeBlock: clipboard write failed', err);
           }
         }}
         className="bg-background/80 text-muted-foreground hover:text-foreground border-border absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded border opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"

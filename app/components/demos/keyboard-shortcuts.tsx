@@ -1,15 +1,11 @@
-import * as React from "react";
-import { Button } from "~/components/ui/button.tsx";
-import {
-  ActionsProvider,
-  useAction,
-  useActions,
-} from "#hooks/action-registry/actions.tsx";
+import * as React from 'react';
+import { Button } from '~/components/ui/button.tsx';
+import { ActionsProvider, useAction, useActions } from '#hooks/action-registry/actions.tsx';
 import {
   ShortcutCheatsheet,
   ShortcutsProvider,
   formatShortcut,
-} from "#components/keyboard-shortcuts/keyboard-shortcuts.tsx";
+} from '#components/keyboard-shortcuts/keyboard-shortcuts.tsx';
 
 /**
  * Demo for the keyboard-shortcuts drop-in. Registers four sample actions
@@ -34,7 +30,7 @@ export function KeyboardShortcutsDemo() {
 function DemoBody() {
   const [log, setLog] = React.useState<string[]>([]);
   const [cheatsheetOpen, setCheatsheetOpen] = React.useState(false);
-  const [search, setSearch] = React.useState("");
+  const [search, setSearch] = React.useState('');
 
   const append = React.useCallback((line: string) => {
     setLog((prev) => [`${new Date().toLocaleTimeString()} — ${line}`, ...prev].slice(0, 6));
@@ -42,41 +38,41 @@ function DemoBody() {
 
   // Action 1: single chord, fires even from inputs.
   useAction({
-    id: "demo.palette",
-    label: "Open command palette",
-    group: "Navigation",
-    shortcut: "mod+k",
+    id: 'demo.palette',
+    label: 'Open command palette',
+    group: 'Navigation',
+    shortcut: 'mod+k',
     allowInInput: true,
-    run: () => append("mod+k → palette open"),
+    run: () => append('mod+k → palette open'),
   });
 
   // Action 2: array-of-alternates, cross-platform-friendly.
   useAction({
-    id: "demo.save",
-    label: "Save",
-    group: "File",
-    shortcut: ["mod+s", "ctrl+s"],
-    run: () => append("save fired"),
+    id: 'demo.save',
+    label: 'Save',
+    group: 'File',
+    shortcut: ['mod+s', 'ctrl+s'],
+    run: () => append('save fired'),
   });
 
   // Action 3: a `g i` two-chord sequence, gated by a guard.
   useAction({
-    id: "demo.goto-inbox",
-    label: "Go to inbox",
-    group: "Navigation",
-    shortcut: "g i",
+    id: 'demo.goto-inbox',
+    label: 'Go to inbox',
+    group: 'Navigation',
+    shortcut: 'g i',
     enabled: () => true,
-    run: () => append("g i → inbox"),
+    run: () => append('g i → inbox'),
   });
 
   // Action 4: a single-character shortcut (`?` works because the matcher
   // relaxes shift comparison for shift-produced punctuation).
   useAction({
-    id: "demo.help",
-    label: "Show help",
-    group: "Help",
-    shortcut: "/",
-    run: () => append("/ → help"),
+    id: 'demo.help',
+    label: 'Show help',
+    group: 'Help',
+    shortcut: '/',
+    run: () => append('/ → help'),
   });
 
   const { getAll } = useActions();
@@ -85,9 +81,7 @@ function DemoBody() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={() => setCheatsheetOpen(true)}>
-          Open cheatsheet (?)
-        </Button>
+        <Button onClick={() => setCheatsheetOpen(true)}>Open cheatsheet (?)</Button>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -105,10 +99,7 @@ function DemoBody() {
             {allActions
               .filter((a) => a.shortcut)
               .map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-2 text-xs"
-                >
+                <li key={a.id} className="flex items-center justify-between gap-2 text-xs">
                   <span className="truncate">{a.label}</span>
                   <ShortcutGlyphs shortcut={a.shortcut!} />
                 </li>
@@ -121,16 +112,11 @@ function DemoBody() {
             Activity
           </h3>
           {log.length === 0 ? (
-            <p className="text-muted-foreground text-xs">
-              Press a shortcut anywhere on the page.
-            </p>
+            <p className="text-muted-foreground text-xs">Press a shortcut anywhere on the page.</p>
           ) : (
             <ul className="flex flex-col gap-0.5 font-mono text-[11px]">
               {log.map((line, i) => (
-                <li
-                  key={i}
-                  className={i === 0 ? "text-foreground" : "text-muted-foreground"}
-                >
+                <li key={i} className={i === 0 ? 'text-foreground' : 'text-muted-foreground'}>
                   {line}
                 </li>
               ))}
@@ -144,9 +130,9 @@ function DemoBody() {
         onOpenChange={setCheatsheetOpen}
         description={
           <>
-            Bound to <kbd className="font-mono">?</kbd> globally. Drop the
-            component into your tree and every registered action with a{" "}
-            <code>shortcut</code> field shows up here automatically.
+            Bound to <kbd className="font-mono">?</kbd> globally. Drop the component into your tree
+            and every registered action with a <code>shortcut</code> field shows up here
+            automatically.
           </>
         }
       />
@@ -160,15 +146,11 @@ function ShortcutGlyphs({ shortcut }: { shortcut: string | string[] }) {
     <span className="flex items-center gap-1">
       {fmt.sequences.map((seq, si) => (
         <React.Fragment key={si}>
-          {si > 0 ? (
-            <span className="text-muted-foreground text-[10px]">or</span>
-          ) : null}
+          {si > 0 ? <span className="text-muted-foreground text-[10px]">or</span> : null}
           <span className="flex items-center gap-0.5">
             {seq.chords.map((chord, ci) => (
               <React.Fragment key={ci}>
-                {ci > 0 ? (
-                  <span className="text-muted-foreground text-[10px]">then</span>
-                ) : null}
+                {ci > 0 ? <span className="text-muted-foreground text-[10px]">then</span> : null}
                 <span className="flex items-center gap-0.5">
                   {chord.caps.map((cap) => (
                     <kbd

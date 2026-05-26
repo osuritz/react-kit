@@ -1,9 +1,9 @@
-import { DropInPage } from "~/components/drop-in-page";
-import { KeyboardShortcutsDemo } from "~/components/demos/keyboard-shortcuts";
-import keyboardShortcutsSrc from "~/components/demos/keyboard-shortcuts.tsx?shiki";
-import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
+import { DropInPage } from '~/components/drop-in-page';
+import { KeyboardShortcutsDemo } from '~/components/demos/keyboard-shortcuts';
+import keyboardShortcutsSrc from '~/components/demos/keyboard-shortcuts.tsx?shiki';
+import { repoBlobUrl, repoTreeUrl } from '~/lib/github';
 
-const DROP_IN_PATH = "src/components/keyboard-shortcuts";
+const DROP_IN_PATH = 'src/components/keyboard-shortcuts';
 
 export default function KeyboardShortcutsRoute() {
   return (
@@ -14,9 +14,9 @@ export default function KeyboardShortcutsRoute() {
       readmeHref={repoBlobUrl(`${DROP_IN_PATH}/README.md`)}
       demos={[
         {
-          title: "Shortcut bindings + cheatsheet",
+          title: 'Shortcut bindings + cheatsheet',
           description:
-            "Try ⌘K, ⌘S, the g-i sequence, or / from anywhere on the page. Press ? to open the cheatsheet.",
+            'Try ⌘K, ⌘S, the g-i sequence, or / from anywhere on the page. Press ? to open the cheatsheet.',
           source: keyboardShortcutsSrc,
           render: <KeyboardShortcutsDemo />,
         },

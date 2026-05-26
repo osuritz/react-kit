@@ -6,7 +6,7 @@ keybinding hook and a command palette both subscribe to. No npm package, no
 build step — copy the file into your app.
 
 > **The registry is intentionally dumb.** It stores `Action` records,
-> exposes `getAll()`, and notifies `subscribe`rs on change. It does *not*
+> exposes `getAll()`, and notifies `subscribe`rs on change. It does _not_
 > parse `shortcut`, render `icon`, evaluate `enabled`, or filter on `scope`
 > — those are consumer concerns. Keep one source of truth (this registry),
 > and let each consumer decide what to do with the actions it sees.
@@ -17,7 +17,7 @@ Copy this file into your project (e.g. `src/hooks/action-registry/`):
 
 - `actions.tsx` — `Action` type, `ActionsProvider`, `useActions()`,
   `useAction()`
-- *(optional)* this README
+- _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
 `vitest.config.ts`, `vitest.setup.ts`, `actions.test.tsx`) are the
@@ -33,7 +33,7 @@ Peer requirements: React 18+ (uses `useSyncExternalStore`).
    creates an inner registry that's isolated from the outer one.
 
    ```tsx
-   import { ActionsProvider } from "./hooks/action-registry/actions";
+   import { ActionsProvider } from './hooks/action-registry/actions';
 
    export function App() {
      return (
@@ -50,16 +50,16 @@ Peer requirements: React 18+ (uses `useSyncExternalStore`).
    consumers (palette, shortcut hook) always see the latest fields.
 
    ```tsx
-   import { useAction } from "./hooks/action-registry/actions";
+   import { useAction } from './hooks/action-registry/actions';
 
    export function SettingsRegister() {
      const navigate = useNavigate();
      useAction({
-       id: "nav.settings",
-       label: "Open Settings",
-       group: "Navigation",
-       shortcut: "mod+,",
-       run: () => navigate("/settings"),
+       id: 'nav.settings',
+       label: 'Open Settings',
+       group: 'Navigation',
+       shortcut: 'mod+,',
+       run: () => navigate('/settings'),
      });
      return null;
    }
@@ -71,8 +71,8 @@ Peer requirements: React 18+ (uses `useSyncExternalStore`).
    the registry mutates:
 
    ```tsx
-   import { useSyncExternalStore } from "react";
-   import { useActions } from "./hooks/action-registry/actions";
+   import { useSyncExternalStore } from 'react';
+   import { useActions } from './hooks/action-registry/actions';
 
    export function CommandList() {
      const { getAll, subscribe } = useActions();
@@ -100,9 +100,9 @@ opaque metadata for consumers; the registry doesn't interpret it.
 
 ```ts
 interface ActionsContextValue {
-  register: (action: Action) => () => void;     // returns an idempotent unregister
-  getAll: () => Action[];                        // stable identity until next mutation
-  getById: (id: string) => Action | undefined;  // O(1) lookup
+  register: (action: Action) => () => void; // returns an idempotent unregister
+  getAll: () => Action[]; // stable identity until next mutation
+  getById: (id: string) => Action | undefined; // O(1) lookup
   subscribe: (listener: () => void) => () => void;
 }
 ```
@@ -123,7 +123,7 @@ interface ActionsContextValue {
 
 Subscribers fire when actions are added, removed, or change their `id`
 — i.e. on `register`, `unregister`, and `useAction` re-renders where
-`action.id` itself changed. **Field-level updates do *not* fire
+`action.id` itself changed. **Field-level updates do _not_ fire
 subscribers.** A re-render of `useAction(...)` with the same `id` but a
 new `label`, `keywords`, `enabled`, or `run` propagates through the
 live getters on the registered Action — the next read sees the new
@@ -133,7 +133,7 @@ The implication for consumers (palettes, shortcut hooks, anything that
 caches across renders): **don't memoize derived state from action
 fields without an independent invalidation signal.** A command palette
 building a fuzzy-search index over `keywords`/`label` should rebuild
-the index when the search input changes, when `subscribe` fires, *and*
+the index when the search input changes, when `subscribe` fires, _and_
 on every render of the palette itself — not under the assumption that
 `subscribe` will catch every visible change. The cheapest correct
 pattern is to recompute on each render with a `useMemo` keyed by the
@@ -158,23 +158,23 @@ keyed by `action.id`:
 
 ```ts
 type Action = {
-  id: string;                    // stable, e.g. "nav.settings"
-  label: string;                 // shown in palette
-  group?: string;                // "Navigation", "Settings", ...
-  keywords?: string[];           // extra fuzzy-match terms
-  shortcut?: string | string[];  // "mod+k", "g i", ["mod+s","ctrl+s"]
-  scope?: string;                // "global" (default) | route/component scope id
+  id: string; // stable, e.g. "nav.settings"
+  label: string; // shown in palette
+  group?: string; // "Navigation", "Settings", ...
+  keywords?: string[]; // extra fuzzy-match terms
+  shortcut?: string | string[]; // "mod+k", "g i", ["mod+s","ctrl+s"]
+  scope?: string; // "global" (default) | route/component scope id
   enabled?: () => boolean;
   run: (ctx: ActionRunContext) => void | Promise<void>;
   icon?: React.ReactNode;
 };
 
 interface ActionRunContext {
-  event?: KeyboardEvent;     // present only when invoked by keyboard-shortcuts
-  source?: ActionSource;     // identifies the invoking surface
+  event?: KeyboardEvent; // present only when invoked by keyboard-shortcuts
+  source?: ActionSource; // identifies the invoking surface
 }
 
-type ActionSource = "shortcut" | "palette" | (string & {});
+type ActionSource = 'shortcut' | 'palette' | (string & {});
 ```
 
 The `shortcut` string is consumed by the keybinding hook, not the registry

@@ -1,16 +1,12 @@
-import { Monitor, Moon, Sun } from "lucide-react";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "~/components/ui/toggle-group.tsx";
+import { Monitor, Moon, Sun } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group.tsx';
 import {
   useColorScheme,
   type UserSpecifiedColorScheme,
-} from "#hooks/color-scheme/color-scheme.tsx";
+} from '#hooks/color-scheme/color-scheme.tsx';
 
 export function ModeToggleSegmented() {
-  const { userSpecifiedColorScheme, colorScheme, setColorScheme } =
-    useColorScheme();
+  const { userSpecifiedColorScheme, colorScheme, setColorScheme } = useColorScheme();
 
   return (
     <div className="flex flex-col gap-2">
@@ -28,10 +24,8 @@ export function ModeToggleSegmented() {
           <Monitor />
         </ToggleGroupItem>
       </ToggleGroup>
-      {userSpecifiedColorScheme === "system" && (
-        <p className="text-muted-foreground text-xs">
-          System resolves to: {colorScheme}
-        </p>
+      {userSpecifiedColorScheme === 'system' && (
+        <p className="text-muted-foreground text-xs">System resolves to: {colorScheme}</p>
       )}
     </div>
   );

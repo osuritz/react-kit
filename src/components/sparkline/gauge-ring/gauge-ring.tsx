@@ -3,7 +3,7 @@
 // %, health score). The arc uses `pathLength={100}` so its length is just the
 // percentage — no circumference math. Track + arc both use `currentColor` (the
 // track at low opacity); set the hue with a text-* class.
-import { cn } from "./lib/cn";
+import { cn } from './lib/cn';
 
 export interface GaugeRingProps {
   value: number;
@@ -44,8 +44,8 @@ export function GaugeRing({
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      className={cn("block", className)}
-      role={label?.trim() ? "img" : undefined}
+      className={cn('block', className)}
+      role={label?.trim() ? 'img' : undefined}
       aria-label={label?.trim() ? label : undefined}
       aria-hidden={label?.trim() ? undefined : true}
     >

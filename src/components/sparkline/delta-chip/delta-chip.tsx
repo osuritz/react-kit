@@ -3,7 +3,7 @@
 // pairs with a sparkline or a metric in a KPI cell. Positive is success-toned
 // (emerald), negative is `text-destructive`, no change is muted. Pass `invert`
 // for metrics where down is good (latency, error rate, cost).
-import { cn } from "./lib/cn";
+import { cn } from './lib/cn';
 
 export interface DeltaChipProps {
   /** The change. Sign (relative to `neutralAt`) drives direction + tone. */
@@ -25,7 +25,7 @@ export interface DeltaChipProps {
   className?: string;
 }
 
-const MINUS = "−"; // proper minus sign, not a hyphen
+const MINUS = '−'; // proper minus sign, not a hyphen
 
 /** Trim float noise (0.1 + 0.2 → "0.3", not "0.30000000000000004"). */
 function trimFloat(n: number): string {
@@ -46,24 +46,24 @@ export function DeltaChip({
   const good = invert ? dir < 0 : dir > 0;
   const tone =
     dir === 0
-      ? "text-muted-foreground"
+      ? 'text-muted-foreground'
       : good
-        ? "text-emerald-600 dark:text-emerald-400"
-        : "text-destructive";
-  const arrow = dir > 0 ? "▲" : dir < 0 ? "▼" : "—";
-  const sign = dir > 0 ? "+" : dir < 0 ? MINUS : "";
+        ? 'text-emerald-600 dark:text-emerald-400'
+        : 'text-destructive';
+  const arrow = dir > 0 ? '▲' : dir < 0 ? '▼' : '—';
+  const sign = dir > 0 ? '+' : dir < 0 ? MINUS : '';
   const text = format
     ? format(value)
     : finite
       ? `${sign}${trimFloat(Math.abs(value - neutralAt))}`
-      : "—";
+      : '—';
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums",
+        'inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums',
         tone,
-        className,
+        className
       )}
       aria-label={label}
     >

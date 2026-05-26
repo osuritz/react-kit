@@ -37,18 +37,18 @@ export type Sequence = Chord[];
 /** Result of parsing a `shortcut` field — one or more equivalent sequences. */
 export type ParsedShortcut = Sequence[];
 
-const MODIFIER_ALIASES: Record<string, "ctrl" | "meta" | "alt" | "shift"> = {
-  ctrl: "ctrl",
-  control: "ctrl",
-  meta: "meta",
-  cmd: "meta",
-  command: "meta",
-  super: "meta",
-  win: "meta",
-  alt: "alt",
-  option: "alt",
-  opt: "alt",
-  shift: "shift",
+const MODIFIER_ALIASES: Record<string, 'ctrl' | 'meta' | 'alt' | 'shift'> = {
+  ctrl: 'ctrl',
+  control: 'ctrl',
+  meta: 'meta',
+  cmd: 'meta',
+  command: 'meta',
+  super: 'meta',
+  win: 'meta',
+  alt: 'alt',
+  option: 'alt',
+  opt: 'alt',
+  shift: 'shift',
 };
 
 /**
@@ -58,44 +58,43 @@ const MODIFIER_ALIASES: Record<string, "ctrl" | "meta" | "alt" | "shift"> = {
  * but the event delivers `"Escape"`, or `"space"` vs `" "`.
  */
 const KEY_ALIASES: Record<string, string> = {
-  esc: "escape",
-  escape: "escape",
-  enter: "enter",
-  return: "enter",
-  space: " ",
-  spacebar: " ",
-  up: "arrowup",
-  down: "arrowdown",
-  left: "arrowleft",
-  right: "arrowright",
-  arrowup: "arrowup",
-  arrowdown: "arrowdown",
-  arrowleft: "arrowleft",
-  arrowright: "arrowright",
-  del: "delete",
-  delete: "delete",
-  backspace: "backspace",
-  tab: "tab",
-  plus: "+",
+  esc: 'escape',
+  escape: 'escape',
+  enter: 'enter',
+  return: 'enter',
+  space: ' ',
+  spacebar: ' ',
+  up: 'arrowup',
+  down: 'arrowdown',
+  left: 'arrowleft',
+  right: 'arrowright',
+  arrowup: 'arrowup',
+  arrowdown: 'arrowdown',
+  arrowleft: 'arrowleft',
+  arrowright: 'arrowright',
+  del: 'delete',
+  delete: 'delete',
+  backspace: 'backspace',
+  tab: 'tab',
+  plus: '+',
 };
 
 /** True when running on macOS / iOS-style platforms where `mod` should mean Meta. */
 export function isMacLike(): boolean {
-  if (typeof navigator === "undefined") return false;
+  if (typeof navigator === 'undefined') return false;
   // `navigator.platform` is deprecated but still the most reliable signal in
   // browsers we target. Fall back to userAgent if it's missing.
   const platform =
-    (navigator as Navigator & { userAgentData?: { platform?: string } })
-      .userAgentData?.platform ??
+    (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ??
     navigator.platform ??
     navigator.userAgent ??
-    "";
+    '';
   return /Mac|iPhone|iPad|iPod/i.test(platform);
 }
 
 function parseChord(raw: string, mac: boolean): Chord {
   const parts = raw
-    .split("+")
+    .split('+')
     .map((p) => p.trim())
     .filter((p) => p.length > 0);
 
@@ -108,7 +107,7 @@ function parseChord(raw: string, mac: boolean): Chord {
     meta: false,
     alt: false,
     shift: false,
-    key: "",
+    key: '',
   };
 
   // Last segment is the key; everything before is a modifier.
@@ -117,16 +116,14 @@ function parseChord(raw: string, mac: boolean): Chord {
 
   for (const m of modParts) {
     const norm = m.toLowerCase();
-    if (norm === "mod") {
+    if (norm === 'mod') {
       if (mac) chord.meta = true;
       else chord.ctrl = true;
       continue;
     }
     const mapped = MODIFIER_ALIASES[norm];
     if (!mapped) {
-      throw new Error(
-        `keyboard-shortcuts: unknown modifier "${m}" in chord "${raw}"`,
-      );
+      throw new Error(`keyboard-shortcuts: unknown modifier "${m}" in chord "${raw}"`);
     }
     chord[mapped] = true;
   }
@@ -142,7 +139,7 @@ function parseChord(raw: string, mac: boolean): Chord {
 export function parseSequence(raw: string, mac = isMacLike()): Sequence {
   const trimmed = raw.trim();
   if (!trimmed) {
-    throw new Error("keyboard-shortcuts: empty shortcut string");
+    throw new Error('keyboard-shortcuts: empty shortcut string');
   }
   return trimmed.split(/\s+/).map((c) => parseChord(c, mac));
 }
@@ -154,10 +151,7 @@ export function parseSequence(raw: string, mac = isMacLike()): Sequence {
  * Alternates are useful for cross-platform spellings: `["mod+s", "ctrl+s"]`
  * binds both forms even on a Mac, where `mod+s` already maps to Meta.
  */
-export function parseShortcut(
-  shortcut: string | string[],
-  mac = isMacLike(),
-): ParsedShortcut {
+export function parseShortcut(shortcut: string | string[], mac = isMacLike()): ParsedShortcut {
   const list = Array.isArray(shortcut) ? shortcut : [shortcut];
   return list.map((s) => parseSequence(s, mac));
 }
@@ -203,12 +197,12 @@ export function chordMatches(chord: Chord, event: KeyboardEvent): boolean {
 export function isModifierOnly(event: KeyboardEvent): boolean {
   const k = event.key;
   return (
-    k === "Shift" ||
-    k === "Control" ||
-    k === "Alt" ||
-    k === "Meta" ||
-    k === "OS" ||
-    k === "Hyper" ||
-    k === "Super"
+    k === 'Shift' ||
+    k === 'Control' ||
+    k === 'Alt' ||
+    k === 'Meta' ||
+    k === 'OS' ||
+    k === 'Hyper' ||
+    k === 'Super'
   );
 }

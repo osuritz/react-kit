@@ -11,14 +11,14 @@
 // boundary *must* be a class — hooks can't express `componentDidCatch`). If
 // you want reset-on-prop-change variants, `useErrorBoundary`, retry helpers,
 // etc., reach for `react-error-boundary` instead of growing this.
-import { Component, useState } from "react";
-import type { ErrorInfo, ReactNode } from "react";
-import { RotateCw, TriangleAlert } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { SparklineArea } from "#components/sparkline/sparkline-area/sparkline-area.tsx";
-import { SparklineBar } from "#components/sparkline/sparkline-bar/sparkline-bar.tsx";
-import { SparklineWinLoss } from "#components/sparkline/sparkline-winloss/sparkline-winloss.tsx";
-import { GaugeRing } from "#components/sparkline/gauge-ring/gauge-ring.tsx";
+import { Component, useState } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
+import { RotateCw, TriangleAlert } from 'lucide-react';
+import { Button } from '~/components/ui/button';
+import { SparklineArea } from '#components/sparkline/sparkline-area/sparkline-area.tsx';
+import { SparklineBar } from '#components/sparkline/sparkline-bar/sparkline-bar.tsx';
+import { SparklineWinLoss } from '#components/sparkline/sparkline-winloss/sparkline-winloss.tsx';
+import { GaugeRing } from '#components/sparkline/gauge-ring/gauge-ring.tsx';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -65,16 +65,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
-function sameKeys(
-  a: ReadonlyArray<unknown> = [],
-  b: ReadonlyArray<unknown> = [],
-): boolean {
+function sameKeys(a: ReadonlyArray<unknown> = [], b: ReadonlyArray<unknown> = []): boolean {
   return a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
 }
 
 /** A widget that throws during render — stands in for a feed returning junk. */
 function Boom(): never {
-  throw new Error("Signups feed returned malformed data");
+  throw new Error('Signups feed returned malformed data');
 }
 
 function WidgetShell({
@@ -161,15 +158,15 @@ export function DashboardErrorContainmentDemo() {
       <div className="flex flex-wrap items-center gap-3">
         <Button
           size="sm"
-          variant={broken ? "destructive" : "outline"}
+          variant={broken ? 'destructive' : 'outline'}
           onClick={() => setBroken((v) => !v)}
         >
-          {broken ? "Clear injected error" : "Inject a render error"}
+          {broken ? 'Clear injected error' : 'Inject a render error'}
         </Button>
         <p className="text-muted-foreground text-xs">
-          Crashes the <strong className="text-foreground">Signups</strong> widget
-          mid-render. Its three neighbors keep working — the failure is contained
-          to one boundary, and clearing it auto-recovers via <code>resetKeys</code>.
+          Crashes the <strong className="text-foreground">Signups</strong> widget mid-render. Its
+          three neighbors keep working — the failure is contained to one boundary, and clearing it
+          auto-recovers via <code>resetKeys</code>.
         </p>
       </div>
 
@@ -217,7 +214,13 @@ export function DashboardErrorContainmentDemo() {
 
         <Widget label="p95 latency" value="150 ms" resetKey={broken}>
           <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
-            <GaugeRing value={75} size={40} thickness={6} centerLabel="75" label="latency budget used 75%" />
+            <GaugeRing
+              value={75}
+              size={40}
+              thickness={6}
+              centerLabel="75"
+              label="latency budget used 75%"
+            />
             <span className="text-muted-foreground text-xs leading-tight">
               75% of
               <br />
@@ -229,17 +232,16 @@ export function DashboardErrorContainmentDemo() {
 
       <div className="border-border bg-muted/30 text-muted-foreground flex flex-col gap-2 rounded-md border px-4 py-3 text-xs leading-relaxed">
         <p>
-          <strong className="text-foreground">Placement is the real decision.</strong>{" "}
-          One boundary per widget means a single bad feed degrades one tile, not
-          the whole dashboard. A boundary at the page root would blank everything;
-          too many tiny boundaries add noise. Group by what can fail independently.
+          <strong className="text-foreground">Placement is the real decision.</strong> One boundary
+          per widget means a single bad feed degrades one tile, not the whole dashboard. A boundary
+          at the page root would blank everything; too many tiny boundaries add noise. Group by what
+          can fail independently.
         </p>
         <p>
-          <strong className="text-foreground">Boundaries only catch render errors.</strong>{" "}
-          Errors thrown in event handlers, async code (timeouts, promises,
-          <code> fetch</code>), and during SSR are <em>not</em> caught — handle
-          those with <code>try/catch</code> where they happen, then surface them
-          through your own error state.
+          <strong className="text-foreground">Boundaries only catch render errors.</strong> Errors
+          thrown in event handlers, async code (timeouts, promises,
+          <code> fetch</code>), and during SSR are <em>not</em> caught — handle those with{' '}
+          <code>try/catch</code> where they happen, then surface them through your own error state.
         </p>
       </div>
     </div>

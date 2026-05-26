@@ -6,7 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
-} from "react";
+} from 'react';
 
 /**
  * Identifies which surface invoked an action. The two values shipped by
@@ -16,7 +16,7 @@ import {
  * `(string & {})` keeps autocomplete on the known values without locking
  * the union.
  */
-export type ActionSource = "shortcut" | "palette" | (string & {});
+export type ActionSource = 'shortcut' | 'palette' | (string & {});
 
 export interface ActionRunContext {
   /** Present only when invoked by keyboard-shortcuts. */
@@ -26,12 +26,12 @@ export interface ActionRunContext {
 }
 
 export type Action = {
-  id: string;                    // stable, e.g. "nav.settings"
-  label: string;                 // shown in palette
-  group?: string;                // "Navigation", "Settings", ...
-  keywords?: string[];           // extra fuzzy-match terms
-  shortcut?: string | string[];  // "mod+k", "g i", ["mod+s","ctrl+s"]
-  scope?: string;                // "global" (default) | route/component scope id
+  id: string; // stable, e.g. "nav.settings"
+  label: string; // shown in palette
+  group?: string; // "Navigation", "Settings", ...
+  keywords?: string[]; // extra fuzzy-match terms
+  shortcut?: string | string[]; // "mod+k", "g i", ["mod+s","ctrl+s"]
+  scope?: string; // "global" (default) | route/component scope id
   enabled?: () => boolean;
   /**
    * When true, the keyboard-shortcut hook fires this action even if the
@@ -63,7 +63,7 @@ class ActionRegistry {
   register = (action: Action): (() => void) => {
     if (this.entries.has(action.id)) {
       console.warn(
-        `ActionRegistry: action id "${action.id}" is already registered; overwriting. Two components registering the same id is almost always a bug.`,
+        `ActionRegistry: action id "${action.id}" is already registered; overwriting. Two components registering the same id is almost always a bug.`
       );
     }
     this.entries.set(action.id, action);
@@ -100,24 +100,20 @@ class ActionRegistry {
 }
 
 const ActionsContext = createContext<ActionRegistry | null>(null);
-ActionsContext.displayName = "ActionsContext";
+ActionsContext.displayName = 'ActionsContext';
 
 export function ActionsProvider({ children }: PropsWithChildren<unknown>) {
   const registryRef = useRef<ActionRegistry | null>(null);
   if (registryRef.current === null) {
     registryRef.current = new ActionRegistry();
   }
-  return (
-    <ActionsContext.Provider value={registryRef.current}>
-      {children}
-    </ActionsContext.Provider>
-  );
+  return <ActionsContext.Provider value={registryRef.current}>{children}</ActionsContext.Provider>;
 }
 
 export function useActions(): ActionsContextValue {
   const registry = useContext(ActionsContext);
   if (!registry) {
-    throw new Error("useActions must be used inside <ActionsProvider>.");
+    throw new Error('useActions must be used inside <ActionsProvider>.');
   }
   // The registry's methods are stable bound members, so this object can be
   // memoized once per provider — consumers that destructure won't see new
@@ -129,7 +125,7 @@ export function useActions(): ActionsContextValue {
       getById: registry.getById,
       subscribe: registry.subscribe,
     }),
-    [registry],
+    [registry]
   );
 }
 

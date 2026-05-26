@@ -5,50 +5,50 @@
  * apps building their own UI can import the same function for consistency.
  */
 
-import type { Chord, Sequence } from "./parse";
-import { isMacLike, parseShortcut } from "./parse";
+import type { Chord, Sequence } from './parse';
+import { isMacLike, parseShortcut } from './parse';
 
 /** Glyph table for macOS (the canonical Apple-style HIG glyphs). */
 const MAC_MODIFIER_GLYPHS = {
-  ctrl: "⌃",
-  meta: "⌘",
-  alt: "⌥",
-  shift: "⇧",
+  ctrl: '⌃',
+  meta: '⌘',
+  alt: '⌥',
+  shift: '⇧',
 } as const;
 
 /** Word-form modifier labels for non-macOS platforms. */
 const PC_MODIFIER_LABELS = {
-  ctrl: "Ctrl",
-  meta: "Win",
-  alt: "Alt",
-  shift: "Shift",
+  ctrl: 'Ctrl',
+  meta: 'Win',
+  alt: 'Alt',
+  shift: 'Shift',
 } as const;
 
 /** Pretty labels for special keys, both platforms. */
 const SPECIAL_KEY_LABELS_MAC: Record<string, string> = {
-  enter: "↵",
-  escape: "Esc",
-  arrowup: "↑",
-  arrowdown: "↓",
-  arrowleft: "←",
-  arrowright: "→",
-  backspace: "⌫",
-  delete: "⌦",
-  tab: "⇥",
-  " ": "Space",
+  enter: '↵',
+  escape: 'Esc',
+  arrowup: '↑',
+  arrowdown: '↓',
+  arrowleft: '←',
+  arrowright: '→',
+  backspace: '⌫',
+  delete: '⌦',
+  tab: '⇥',
+  ' ': 'Space',
 };
 
 const SPECIAL_KEY_LABELS_PC: Record<string, string> = {
-  enter: "Enter",
-  escape: "Esc",
-  arrowup: "↑",
-  arrowdown: "↓",
-  arrowleft: "←",
-  arrowright: "→",
-  backspace: "Backspace",
-  delete: "Del",
-  tab: "Tab",
-  " ": "Space",
+  enter: 'Enter',
+  escape: 'Esc',
+  arrowup: '↑',
+  arrowdown: '↓',
+  arrowleft: '←',
+  arrowright: '→',
+  backspace: 'Backspace',
+  delete: 'Del',
+  tab: 'Tab',
+  ' ': 'Space',
 };
 
 /** A single key-cap label, e.g. `"⌘"`, `"K"`, `"Esc"`. */
@@ -89,12 +89,7 @@ export function formatChord(chord: Chord, mac = isMacLike()): FormattedChord {
   // On Mac the Apple-canonical order is ⌃⌥⇧⌘. On Windows/Linux the common
   // order is Ctrl + Alt + Shift + Win. Both reduce to "ctrl, alt, shift,
   // meta" when expressed by role.
-  const order: Array<keyof typeof MAC_MODIFIER_GLYPHS> = [
-    "ctrl",
-    "alt",
-    "shift",
-    "meta",
-  ];
+  const order: Array<keyof typeof MAC_MODIFIER_GLYPHS> = ['ctrl', 'alt', 'shift', 'meta'];
   for (const role of order) {
     if (!chord[role]) continue;
     const label = mac ? MAC_MODIFIER_GLYPHS[role] : PC_MODIFIER_LABELS[role];
@@ -105,10 +100,7 @@ export function formatChord(chord: Chord, mac = isMacLike()): FormattedChord {
 }
 
 /** Format one sequence (`g i` → two `FormattedChord`s). */
-export function formatSequence(
-  seq: Sequence,
-  mac = isMacLike(),
-): FormattedSequence {
+export function formatSequence(seq: Sequence, mac = isMacLike()): FormattedSequence {
   return { chords: seq.map((c) => formatChord(c, mac)) };
 }
 
@@ -117,10 +109,7 @@ export function formatSequence(
  * `parseShortcut` + `formatSequence` for the common "given a registered
  * action, render its keys" path.
  */
-export function formatShortcut(
-  shortcut: string | string[],
-  mac = isMacLike(),
-): FormattedShortcut {
+export function formatShortcut(shortcut: string | string[], mac = isMacLike()): FormattedShortcut {
   const parsed = parseShortcut(shortcut, mac);
   return { sequences: parsed.map((s) => formatSequence(s, mac)) };
 }

@@ -1,9 +1,9 @@
-import { DropInPage } from "~/components/drop-in-page";
-import { ActionRegistryDemo } from "~/components/demos/action-registry";
-import actionRegistrySrc from "~/components/demos/action-registry.tsx?shiki";
-import { repoBlobUrl, repoTreeUrl } from "~/lib/github";
+import { DropInPage } from '~/components/drop-in-page';
+import { ActionRegistryDemo } from '~/components/demos/action-registry';
+import actionRegistrySrc from '~/components/demos/action-registry.tsx?shiki';
+import { repoBlobUrl, repoTreeUrl } from '~/lib/github';
 
-const DROP_IN_PATH = "src/hooks/action-registry";
+const DROP_IN_PATH = 'src/hooks/action-registry';
 
 export default function ActionRegistryRoute() {
   return (
@@ -14,9 +14,9 @@ export default function ActionRegistryRoute() {
       readmeHref={repoBlobUrl(`${DROP_IN_PATH}/README.md`)}
       demos={[
         {
-          title: "Register and observe",
+          title: 'Register and observe',
           description:
-            "Three components register actions on mount; a sibling subscribes via useSyncExternalStore and renders the list. Toggle the checkbox to mount/unmount nav.search and watch the list react.",
+            'Three components register actions on mount; a sibling subscribes via useSyncExternalStore and renders the list. Toggle the checkbox to mount/unmount nav.search and watch the list react.',
           source: actionRegistrySrc,
           render: <ActionRegistryDemo />,
         },
