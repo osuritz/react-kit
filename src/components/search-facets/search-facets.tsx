@@ -103,6 +103,10 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
     }
     setPrevCount(nextCount);
   }
+  // U+200B (zero-width space) is the nonce of choice: it mutates the region's
+  // textContent so assistive tech re-announces, yet it is invisible, not spoken
+  // by screen readers, and not matched by `\s`, so it survives the whitespace
+  // normalization that text assertions and the DOM apply to a trailing space.
   const liveMessage = live.text === '' ? '' : `${live.text}${'\u200B'.repeat(live.seq % 2)}`;
 
   const [isOpen, setIsOpen] = React.useState(false);
