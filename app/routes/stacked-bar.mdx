@@ -1,0 +1,21 @@
+---
+title: StackedBar
+group: Sparklines
+order: 70
+blurb: Single-row part-to-whole bar for composition and breakdowns.
+description: >-
+  A single-row part-to-whole bar for composition: status breakdowns, budget
+  splits, market share. Segments cycle the chart tokens or take an explicit
+  color.
+dropInPath: src/components/sparkline/stacked-bar
+---
+
+import { StackedBarDemo } from '~/components/demos/stacked-bar';
+import stackedBarSrc from '~/components/demos/stacked-bar.tsx?shiki';
+
+<DemoCard
+  title="Composition at a glance"
+  description="A CI test-run breakdown with semantic per-status colors and a legend, plus a neutral spend split that falls back to the cycled chart tokens."
+  source={stackedBarSrc}
+  render={<StackedBarDemo />}
+/>

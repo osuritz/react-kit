@@ -1,0 +1,21 @@
+---
+title: GaugeRing
+group: Sparklines
+order: 80
+blurb: A single percentage as a donut — quota, completion, or health score.
+description: >-
+  A single percentage as a donut — quota usage, completion, health score. The
+  arc uses pathLength=100 so its length is just the percentage, with an
+  optional center label.
+dropInPath: src/components/sparkline/gauge-ring
+---
+
+import { GaugeRingDemo } from '~/components/demos/gauge-ring';
+import gaugeRingSrc from '~/components/demos/gauge-ring.tsx?shiki';
+
+<DemoCard
+  title="Usage rings"
+  description="Four quota/completion rings, each colored via a text-* class on its wrapper, with a percentage in the middle."
+  source={gaugeRingSrc}
+  render={<GaugeRingDemo />}
+/>

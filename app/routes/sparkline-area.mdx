@@ -1,0 +1,20 @@
+---
+title: SparklineArea
+group: Sparklines
+order: 20
+blurb: Trend line with a soft fill for emphasising magnitude or volume.
+description: >-
+  A trend line with a soft fill beneath it — for emphasising magnitude or
+  volume (revenue, traffic, active users). Pure SVG, colored via currentColor.
+dropInPath: src/components/sparkline/sparkline-area
+---
+
+import { SparklineAreaDemo } from '~/components/demos/sparkline-area';
+import sparklineAreaSrc from '~/components/demos/sparkline-area.tsx?shiki';
+
+<DemoCard
+  title="Volume in context"
+  description="A headline metric with a filled trend, plus compact area cells — the fill draws the eye to overall magnitude rather than slope alone."
+  source={sparklineAreaSrc}
+  render={<SparklineAreaDemo />}
+/>

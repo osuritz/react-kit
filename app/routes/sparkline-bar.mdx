@@ -1,0 +1,21 @@
+---
+title: SparklineBar
+group: Sparklines
+order: 30
+blurb: Column sparkline for discrete per-period values; negatives turn destructive.
+description: >-
+  A column sparkline for discrete per-period values (daily signups, monthly
+  bookings). Bars below the baseline turn destructive, so negative swings read
+  at a glance.
+dropInPath: src/components/sparkline/sparkline-bar
+---
+
+import { SparklineBarDemo } from '~/components/demos/sparkline-bar';
+import sparklineBarSrc from '~/components/demos/sparkline-bar.tsx?shiki';
+
+<DemoCard
+  title="Counts and net flow"
+  description="A daily-signups column strip, and a net-cash-flow series where below-baseline bars are tinted with the destructive token."
+  source={sparklineBarSrc}
+  render={<SparklineBarDemo />}
+/>

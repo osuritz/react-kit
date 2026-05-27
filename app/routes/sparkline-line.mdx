@@ -1,0 +1,21 @@
+---
+title: SparklineLine
+group: Sparklines
+order: 10
+blurb: Axis-less trend line for tables, KPI cards, and dense dashboards.
+description: >-
+  A small, axis-less trend line for tables, KPI cards, and dense dashboards.
+  Pure SVG, colored via currentColor, with optional last-point and min/max
+  markers.
+dropInPath: src/components/sparkline/sparkline-line
+---
+
+import { SparklineLineDemo } from '~/components/demos/sparkline-line';
+import sparklineLineSrc from '~/components/demos/sparkline-line.tsx?shiki';
+
+<DemoCard
+  title="Trend in context"
+  description="A KPI card with a last-point dot, and the same sparkline shrunk into table rows with min/max markers — each inherits its color from the surrounding text via currentColor."
+  source={sparklineLineSrc}
+  render={<SparklineLineDemo />}
+/>

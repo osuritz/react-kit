@@ -1,0 +1,22 @@
+---
+title: KeyboardShortcuts
+group: Components
+order: 20
+blurb: Keybinding layer + cheatsheet that consume the action registry.
+description: >-
+  A drop-in keybinding layer + cheatsheet that consume the action-registry.
+  Bind any registered action by setting its `shortcut` field — single chords,
+  alternates, or g-i-style sequences. The cheatsheet picks them up
+  automatically.
+dropInPath: src/components/keyboard-shortcuts
+---
+
+import { KeyboardShortcutsDemo } from '~/components/demos/keyboard-shortcuts';
+import keyboardShortcutsSrc from '~/components/demos/keyboard-shortcuts.tsx?shiki';
+
+<DemoCard
+  title="Shortcut bindings + cheatsheet"
+  description="Try ⌘K, ⌘S, the g-i sequence, or / from anywhere on the page. Press ? to open the cheatsheet."
+  source={keyboardShortcutsSrc}
+  render={<KeyboardShortcutsDemo />}
+/>
