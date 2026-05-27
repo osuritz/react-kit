@@ -38,7 +38,12 @@ export interface SearchFacetsProps {
   /** Caller classes for the root container. Merged with `tailwind-merge`. */
   className?: string;
   onSubmit?: (q: Query) => void;
-  /** Optional render-prop slot for the builder popover trigger area. */
+  /**
+   * Optional render-prop slot for the builder popover trigger area. Wire the
+   * imperative `openBuilder` / `closeBuilder` actions to event handlers
+   * (`onClick`, etc.); don't invoke them during render — they read DOM focus
+   * and refs and update state, so calling them while rendering is unsafe.
+   */
   renderBuilderTrigger?: (api: BuilderTriggerApi) => React.ReactNode;
 }
 
@@ -62,31 +67,47 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
 
   const api = useSearchFacets({ schema, value, onChange });
 
-  // Polite live announcements for chip add/remove. We track the previous
-  // clause count and announce a short status string when it changes.
-  const prevCountRef = React.useRef<number>(value.clauses.length);
-  const [liveMessage, setLiveMessage] = React.useState<string>('');
-  React.useEffect(() => {
-    const prev = prevCountRef.current;
-    const next = value.clauses.length;
-    if (next > prev) {
-      const added = value.clauses[next - 1];
+  // Polite live announcements for chip add/remove. We compare the previous
+  // clause count to the current one *while rendering* (React's "adjust state
+  // during render" pattern) and update the announcement when it changes.
+  // Deriving it here rather than in an effect avoids a cascading post-paint
+  // re-render; the sr-only region below is always mounted (empty at first),
+  // so each text change is observed and announced by assistive tech.
+  //
+  // `seq` increments on every announcement and toggles a trailing zero-width
+  // space below, so two consecutive identical messages (e.g. two removals in
+  // a row) still mutate the region's text — an aria-live region whose value
+  // is unchanged is not re-announced.
+  const [prevCount, setPrevCount] = React.useState<number>(value.clauses.length);
+  const [live, setLive] = React.useState<{ text: string; seq: number }>({ text: '', seq: 0 });
+  const nextCount = value.clauses.length;
+  if (nextCount !== prevCount) {
+    let text: string | null = null;
+    if (nextCount > prevCount) {
+      const added = value.clauses[nextCount - 1];
       if (added) {
-        setLiveMessage(
-          `Filter added: ${added.facet} ${added.negated ? 'is NOT' : 'is'} ${
-            added.value.kind === 'literal'
-              ? added.value.raw
-              : added.value.kind === 'compare'
-                ? `${added.value.op} ${added.value.raw}`
-                : `${added.value.from} to ${added.value.to}`
-          }`
-        );
+        text = `Filter added: ${added.facet} ${added.negated ? 'is NOT' : 'is'} ${
+          added.value.kind === 'literal'
+            ? added.value.raw
+            : added.value.kind === 'compare'
+              ? `${added.value.op} ${added.value.raw}`
+              : `${added.value.from} to ${added.value.to}`
+        }`;
       }
-    } else if (next < prev) {
-      setLiveMessage('Filter removed');
+    } else {
+      text = 'Filter removed';
     }
-    prevCountRef.current = next;
-  }, [value.clauses]);
+    if (text !== null) {
+      const announcement = text;
+      setLive((prev) => ({ text: announcement, seq: prev.seq + 1 }));
+    }
+    setPrevCount(nextCount);
+  }
+  // U+200B (zero-width space) is the nonce of choice: it mutates the region's
+  // textContent so assistive tech re-announces, yet it is invisible, not spoken
+  // by screen readers, and not matched by `\s`, so it survives the whitespace
+  // normalization that text assertions and the DOM apply to a trailing space.
+  const liveMessage = live.text === '' ? '' : `${live.text}${'\u200B'.repeat(live.seq % 2)}`;
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
@@ -254,6 +275,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
         ) : null}
       </Combobox.Root>
       {renderBuilderTrigger ? (
+        // oxlint-disable-next-line react-hooks-js/refs -- false positive: triggerApi only bundles the openBuilder/closeBuilder callbacks, which read triggerRef/lastTriggerRef when invoked from event handlers, never during render. The render prop receives them to wire its own UI; the public BuilderTriggerApi exposes no ref.
         renderBuilderTrigger(triggerApi)
       ) : (
         <>
@@ -281,7 +303,7 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
             editingIndex={editingIndex}
             open={isOpen}
             onOpenChange={(o) => (o ? openBuilder(editingIndex) : closeBuilder())}
-            anchor={triggerRef.current}
+            anchor={triggerRef}
           />
         </>
       )}

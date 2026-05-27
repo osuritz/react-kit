@@ -274,6 +274,23 @@ describe('a11y — live region', () => {
     fireEvent.click(screen.getByRole('button', { name: /remove filter from is bob/i }));
     expect(screen.getByRole('status')).toHaveTextContent(/filter removed/i);
   });
+
+  test('re-announces consecutive identical removals by mutating the live-region text', () => {
+    const initial = parseQuery('from:bob has:attachment', schema).ast;
+    render(<Controlled initial={initial} />);
+    const status = screen.getByRole('status');
+
+    fireEvent.click(screen.getByRole('button', { name: /remove filter from is bob/i }));
+    expect(status).toHaveTextContent(/filter removed/i);
+    const firstText = status.textContent;
+
+    fireEvent.click(screen.getByRole('button', { name: /remove filter has is attachment/i }));
+    // The second removal carries the same semantic message...
+    expect(status).toHaveTextContent(/filter removed/i);
+    // ...but the rendered text must still change, otherwise an aria-live
+    // region with an unchanged value is not re-announced by assistive tech.
+    expect(status.textContent).not.toBe(firstText);
+  });
 });
 
 describe('a11y — form embedding', () => {
