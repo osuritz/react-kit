@@ -38,7 +38,12 @@ export interface SearchFacetsProps {
   /** Caller classes for the root container. Merged with `tailwind-merge`. */
   className?: string;
   onSubmit?: (q: Query) => void;
-  /** Optional render-prop slot for the builder popover trigger area. */
+  /**
+   * Optional render-prop slot for the builder popover trigger area. Wire the
+   * imperative `openBuilder` / `closeBuilder` actions to event handlers
+   * (`onClick`, etc.); don't invoke them during render — they read DOM focus
+   * and refs and update state, so calling them while rendering is unsafe.
+   */
   renderBuilderTrigger?: (api: BuilderTriggerApi) => React.ReactNode;
 }
 
@@ -68,28 +73,37 @@ export function SearchFacets(props: SearchFacetsProps): React.JSX.Element {
   // Deriving it here rather than in an effect avoids a cascading post-paint
   // re-render; the sr-only region below is always mounted (empty at first),
   // so each text change is observed and announced by assistive tech.
+  //
+  // `seq` increments on every announcement and toggles a trailing zero-width
+  // space below, so two consecutive identical messages (e.g. two removals in
+  // a row) still mutate the region's text — an aria-live region whose value
+  // is unchanged is not re-announced.
   const [prevCount, setPrevCount] = React.useState<number>(value.clauses.length);
-  const [liveMessage, setLiveMessage] = React.useState<string>('');
+  const [live, setLive] = React.useState<{ text: string; seq: number }>({ text: '', seq: 0 });
   const nextCount = value.clauses.length;
   if (nextCount !== prevCount) {
+    let text: string | null = null;
     if (nextCount > prevCount) {
       const added = value.clauses[nextCount - 1];
       if (added) {
-        setLiveMessage(
-          `Filter added: ${added.facet} ${added.negated ? 'is NOT' : 'is'} ${
-            added.value.kind === 'literal'
-              ? added.value.raw
-              : added.value.kind === 'compare'
-                ? `${added.value.op} ${added.value.raw}`
-                : `${added.value.from} to ${added.value.to}`
-          }`
-        );
+        text = `Filter added: ${added.facet} ${added.negated ? 'is NOT' : 'is'} ${
+          added.value.kind === 'literal'
+            ? added.value.raw
+            : added.value.kind === 'compare'
+              ? `${added.value.op} ${added.value.raw}`
+              : `${added.value.from} to ${added.value.to}`
+        }`;
       }
     } else {
-      setLiveMessage('Filter removed');
+      text = 'Filter removed';
+    }
+    if (text !== null) {
+      const announcement = text;
+      setLive((prev) => ({ text: announcement, seq: prev.seq + 1 }));
     }
     setPrevCount(nextCount);
   }
+  const liveMessage = live.text === '' ? '' : `${live.text}${'\u200B'.repeat(live.seq % 2)}`;
 
   const [isOpen, setIsOpen] = React.useState(false);
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
