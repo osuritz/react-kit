@@ -90,18 +90,18 @@ flat / non-finite data. See the
 [family overview](src/components/sparkline/README.md) for the shared
 conventions and peer requirements.
 
-| Drop-in                                                            | Component            | What it's for                                                  |
-| ------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------- |
-| [`sparkline-line`](src/components/sparkline/sparkline-line/)       | `SparklineLine`      | Canonical trend line for tables and KPI cards                  |
-| [`sparkline-area`](src/components/sparkline/sparkline-area/)       | `SparklineArea`      | Trend with a filled area — emphasises volume/magnitude         |
-| [`sparkline-bar`](src/components/sparkline/sparkline-bar/)         | `SparklineBar`       | Discrete per-period values; below-baseline turns destructive   |
-| [`sparkline-winloss`](src/components/sparkline/sparkline-winloss/) | `SparklineWinLoss`   | Binary up/down outcomes (SLA met/missed, pass/fail)            |
-| [`sparkline-threshold`](src/components/sparkline/sparkline-threshold/) | `SparklineThreshold` | Metric vs an SLO — shaded band + limit, breaches flagged   |
-| [`bullet-graph`](src/components/sparkline/bullet-graph/)           | `BulletGraph`        | Tufte actual-vs-target with qualitative bands (the KPI member) |
-| [`stacked-bar`](src/components/sparkline/stacked-bar/)             | `StackedBar`         | Single-row part-to-whole (status breakdown, budget)            |
-| [`gauge-ring`](src/components/sparkline/gauge-ring/)               | `GaugeRing`          | One percentage as a donut (quota, completion)                  |
-| [`heat-strip`](src/components/sparkline/heat-strip/)               | `HeatStrip`          | Single-row intensity over periods (usage density)              |
-| [`delta-chip`](src/components/sparkline/delta-chip/)               | `DeltaChip`          | The `▲ +12%` change indicator that pairs with a sparkline      |
+| Drop-in                                                                | Component            | What it's for                                                  |
+| ---------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------- |
+| [`sparkline-line`](src/components/sparkline/sparkline-line/)           | `SparklineLine`      | Canonical trend line for tables and KPI cards                  |
+| [`sparkline-area`](src/components/sparkline/sparkline-area/)           | `SparklineArea`      | Trend with a filled area — emphasises volume/magnitude         |
+| [`sparkline-bar`](src/components/sparkline/sparkline-bar/)             | `SparklineBar`       | Discrete per-period values; below-baseline turns destructive   |
+| [`sparkline-winloss`](src/components/sparkline/sparkline-winloss/)     | `SparklineWinLoss`   | Binary up/down outcomes (SLA met/missed, pass/fail)            |
+| [`sparkline-threshold`](src/components/sparkline/sparkline-threshold/) | `SparklineThreshold` | Metric vs an SLO — shaded band + limit, breaches flagged       |
+| [`bullet-graph`](src/components/sparkline/bullet-graph/)               | `BulletGraph`        | Tufte actual-vs-target with qualitative bands (the KPI member) |
+| [`stacked-bar`](src/components/sparkline/stacked-bar/)                 | `StackedBar`         | Single-row part-to-whole (status breakdown, budget)            |
+| [`gauge-ring`](src/components/sparkline/gauge-ring/)                   | `GaugeRing`          | One percentage as a donut (quota, completion)                  |
+| [`heat-strip`](src/components/sparkline/heat-strip/)                   | `HeatStrip`          | Single-row intensity over periods (usage density)              |
+| [`delta-chip`](src/components/sparkline/delta-chip/)                   | `DeltaChip`          | The `▲ +12%` change indicator that pairs with a sparkline      |
 
 ## Demos
 

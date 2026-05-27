@@ -38,18 +38,18 @@ floor they advertise; the demo app runs **React 19**.
 
 ## Commands
 
-| Task                 | Command                | Notes                                            |
-| -------------------- | ---------------------- | ------------------------------------------------ |
-| Install              | `pnpm install`         | Never `npm install`.                             |
-| Run all tests        | `pnpm test`            | = `pnpm -r run test`; runs every drop-in's suite |
-| One drop-in's tests  | `vitest run` in folder | Each folder has its own `vitest.config.ts`       |
-| Typecheck a drop-in  | `tsc --noEmit`         | Per-folder `tsconfig.json`                        |
-| Lint                 | `pnpm run lint`        | oxlint                                            |
-| Lint (autofix)       | `pnpm run lint:fix`    |                                                  |
-| Format check         | `pnpm run format`      | oxfmt `--check` (CI runs this)                   |
-| Format write         | `pnpm run format:fix`  |                                                  |
-| Demo site (dev)      | `pnpm dev`             | Vite                                             |
-| Demo site (build)    | `pnpm build`           |                                                  |
+| Task                | Command                | Notes                                            |
+| ------------------- | ---------------------- | ------------------------------------------------ |
+| Install             | `pnpm install`         | Never `npm install`.                             |
+| Run all tests       | `pnpm test`            | = `pnpm -r run test`; runs every drop-in's suite |
+| One drop-in's tests | `vitest run` in folder | Each folder has its own `vitest.config.ts`       |
+| Typecheck a drop-in | `tsc --noEmit`         | Per-folder `tsconfig.json`                       |
+| Lint                | `pnpm run lint`        | oxlint                                           |
+| Lint (autofix)      | `pnpm run lint:fix`    |                                                  |
+| Format check        | `pnpm run format`      | oxfmt `--check` (CI runs this)                   |
+| Format write        | `pnpm run format:fix`  |                                                  |
+| Demo site (dev)     | `pnpm dev`             | Vite                                             |
+| Demo site (build)   | `pnpm build`           |                                                  |
 
 CI (`.github/workflows/format-lint.yml`) runs format → lint → test on every
 push/PR to `main`; `deploy.yml` ships the built `app/` to GitHub Pages.
@@ -57,7 +57,7 @@ push/PR to `main`; `deploy.yml` ships the built `app/` to GitHub Pages.
 ## Tooling
 
 - **Lint:** oxlint (replaced ESLint), config in `.oxlintrc.json`. Note: listing
-  `plugins` *replaces* the defaults, so all needed plugins are listed
+  `plugins` _replaces_ the defaults, so all needed plugins are listed
   explicitly. React Hooks rules run via the `react-hooks-js` JS plugin
   (`rules-of-hooks`/`exhaustive-deps` are errors).
 - **Format:** oxfmt, config in `.oxfmtrc.json` — single quotes, semicolons,
