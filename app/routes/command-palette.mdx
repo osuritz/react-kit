@@ -1,0 +1,23 @@
+---
+title: CommandPalette
+group: Components
+order: 30
+blurb: ⌘K launcher built on Base UI with async sources.
+description: >-
+  A drop-in cmd+k launcher built on cmdk. Reads from the action-registry,
+  groups by Action.group, fuzzy-matches label + keywords, filters out disabled
+  actions, shows platform-correct shortcut glyphs, persists last-5 recents, and
+  accepts async CommandSources for backend search — debounced, with per-source
+  loading.
+dropInPath: src/components/command-palette
+---
+
+import { CommandPaletteDemo } from '~/components/demos/command-palette';
+import commandPaletteSrc from '~/components/demos/command-palette.tsx?shiki';
+
+<DemoCard
+  title="Palette + async source"
+  description="Press ⌘K (or click the button) to open. Try 'theme', 'sign', or 'onboarding' (the last hits a fake async docs source). Recents persist across reloads in localStorage."
+  source={commandPaletteSrc}
+  render={<CommandPaletteDemo />}
+/>

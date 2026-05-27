@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import mdx from '@mdx-js/rollup';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import { shiki } from './app/vite-plugins/shiki';
 import { fileURLToPath, URL } from 'node:url';
 
@@ -18,7 +21,15 @@ import { fileURLToPath, URL } from 'node:url';
 // dedupe them too.
 export default defineConfig({
   base: '/react-kit/',
-  plugins: [react(), tailwindcss(), shiki()],
+  plugins: [
+    // MDX must run before the React plugin (so it can transform the JSX that
+    // MDX emits) and frontmatter must be parsed into a `frontmatter` export
+    // for the generated router/nav in `app/lib/pages`.
+    { enforce: 'pre', ...mdx({ remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter] }) },
+    react({ include: /\.(?:jsx|js|mdx|md|tsx|ts)$/ }),
+    tailwindcss(),
+    shiki(),
+  ],
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./app', import.meta.url)),

@@ -1,0 +1,21 @@
+---
+title: SparklineThreshold
+group: Sparklines
+order: 50
+blurb: Monitoring line with an acceptable band and a dashed limit; breaches are marked.
+description: >-
+  A monitoring sparkline: a trend line with a shaded acceptable band and a
+  dashed limit line. Points that breach the limit or leave the band are marked
+  destructive.
+dropInPath: src/components/sparkline/sparkline-threshold
+---
+
+import { SparklineThresholdDemo } from '~/components/demos/sparkline-threshold';
+import sparklineThresholdSrc from '~/components/demos/sparkline-threshold.tsx?shiki';
+
+<DemoCard
+  title="Metric vs SLO"
+  description="p95 latency against a 200ms limit with a 0–150ms healthy band — the three intervals over the limit are flagged with the destructive token."
+  source={sparklineThresholdSrc}
+  render={<SparklineThresholdDemo />}
+/>

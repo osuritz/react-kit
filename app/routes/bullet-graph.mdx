@@ -1,0 +1,20 @@
+---
+title: BulletGraph
+group: Sparklines
+order: 60
+blurb: Tufte's compact actual-vs-target bar with qualitative bands.
+description: >-
+  Tufte's compact actual-vs-target bar with qualitative bands (poor/ok/good).
+  The richest KPI micro-chart — did we hit the number, and is that good?
+dropInPath: src/components/sparkline/bullet-graph
+---
+
+import { BulletGraphDemo } from '~/components/demos/bullet-graph';
+import bulletGraphSrc from '~/components/demos/bullet-graph.tsx?shiki';
+
+<DemoCard
+  title="Scorecard rows"
+  description="A four-KPI scorecard: each row pairs a bullet graph (measure bar + target tick over poor/ok/good bands) with its formatted value and an on-track / behind chip."
+  source={bulletGraphSrc}
+  render={<BulletGraphDemo />}
+/>

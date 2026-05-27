@@ -6,12 +6,14 @@ project — when consuming a drop-in, work from `src/<path>/` instead.
 
 ## Two buckets
 
-| Path                               | Purpose                                                                                                                                                                                                                           |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `routes/<name>.tsx`                | One file per drop-in. Declarative metadata: title, description, GitHub links, list of demos to render. The router maps URL paths to these.                                                                                        |
-| `components/`, `lib/`, `index.css` | Demo glue: the `SiteLayout` chrome, the shared `DropInPage` and `DemoCard` primitives, the `*-demo` wrappers under `components/demos/`, vendored shadcn primitives under `components/ui/`, the `cn()` helper, and the global CSS. |
+| Path                               | Purpose                                                                                                                                                                                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `routes/<name>.mdx`                | One MDX page per drop-in. Frontmatter holds the metadata (title, group, order, blurb, description, GitHub-link paths); the body imports the demo wrapper + its `?shiki` source and embeds `<DemoCard>`s. The filename is the route path.                           |
+| `lib/pages.tsx`                    | Globs `routes/*.mdx` and generates **both** the router children and the navigation groups from frontmatter — the single source those derive from.                                                                                                                  |
+| `components/`, `lib/`, `index.css` | Demo glue: the `SiteLayout` chrome, the `MdxRoute` page wrapper + `mdxComponents` map, the shared `DemoCard` primitive, the `*-demo` wrappers under `components/demos/`, vendored shadcn primitives under `components/ui/`, the `cn()` helper, and the global CSS. |
 
-`main.tsx` is the Vite entry point. `router.tsx` is the route table.
+`main.tsx` is the Vite entry point. `router.tsx` assembles the layout and spreads
+the generated route children. MDX is configured in `vite.config.ts`.
 
 ## Aliases
 
@@ -26,14 +28,17 @@ project — when consuming a drop-in, work from `src/<path>/` instead.
 1. Create the demo wrapper at `app/components/demos/<name>.tsx` (it imports
    from `#hooks/<name>/...` or `#components/<name>/...` exactly as a real
    consumer would).
-2. Create the route at `app/routes/<name>.tsx`. Use the `DropInPage`
-   template for a standard drop-in, or hand-roll the page if the demo's UI
-   is too rich for `DemoCard` (see `routes/integration.tsx` for the
-   hand-rolled pattern).
-3. Add a route entry in `app/router.tsx`.
-4. Add a `NavItem` to the right group in `app/lib/nav.ts` — the single source
-   of truth that feeds the desktop sidebar, the mobile drawer, and the
-   home-page grid at once.
+2. Create the page at `app/routes/<name>.mdx`. Declare the frontmatter
+   (`title`, `group`, `order`, `blurb`, optional `description`, and
+   `dropInPath` for the README + Source links), then import the demo wrapper
+   and its `?shiki` source and embed one or more `<DemoCard>`s. `<DemoCard>` is
+   provided to every page automatically — no import. For a demo too rich for
+   `DemoCard`, hand-roll the body (set `appSourcePath` and render the demo
+   directly — see `routes/integration.mdx`).
+
+That's it — the route table (`router.tsx`) and the navigation (sidebar, mobile
+drawer, home grid, via `app/lib/nav.ts` → `lib/pages.tsx`) are generated from
+the page's frontmatter, so there's nothing else to register.
 
 ## Drop-in styling assumption
 

@@ -1,0 +1,21 @@
+---
+title: SparklineWinLoss
+group: Sparklines
+order: 40
+blurb: Equal-height up/down ticks for binary outcomes — the pattern is the point.
+description: >-
+  Equal-height up/down ticks for binary outcomes — SLA met/missed, test
+  pass/fail, gain/loss days. Magnitude is ignored; the pattern is the point.
+  Losses turn destructive.
+dropInPath: src/components/sparkline/sparkline-winloss
+---
+
+import { SparklineWinLossDemo } from '~/components/demos/sparkline-winloss';
+import sparklineWinLossSrc from '~/components/demos/sparkline-winloss.tsx?shiki';
+
+<DemoCard
+  title="Outcomes at a glance"
+  description="A 20-day SLA met/missed strip and a CI pass/fail strip — wins take the container color, losses are tinted with the destructive token."
+  source={sparklineWinLossSrc}
+  render={<SparklineWinLossDemo />}
+/>

@@ -1,0 +1,21 @@
+---
+title: DeltaChip
+group: Sparklines
+order: 100
+blurb: The tiny ▲ +12% / ▼ −4% change indicator that pairs with a metric.
+description: >-
+  The tiny ▲ +12% / ▼ −4% change indicator that pairs with a sparkline or
+  metric. Positive is success-toned, negative is destructive — invert it where
+  down is good (latency, cost).
+dropInPath: src/components/sparkline/delta-chip
+---
+
+import { DeltaChipDemo } from '~/components/demos/delta-chip';
+import deltaChipSrc from '~/components/demos/delta-chip.tsx?shiki';
+
+<DemoCard
+  title="Deltas in a metric list"
+  description="A column of metrics with their period-over-period change. Note latency and cost use invert, so an increase reads as destructive rather than success."
+  source={deltaChipSrc}
+  render={<DeltaChipDemo />}
+/>

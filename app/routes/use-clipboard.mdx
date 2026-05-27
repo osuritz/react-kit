@@ -1,0 +1,22 @@
+---
+title: useClipboard
+group: Hooks
+order: 20
+blurb: Copy-to-clipboard hook with auto-resetting copied state and execCommand fallback.
+description: >-
+  A drop-in React hook for copying text to the clipboard with a copied!
+  affordance that auto-resets, async + execCommand fallback handling, and
+  optional before/after callbacks. The CopyButton below is the recommended
+  usage pattern.
+dropInPath: src/hooks/use-clipboard
+---
+
+import { CopyButton } from '~/components/demos/copy-button';
+import copyButtonSrc from '~/components/demos/copy-button.tsx?shiki';
+
+<DemoCard
+  title="Copy button"
+  description="A copy button wired to useClipboard, with a 2s copied state and an aria-live announcement for screen readers."
+  source={copyButtonSrc}
+  render={<CopyButton />}
+/>

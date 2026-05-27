@@ -87,13 +87,24 @@ push/PR to `main`; `deploy.yml` ships the built `app/` to GitHub Pages.
 
 ## Adding a drop-in to the demo site
 
-`app/lib/nav.ts` is the **single source of truth** for navigation — the desktop
-sidebar, the mobile drawer, and the home-page grid all derive from it, so a new
-entry there surfaces everywhere at once. To wire up a new drop-in:
+Each page is an **MDX file** under `app/routes/`. The route table and the
+navigation (desktop sidebar, mobile drawer, home-page grid) are both generated
+from the pages' frontmatter by `app/lib/pages.tsx` — so there's no router or nav
+list to hand-edit, and they can't drift. Two steps:
 
 1. Add a demo wrapper under `app/components/demos/<name>.tsx` (importing via
-   `#hooks/...` / `#components/...`).
-2. Add the route under `app/routes/<name>.tsx` (use the `DropInPage` template,
-   or hand-roll like `routes/integration.tsx` for richer demos).
-3. Register the route in `app/router.tsx`.
-4. Add a `NavItem` to the relevant group in `app/lib/nav.ts`.
+   `#hooks/...` / `#components/...`, exactly as a real consumer would).
+2. Add the page under `app/routes/<name>.mdx`. **The filename is the route
+   path.** Declare frontmatter — `title`, `group` (Hooks / Components /
+   Sparklines / Demos), `order` (within the group), `blurb` (home-card line),
+   optional `description`, and `dropInPath` (drives the README + Source links) —
+   then import the demo wrapper and its `?shiki` source and embed one or more
+   `<DemoCard>`s (provided to MDX automatically — no import). See
+   `routes/delta-chip.mdx` for the standard shape and `routes/integration.mdx`
+   for a hand-rolled page (`appSourcePath`, demo rendered directly without a
+   `DemoCard`).
+
+`app/lib/nav.ts` re-exports the generated `NAV_GROUPS`; group order lives in
+`GROUP_ORDER` in `app/lib/pages.tsx`. MDX is wired in `vite.config.ts`
+(`@mdx-js/rollup` + `remark-frontmatter` + `remark-mdx-frontmatter`); the
+`*.mdx` module type is declared in `app/vite-env.d.ts`.
