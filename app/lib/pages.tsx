@@ -28,9 +28,15 @@ const pages: ReadonlyArray<Page> = Object.entries(modules).map(([path, mod]) => 
     .pop()!
     .replace(/\.mdx$/, '');
   const { frontmatter } = mod;
-  if (!frontmatter?.title || !frontmatter.group) {
+  const missing = [
+    frontmatter?.title ? null : 'title',
+    frontmatter?.group ? null : 'group',
+    typeof frontmatter?.order === 'number' ? null : 'order',
+    frontmatter?.blurb ? null : 'blurb',
+  ].filter((field) => field !== null);
+  if (missing.length > 0) {
     throw new Error(
-      `app/routes/${slug}.mdx is missing required frontmatter (title, group). ` +
+      `app/routes/${slug}.mdx is missing required frontmatter: ${missing.join(', ')}. ` +
         `Every drop-in page needs title, group, order, and blurb.`
     );
   }
