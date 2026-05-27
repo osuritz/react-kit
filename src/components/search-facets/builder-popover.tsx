@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { type RefObject, useEffect, useId, useRef } from 'react';
 import { Popover } from '@base-ui/react/popover';
 import { Checkbox } from '@base-ui/react/checkbox';
 import {
@@ -24,8 +24,12 @@ export interface BuilderPopoverProps {
   editingIndex: number | null;
   open: boolean;
   onOpenChange: (next: boolean) => void;
-  /** Element the popover is anchored to. */
-  anchor: HTMLElement | null;
+  /**
+   * Element the popover is anchored to. Accepts a live element or a ref
+   * object — pass a ref to avoid reading `.current` during render (Base UI
+   * reads it during positioning).
+   */
+  anchor: HTMLElement | RefObject<HTMLElement | null> | null;
   /** Caller classes for the popover popup. Merged with `tailwind-merge`. */
   className?: string;
 }
