@@ -31,7 +31,9 @@ project — when consuming a drop-in, work from `src/<path>/` instead.
    is too rich for `DemoCard` (see `routes/integration.tsx` for the
    hand-rolled pattern).
 3. Add a route entry in `app/router.tsx`.
-4. Add a sidebar entry in `app/components/site-layout.tsx`'s `NAV` table.
+4. Add a `NavItem` to the right group in `app/lib/nav.ts` — the single source
+   of truth that feeds the desktop sidebar, the mobile drawer, and the
+   home-page grid at once.
 
 ## Drop-in styling assumption
 

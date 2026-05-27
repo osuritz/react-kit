@@ -29,6 +29,16 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   branch on the scheme (theme toggle, icon/chart swaps); pure CSS theming
   doesn't need it.
 
+- **[use-clipboard](src/hooks/use-clipboard/README.md)** — drop-in
+  copy-to-clipboard hook. `copy()` writes the text and flips a `copied`
+  flag that auto-resets on a timer; it handles the async Clipboard API,
+  the `execCommand` fallback, secure-context / permission failures (a
+  typed `ClipboardError`), and optional before/after callbacks. It never
+  throws — every failure resolves to `false` and surfaces on `error`.
+  Reach for it whenever you have a "Copy" affordance and want the
+  "Copied!" state and all the failure modes handled for you. No runtime
+  dependencies.
+
 - **[action-registry](src/hooks/action-registry/README.md)** — drop-in shared
   registry for app actions (id + label + optional
   shortcut/group/keywords/icon). The primitive a keybinding hook and a
@@ -58,7 +68,7 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
 
 - **[command-palette](src/components/command-palette/README.md)** —
   drop-in `⌘K` launcher built on
-  [cmdk](https://cmdk.paco.me). Subscribes to the
+  [Base UI](https://base-ui.com)'s `Combobox` + `Dialog`. Subscribes to the
   [action-registry](src/hooks/action-registry/README.md), groups
   rows by `Action.group`, fuzzy-matches `label` + `keywords`, filters
   out `enabled() === false`, and renders platform-correct shortcut
@@ -67,20 +77,53 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   per-source loading. Owns its own open hotkey only; per-action
   shortcuts stay with the keyboard-shortcuts drop-in.
 
-## Integration demo
+### Sparklines
 
-The three action drop-ins above are designed to compose. The
-[`/integration`](https://osuritz.github.io/react-kit/integration) route
-on the demo site (source:
-[`app/components/demos/integration.tsx`](app/components/demos/integration.tsx))
-wires
-[action-registry](src/hooks/action-registry/README.md),
-[keyboard-shortcuts](src/components/keyboard-shortcuts/README.md), and
-[command-palette](src/components/command-palette/README.md) together
-and exercises every seam between them: surface attribution via
-`ctx.source`, live `enabled()` toggling, mount/unmount cleanup,
-`allowInInput` suppression, async palette sources, and a registered
-`palette.open` action that owns the `mod+k` chord.
+A small family of copy-paste, dependency-light **micro-charts** — tiny,
+word-sized SVG charts (think GitHub's contribution graph, or the mini chart
+beside a stock price) built to sit inline in dense, data-heavy UIs like
+tables, KPI cards, and dashboards. They share a common shape: pure
+presentational SVG (no state or effects), color via `currentColor` (set the
+hue with a `text-*` class), an optional `label` that exposes the chart as
+`role="img"` (omit it and it's decorative), and a sane baseline on empty /
+flat / non-finite data. See the
+[family overview](src/components/sparkline/README.md) for the shared
+conventions and peer requirements.
+
+| Drop-in                                                                | Component            | What it's for                                                  |
+| ---------------------------------------------------------------------- | -------------------- | -------------------------------------------------------------- |
+| [`sparkline-line`](src/components/sparkline/sparkline-line/)           | `SparklineLine`      | Canonical trend line for tables and KPI cards                  |
+| [`sparkline-area`](src/components/sparkline/sparkline-area/)           | `SparklineArea`      | Trend with a filled area — emphasises volume/magnitude         |
+| [`sparkline-bar`](src/components/sparkline/sparkline-bar/)             | `SparklineBar`       | Discrete per-period values; below-baseline turns destructive   |
+| [`sparkline-winloss`](src/components/sparkline/sparkline-winloss/)     | `SparklineWinLoss`   | Binary up/down outcomes (SLA met/missed, pass/fail)            |
+| [`sparkline-threshold`](src/components/sparkline/sparkline-threshold/) | `SparklineThreshold` | Metric vs an SLO — shaded band + limit, breaches flagged       |
+| [`bullet-graph`](src/components/sparkline/bullet-graph/)               | `BulletGraph`        | Tufte actual-vs-target with qualitative bands (the KPI member) |
+| [`stacked-bar`](src/components/sparkline/stacked-bar/)                 | `StackedBar`         | Single-row part-to-whole (status breakdown, budget)            |
+| [`gauge-ring`](src/components/sparkline/gauge-ring/)                   | `GaugeRing`          | One percentage as a donut (quota, completion)                  |
+| [`heat-strip`](src/components/sparkline/heat-strip/)                   | `HeatStrip`          | Single-row intensity over periods (usage density)              |
+| [`delta-chip`](src/components/sparkline/delta-chip/)                   | `DeltaChip`          | The `▲ +12%` change indicator that pairs with a sparkline      |
+
+## Demos
+
+Two routes on the demo site compose the drop-ins above end-to-end rather than
+showing them in isolation:
+
+- **[Sparkline dashboard](https://osuritz.github.io/react-kit/sparkline-dashboard)**
+  — the whole micro-chart family assembled into one realistic enterprise
+  dashboard, so you can see how the sparklines, bullet graph, gauge,
+  heat strip, and delta chips read side by side.
+
+- **[Integration](https://osuritz.github.io/react-kit/integration)**
+  (source:
+  [`app/components/demos/integration.tsx`](app/components/demos/integration.tsx))
+  — the three action drop-ins, which are designed to compose. It wires
+  [action-registry](src/hooks/action-registry/README.md),
+  [keyboard-shortcuts](src/components/keyboard-shortcuts/README.md), and
+  [command-palette](src/components/command-palette/README.md) together and
+  exercises every seam between them: surface attribution via `ctx.source`,
+  live `enabled()` toggling, mount/unmount cleanup, `allowInInput`
+  suppression, async palette sources, and a registered `palette.open` action
+  that owns the `mod+k` chord.
 
 ## License
 
