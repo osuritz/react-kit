@@ -1,0 +1,24 @@
+---
+title: useFetch
+group: Hooks
+order: 24
+blurb: One-shot fetch on mount — data/isLoading/error without a data library.
+description: >-
+  A lightweight one-shot fetch hook: fetch exactly once per component
+  lifetime, on mount, and get back data/isLoading/error. Takes fetch args
+  (JSON-parsed, non-2xx rejects) or any Promise-returning function. Input
+  changes after mount are intentionally ignored — remount with a key to
+  refetch. The middle ground between fetch-in-useEffect boilerplate and
+  React Query; for input-reactive fetching see useAutocomplete.
+dropInPath: src/hooks/use-fetch
+---
+
+import { FetchDemo } from '~/components/demos/use-fetch';
+import fetchSrc from '~/components/demos/use-fetch.tsx?shiki';
+
+<DemoCard
+  title="One-shot fetch"
+  description="useFetch against a simulated 900ms backend. It fetches once per mount — the button remounts the consumer with a fresh key, which is the idiomatic way to refetch. Note the checkbox alone changes nothing: input changes after mount are intentionally ignored."
+  source={fetchSrc}
+  render={<FetchDemo />}
+/>
