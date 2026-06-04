@@ -7,7 +7,7 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
-      include: ['use-autocomplete.ts', 'use-debounce.ts'],
+      include: ['use-debounce.ts'],
       reporter: ['text', 'json-summary'],
     },
   },

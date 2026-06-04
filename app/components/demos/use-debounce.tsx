@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDebounce } from '#hooks/use-autocomplete/use-autocomplete.ts';
+import { useDebounce } from '#hooks/use-debounce/use-debounce.ts';
 
 export function DebounceDemo() {
   const [value, setValue] = useState('');

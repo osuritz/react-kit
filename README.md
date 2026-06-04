@@ -39,14 +39,20 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   "Copied!" state and all the failure modes handled for you. No runtime
   dependencies.
 
-- **[use-autocomplete](src/hooks/use-autocomplete/README.md)** — two drop-in
-  hooks for debounced search. `useDebounce` is the pure generic primitive —
-  React Query/SWR users should use it directly (debounce the query, let the
-  library own fetch state — don't mix the two). `useAutocomplete` composes it with fetch for
-  teams managing fetch state manually: loading/error state, stale-response
-  discard, empty-query short-circuit, and an always-fresh `fetchFn` ref so
-  inline arrow functions work without `useCallback`. Works with any
-  Promise-returning backend. No runtime dependencies.
+- **[use-debounce](src/hooks/use-debounce/README.md)** — drop-in generic
+  debounce hook: returns a value only once it has stopped changing for
+  `delay` ms. The primitive behind debounced search — React Query/SWR users
+  should use it directly (debounce the query, put it in the `queryKey`, let
+  the library own fetch state). No runtime dependencies.
+
+- **[use-autocomplete](src/hooks/use-autocomplete/README.md)** — drop-in
+  debounced autocomplete for teams managing fetch state manually:
+  loading/error state, stale-response discard, empty-query short-circuit,
+  and an always-fresh `fetchFn` ref so inline arrow functions work without
+  `useCallback`. Works with any Promise-returning backend; composes
+  [use-debounce](src/hooks/use-debounce/README.md) (vendored in-folder).
+  Don't mix with React Query — it's one or the other. No runtime
+  dependencies.
 
 - **[action-registry](src/hooks/action-registry/README.md)** — drop-in shared
   registry for app actions (id + label + optional

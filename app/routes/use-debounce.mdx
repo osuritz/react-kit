@@ -1,0 +1,23 @@
+---
+title: useDebounce
+group: Hooks
+order: 23
+blurb: Pure generic debounce — the value lands only once it stops changing.
+description: >-
+  A pure, minimal debounce primitive, generic over any value type. Debounce a
+  search query and hand the settled value to whatever owns your fetch state —
+  with React Query, put it in the queryKey and use enabled to skip empty
+  queries. The use-autocomplete drop-in composes this hook for teams managing
+  fetch state manually.
+dropInPath: src/hooks/use-debounce
+---
+
+import { DebounceDemo } from '~/components/demos/use-debounce';
+import debounceSrc from '~/components/demos/use-debounce.tsx?shiki';
+
+<DemoCard
+  title="Raw vs. debounced"
+  description="Type quickly, then pause — the debounced value only updates once typing stops. With React Query, put it in the queryKey; enabled: !!debouncedQuery skips empty queries (the equivalent of useAutocomplete's empty-query early return)."
+  source={debounceSrc}
+  render={<DebounceDemo />}
+/>

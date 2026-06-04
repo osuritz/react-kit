@@ -1,14 +1,19 @@
 /**
- * useDebounce + useAutocomplete — debounced-search primitives.
+ * useAutocomplete — debounced autocomplete for teams managing fetch state
+ * manually. Bundles debounce + fetch + loading/error/stale-response handling
+ * for any Promise-returning backend, no useCallback required:
  *
- * Which one do I want?
+ *     const { results, loading, error } = useAutocomplete(
+ *       query,
+ *       (q) => axios.get(`/api/search?q=${encodeURIComponent(q)}`).then((r) => r.data),
+ *     );
  *
- * - **React Query users should use `useDebounce` directly** — React Query
- *   manages its own fetching lifecycle, so don't mix it with useAutocomplete;
- *   use one or the other. Debounce the query string, hand it to `useQuery`,
- *   and let React Query own caching, loading, and error state
- *   (`enabled: !!debouncedQuery` is the React Query equivalent of
- *   useAutocomplete's empty-query early return):
+ * **On React Query?** Use the standalone `use-debounce` drop-in directly
+ * instead — React Query manages its own fetching lifecycle, so don't mix it
+ * with useAutocomplete; it's one or the other. Debounce the query string,
+ * hand it to `useQuery`, and let React Query own caching, loading, and error
+ * state (`enabled: !!debouncedQuery` is the React Query equivalent of
+ * useAutocomplete's empty-query early return):
  *
  *     const debouncedQuery = useDebounce(query, 300);
  *
@@ -17,35 +22,9 @@
  *       queryFn: () => fetchResults(debouncedQuery),
  *       enabled: !!debouncedQuery,
  *     });
- *
- * - **`useAutocomplete` is for teams managing fetch state manually** — it
- *   bundles debounce + fetch + loading/error/stale-response handling for any
- *   Promise-returning backend, no useCallback required:
- *
- *     const { results, loading, error } = useAutocomplete(
- *       query,
- *       (q) => axios.get(`/api/search?q=${encodeURIComponent(q)}`).then((r) => r.data),
- *     );
  */
 import { useEffect, useRef, useState } from 'react';
-
-/**
- * Returns `value`, but only after it has stopped changing for `delay` ms.
- * Generic over any value type — strings, numbers, objects (compared by
- * identity, like any dependency).
- */
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const id = setTimeout(() => setDebouncedValue(value), delay);
-    // Each change cancels the previous pending timeout — that *is* the
-    // debounce. Cleanup on unmount also prevents a set-state-after-unmount.
-    return () => clearTimeout(id);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
+import { useDebounce } from './use-debounce';
 
 export interface UseAutocompleteResult<T> {
   results: T[];

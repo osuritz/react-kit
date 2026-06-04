@@ -1,25 +1,28 @@
 # use-autocomplete
 
-Two drop-in React hooks for debounced search: `useDebounce`, a pure generic
-debounce primitive, and `useAutocomplete`, which composes it with fetch +
-loading/error/stale-response handling. No npm package, no build step — copy
-the file into your app.
+A drop-in debounced autocomplete hook for teams managing fetch state
+manually: debounce + fetch + loading/error/stale-response handling over any
+Promise-returning backend. No npm package, no build step — copy the files
+into your app.
 
 > Debounced fetching looks simple until the failure modes show up: a slow
 > response for `"re"` overwriting the results for `"react"`, a setState after
 > unmount, a refetch storm because the inline `fetchFn` gets a new identity
-> every render. These hooks handle all of that in ~60 lines.
+> every render. This hook handles all of that in ~60 lines.
 
-**Which one do I want?** React Query (or SWR) users should use `useDebounce`
-directly and let their data library own fetch state. `useAutocomplete` is for
-teams managing fetch state manually. Don't mix them — React Query manages its
-own fetching lifecycle, so it's one or the other.
+**On React Query (or SWR)?** Use the
+[use-debounce](../use-debounce/README.md) drop-in directly and let your data
+library own fetch state. Don't mix the two — React Query manages its own
+fetching lifecycle, so it's one or the other.
 
 ## What to copy
 
-Copy this file into your project (e.g. `src/hooks/use-autocomplete/`):
+Copy these two files into your project (e.g. `src/hooks/use-autocomplete/`):
 
-- `use-autocomplete.ts` — both hooks (`useDebounce`, `useAutocomplete`)
+- `use-autocomplete.ts` — the `useAutocomplete` hook
+- `use-debounce.ts` — vendored copy of the
+  [use-debounce](../use-debounce/README.md) drop-in it composes (kept
+  in-folder so the drop-in stays self-contained)
 - _(optional)_ this README
 
 The other files in this directory (`package.json`, `tsconfig.json`,
@@ -30,8 +33,6 @@ what you copy into your app.
 Peer requirements: React 18+ (works in 18 and 19). No runtime deps.
 
 ## Quick start
-
-### `useAutocomplete` — manual fetch state, any backend
 
 `fetchFn` can be an inline arrow function — no `useCallback` needed. The hook
 reads it through an always-fresh ref, so its identity is never an effect
@@ -70,63 +71,15 @@ export function UserSearch() {
 }
 ```
 
-### `useDebounce` + React Query — when a library owns fetch state
-
-React Query owns the loading/error/results state; you just debounce the query
-key. The `enabled` flag is the React Query equivalent of `useAutocomplete`'s
-empty-query early return.
-
-```tsx
-import { useState } from 'react';
-import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
-import { useDebounce } from './hooks/use-autocomplete/use-autocomplete';
-
-export function ProductSearch() {
-  const [query, setQuery] = useState('');
-  const debouncedQuery = useDebounce(query, 300);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['search', debouncedQuery],
-    queryFn: () => axios.get('/api/search', { params: { q: debouncedQuery } }).then((r) => r.data),
-    enabled: !!debouncedQuery, // ≙ useAutocomplete's empty-query early return
-  });
-
-  return (
-    <div>
-      <input value={query} onChange={(e) => setQuery(e.target.value)} />
-      {isLoading && <span role="status">Loading…</span>}
-      {error && <span role="alert">Search failed.</span>}
-      <ul>
-        {data?.map((item) => (
-          <li key={item.id}>{item.title}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-```
-
 ## API
 
 ```ts
-function useDebounce<T>(value: T, delay: number): T;
-
 function useAutocomplete<T>(
   query: string,
   fetchFn: (query: string) => Promise<T[]>,
   delay?: number // default 300
 ): { results: T[]; loading: boolean; error: unknown };
 ```
-
-### `useDebounce`
-
-Returns `value`, but only after it has stopped changing for `delay` ms.
-Generic over any type — non-primitives are compared by identity, like any
-React dependency. The initial value is returned immediately (there is nothing
-to debounce yet).
-
-### `useAutocomplete`
 
 - **Debounces internally** — pass the live input value; only the final query
   of a typing burst is fetched.
@@ -164,9 +117,9 @@ pnpm install
 pnpm test
 ```
 
-Covers debounce timing (reset on rapid changes, zero delay, mid-flight delay
-changes, unmount), generic values, empty/whitespace-query short-circuit and
-trimming, custom delay, loading transitions (including no flicker across a
-supersede), stale response and stale rejection discard, error capture and
-recovery, fetchFn identity changes, StrictMode double-effects, and
-post-unmount resolutions.
+Covers empty/whitespace-query short-circuit and trimming, debounce timing,
+custom delay, loading transitions (including no flicker across a supersede),
+stale response and stale rejection discard, error capture and recovery,
+fetchFn identity changes, StrictMode double-effects, and post-unmount
+resolutions. The debounce primitive itself is covered in the
+[use-debounce](../use-debounce/README.md) drop-in's suite.
