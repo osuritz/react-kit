@@ -1,0 +1,23 @@
+---
+title: useAutocomplete
+group: Hooks
+order: 25
+blurb: Debounced autocomplete over any Promise backend, for manual fetch state.
+description: >-
+  Debounce + fetch + loading/error/stale-response handling for teams managing
+  fetch state manually, over any Promise-returning backend. Composes the
+  useDebounce drop-in (vendored in-folder). React Query manages its own
+  fetching lifecycle — React Query users should use useDebounce directly
+  instead; it's one or the other, never both.
+dropInPath: src/hooks/use-autocomplete
+---
+
+import { AutocompleteDemo } from '~/components/demos/use-autocomplete';
+import autocompleteSrc from '~/components/demos/use-autocomplete.tsx?shiki';
+
+<DemoCard
+  title="Autocomplete search"
+  description="useAutocomplete against a simulated 400ms backend. The fetchFn is an inline arrow — no useCallback. Type a word quickly: only the final query fires a request, and a stale slow response can never overwrite a newer one."
+  source={autocompleteSrc}
+  render={<AutocompleteDemo />}
+/>
