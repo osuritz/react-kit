@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { useAutocomplete, useDebounce } from './use-autocomplete';
 
@@ -79,6 +80,21 @@ describe('useDebounce', () => {
     expect(result.current).toBe(2);
   });
 
+  it('restarts the timer with the new delay when delay changes mid-debounce', async () => {
+    const { result, rerender } = renderHook(({ value, delay }) => useDebounce(value, delay), {
+      initialProps: { value: 'a', delay: 300 },
+    });
+
+    rerender({ value: 'ab', delay: 300 });
+    await advance(200); // 100ms left on the 300ms timer…
+    rerender({ value: 'ab', delay: 500 }); // …but a delay change reschedules from scratch
+    await advance(499);
+    expect(result.current).toBe('a');
+
+    await advance(1);
+    expect(result.current).toBe('ab');
+  });
+
   it('does not fire a pending update after unmount', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const { rerender, unmount } = renderHook(({ value }) => useDebounce(value, 300), {
@@ -100,6 +116,27 @@ describe('useAutocomplete', () => {
     await advance(300);
     expect(result.current).toEqual({ results: [], loading: false, error: null });
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('treats a whitespace-only query as empty — no fetch fired', async () => {
+    const fetchFn = vi.fn();
+    const { result } = renderHook(() => useAutocomplete('   ', fetchFn));
+
+    await advance(300);
+    expect(result.current).toEqual({ results: [], loading: false, error: null });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('trims surrounding whitespace off the query before fetching', async () => {
+    const fetchFn = vi.fn(async (q: string) => [q]);
+    const { rerender } = renderHook(({ query }) => useAutocomplete(query, fetchFn), {
+      initialProps: { query: '' },
+    });
+
+    rerender({ query: '  re ' });
+    await advance(300);
+    expect(fetchFn).toHaveBeenCalledOnce();
+    expect(fetchFn).toHaveBeenCalledWith('re');
   });
 
   it('fetches a typed query after the debounce delay and exposes results', async () => {
@@ -192,6 +229,28 @@ describe('useAutocomplete', () => {
     });
 
     expect(result.current.results).toEqual(['react']);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it('keeps loading true across a supersede — no false flicker between requests', async () => {
+    const slow = deferred<string[]>();
+    const fast = deferred<string[]>();
+    const fetchFn = vi.fn((q: string) => (q === 're' ? slow.promise : fast.promise));
+    const { result, rerender } = renderHook(({ query }) => useAutocomplete(query, fetchFn), {
+      initialProps: { query: 're' },
+    });
+
+    await advance(300); // 're' in flight
+    expect(result.current.loading).toBe(true);
+
+    rerender({ query: 'react' });
+    expect(result.current.loading).toBe(true); // still loading while 're' is being superseded
+    await advance(300); // 'react' fires
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => {
+      fast.resolve(['react']);
+    });
     expect(result.current.loading).toBe(false);
   });
 
@@ -302,6 +361,26 @@ describe('useAutocomplete', () => {
     expect(second).toHaveBeenCalledOnce();
     expect(second).toHaveBeenCalledWith('react');
     expect(result.current.results).toEqual(['second']);
+  });
+
+  it('settles to a consistent state under StrictMode double-effects', async () => {
+    const fetchFn = vi.fn(async (q: string) => [q]);
+    const { result, rerender } = renderHook(({ query }) => useAutocomplete(query, fetchFn), {
+      initialProps: { query: '' },
+      wrapper: StrictMode,
+    });
+
+    rerender({ query: 're' });
+    await advance(300);
+    // StrictMode re-runs the effect (cleanup cancels the first request), but
+    // state must settle exactly as in production: results once, no flicker.
+    expect(result.current.results).toEqual(['re']);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+
+    rerender({ query: '' });
+    await advance(300);
+    expect(result.current).toEqual({ results: [], loading: false, error: null });
   });
 
   it('does not update state when a response resolves after unmount', async () => {

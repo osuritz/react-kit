@@ -116,7 +116,7 @@ function useAutocomplete<T>(
   query: string,
   fetchFn: (query: string) => Promise<T[]>,
   delay?: number // default 300
-): { results: T[]; loading: boolean; error: unknown | null };
+): { results: T[]; loading: boolean; error: unknown };
 ```
 
 ### `useDebounce`
@@ -130,12 +130,14 @@ to debounce yet).
 
 - **Debounces internally** — pass the live input value; only the final query
   of a typing burst is fetched.
-- **Empty query** clears `results`/`error` and fires no request.
+- **Empty or whitespace-only query** clears `results`/`error` and fires no
+  request. The query is trimmed before fetching, so `"  re "` and `"re"` are
+  the same request.
 - **Stale responses are discarded** — if a newer query fires while an older
   request is in flight, the older resolution (or rejection) is dropped, so
   results never go backwards.
 - **Errors** land in `error` (typed `unknown` — whatever your `fetchFn`
-  rejected with) and clear on the next successful fetch.
+  rejected with; `null` when healthy) and clear on the next successful fetch.
 - **No `useCallback` needed** for `fetchFn`; the latest closure is always
   used when a fetch fires.
 - Mounting with a non-empty query fetches immediately (debounce applies to
@@ -148,7 +150,12 @@ to debounce yet).
   background but its result is ignored. If you need to actually cancel the
   network request, wire an `AbortController` inside your `fetchFn`.
 - `loading` is `true` from the moment the debounced fetch fires until its
-  response lands (or it is superseded).
+  response lands; it stays `true` (no flicker) when a newer query supersedes
+  an in-flight request.
+- Changing `delay` while a value is settling restarts the debounce timer from
+  scratch with the new delay — the standard debounce-hook tradeoff. If you
+  drive `delay` from state, expect the value to land `newDelay` ms after the
+  change.
 
 ## Tests
 
@@ -157,7 +164,9 @@ pnpm install
 pnpm test
 ```
 
-Covers debounce timing (reset on rapid changes, zero delay, unmount), generic
-values, empty-query short-circuit, custom delay, loading transitions, stale
-response and stale rejection discard, error capture and recovery, fetchFn
-identity changes, and post-unmount resolutions.
+Covers debounce timing (reset on rapid changes, zero delay, mid-flight delay
+changes, unmount), generic values, empty/whitespace-query short-circuit and
+trimming, custom delay, loading transitions (including no flicker across a
+supersede), stale response and stale rejection discard, error capture and
+recovery, fetchFn identity changes, StrictMode double-effects, and
+post-unmount resolutions.

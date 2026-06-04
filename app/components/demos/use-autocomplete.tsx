@@ -37,9 +37,11 @@ function searchLanguages(query: string): Promise<string[]> {
 }
 
 export function AutocompleteDemo() {
+  // Must start empty: a non-empty initial query would fetch on mount (twice
+  // under StrictMode, which re-runs effects) and skew the request counter.
   const [query, setQuery] = useState('');
-  // The hook debounces internally, so this counts real requests — type a
-  // whole word quickly and watch it only increment once.
+  // Counts every request the hook actually fires. Because the hook debounces
+  // internally, typing a whole word quickly increments it only once.
   const [requests, setRequests] = useState(0);
 
   const { results, loading, error } = useAutocomplete(query, (q) => {
@@ -87,8 +89,8 @@ export function AutocompleteDemo() {
       )}
 
       <p className="text-muted-foreground text-xs">
-        Requests fired: <span className="text-foreground font-mono">{requests}</span> (debounced
-        300ms; simulated 400ms latency)
+        Requests actually fired: <span className="text-foreground font-mono">{requests}</span>{' '}
+        (debounced 300ms; simulated 400ms latency)
       </p>
     </div>
   );

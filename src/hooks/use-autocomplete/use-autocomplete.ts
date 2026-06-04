@@ -50,7 +50,8 @@ export function useDebounce<T>(value: T, delay: number): T {
 export interface UseAutocompleteResult<T> {
   results: T[];
   loading: boolean;
-  error: unknown | null;
+  /** Whatever the last failed `fetchFn` rejected with; `null` when healthy. */
+  error: unknown;
 }
 
 /**
@@ -68,7 +69,7 @@ export function useAutocomplete<T>(
 ): UseAutocompleteResult<T> {
   const [results, setResults] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<unknown | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
   const debouncedQuery = useDebounce(query, delay);
 
@@ -83,8 +84,11 @@ export function useAutocomplete<T>(
   fetchFnRef.current = fetchFn;
 
   useEffect(() => {
-    // Empty query: clear and bail — no request fired.
-    if (!debouncedQuery) {
+    // Empty (or whitespace-only) query: clear and bail — no request fired.
+    // The trimmed query is also what gets fetched, so "  re " and "re" are
+    // the same request.
+    const trimmedQuery = debouncedQuery.trim();
+    if (!trimmedQuery) {
       // oxlint-disable-next-line react-hooks-js/set-state-in-effect -- intentional: clearing is a reaction to the (debounced, external-by-design) query emptying; there is no render-time place to do it inside a hook without changing the hook's state shape.
       setResults([]);
       setLoading(false);
@@ -101,7 +105,7 @@ export function useAutocomplete<T>(
     setError(null);
 
     fetchFnRef
-      .current(debouncedQuery)
+      .current(trimmedQuery)
       .then((data) => {
         if (cancelled) return;
         setResults(data);
