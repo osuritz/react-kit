@@ -45,6 +45,15 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   should use it directly (debounce the query, put it in the `queryKey`, let
   the library own fetch state). No runtime dependencies.
 
+- **[use-fetch](src/hooks/use-fetch/README.md)** — drop-in one-shot fetch
+  hook: fetch once on mount, get `data`/`isLoading`/`error` back. Takes
+  fetch args (JSON-parsed, non-2xx rejects) or any Promise-returning
+  function. Input changes after mount are intentionally ignored — remount
+  with a `key` to refetch. A deliberately toy implementation for static
+  requests: a URL built from a changing param silently keeps fetching the
+  first value, and the fix for that is React Query's `queryKey`, not a
+  bigger useFetch. No runtime dependencies.
+
 - **[use-autocomplete](src/hooks/use-autocomplete/README.md)** — drop-in
   debounced autocomplete for teams managing fetch state manually:
   loading/error state, stale-response discard, empty-query short-circuit,
