@@ -4,10 +4,22 @@
  * Fetches exactly once per component lifetime, on mount. This is a
  * deliberate design choice, not a missing feature: the effect has an empty
  * dependency array and the input is captured on first render, so later input
- * changes are intentionally ignored. Need the request to react to changing
- * input (a search query, a route param)? That's a different hook with
- * different semantics — see the `use-autocomplete` drop-in for the reactive,
- * debounced shape, or reach for React Query when you want caching/retries.
+ * changes are intentionally ignored.
+ *
+ * KNOWN LIMIT — this is a toy by design. The classic trap:
+ *
+ *     const productId = useParams().productId;
+ *     useFetch([`/products/${productId}`]); // silently keeps fetching the
+ *                                           // FIRST productId forever
+ *
+ * When productId changes, nothing happens — no error, no refetch. Making the
+ * hook react to input means picking a re-run key: depending on the raw input
+ * re-fetches infinitely (new array/lambda identity every render), so you'd
+ * have to serialize it (e.g. depend on the URL string) — which is exactly
+ * React Query's queryKey. At that point, use React Query: it is made for
+ * precisely this. For dynamic input either remount with a `key`, pass a
+ * lambda and manage the lifecycle yourself, or graduate to React Query
+ * (see also the `use-autocomplete` drop-in for the debounced reactive shape).
  *
  *     // fetch-args form: spread into globalThis.fetch, JSON-parsed,
  *     // non-2xx rejects with Error('HTTP <status>')

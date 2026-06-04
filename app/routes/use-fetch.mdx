@@ -8,8 +8,10 @@ description: >-
   lifetime, on mount, and get back data/isLoading/error. Takes fetch args
   (JSON-parsed, non-2xx rejects) or any Promise-returning function. Input
   changes after mount are intentionally ignored — remount with a key to
-  refetch. The middle ground between fetch-in-useEffect boilerplate and
-  React Query; for input-reactive fetching see useAutocomplete.
+  refetch. A deliberately toy implementation for static requests: a URL
+  built from a changing param silently keeps fetching the first value
+  forever. When you need input-driven refetching, don't grow useFetch —
+  that's React Query's queryKey (or useAutocomplete for debounced search).
 dropInPath: src/hooks/use-fetch
 ---
 

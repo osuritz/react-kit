@@ -6,13 +6,13 @@ A drop-in one-shot fetch hook: fetch once on mount, get back
 apps, prototypes, and interviews. No npm package, no build step — copy the
 file into your app.
 
-> One-shot is the point. The hook fetches exactly once per component
-> lifetime; input changes after mount are intentionally ignored (the effect
-> has an empty dependency array, and the input is captured to a ref on first
-> render — capture-once is consistent with run-once). Need the request to
-> _react_ to changing input? That's a different hook: see
-> [use-autocomplete](../use-autocomplete/README.md) for the debounced
-> reactive shape, or React Query for caching/retries/revalidation.
+> One-shot is the point — and the limit. The hook fetches exactly once per
+> component lifetime; input changes after mount are intentionally ignored
+> (the effect has an empty dependency array, and the input is captured to a
+> ref on first render — capture-once is consistent with run-once). This is a
+> deliberately **toy implementation**: see
+> [Know when to graduate](#know-when-to-graduate) below for the trap that
+> tells you you've outgrown it.
 
 ## What to copy
 
@@ -76,6 +76,37 @@ function useFetch<T>(input: FetchInput): {
   error: unknown; // whatever the fetch rejected with; null when healthy
 };
 ```
+
+## Know when to graduate
+
+The classic trap — a URL built from a param that can change:
+
+```tsx
+const { productId } = useParams();
+const { data } = useFetch([`/products/${productId}`]);
+// productId changes → nothing happens. The hook silently keeps
+// fetching the FIRST productId forever.
+```
+
+No error, no refetch — the input was captured on first render and the effect
+never re-runs. If you hit this, **don't grow useFetch**. Making it react to
+input means choosing a re-run key: depending on the raw input would refetch
+infinitely (the args array — or an inline lambda — has a new identity every
+render), so you'd have to serialize the input into something stable to
+compare. That serialized key is exactly React Query's `queryKey` — a
+decoupled, comparable key that controls when a refetch happens. Anything
+beyond a one-shot mount fetch grows toward React Query, so at that point
+just use React Query; it is made for precisely this.
+
+Your options, in order of how dynamic the request is:
+
+1. **Static request** — `useFetch` as-is.
+2. **Occasionally re-run** — remount the consumer with a `key`, or pass a
+   lambda and own the lifecycle yourself.
+3. **Input-driven request** (route params, search queries) — React Query
+   (`queryKey: ['product', productId]`), or
+   [use-autocomplete](../use-autocomplete/README.md) for the debounced
+   search shape.
 
 ## Behavior notes
 
