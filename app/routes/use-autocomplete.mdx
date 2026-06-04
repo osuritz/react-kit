@@ -1,0 +1,32 @@
+---
+title: useAutocomplete
+group: Hooks
+order: 25
+blurb: Debounced autocomplete over any Promise backend — plus useDebounce, the primitive inside.
+description: >-
+  Two hooks in one file — use one or the other. useAutocomplete bundles
+  debounce + fetch + loading/error/stale-response handling for teams managing
+  fetch state manually; useDebounce is the generic primitive it composes.
+  React Query manages its own fetching lifecycle, so React Query users should
+  use useDebounce directly and let the library own fetch state.
+dropInPath: src/hooks/use-autocomplete
+---
+
+import { AutocompleteDemo } from '~/components/demos/use-autocomplete';
+import autocompleteSrc from '~/components/demos/use-autocomplete.tsx?shiki';
+import { DebounceDemo } from '~/components/demos/use-debounce';
+import debounceSrc from '~/components/demos/use-debounce.tsx?shiki';
+
+<DemoCard
+  title="Autocomplete search"
+  description="useAutocomplete against a simulated 400ms backend. The fetchFn is an inline arrow — no useCallback. Type a word quickly: only the final query fires a request, and a stale slow response can never overwrite a newer one."
+  source={autocompleteSrc}
+  render={<AutocompleteDemo />}
+/>
+
+<DemoCard
+  title="useDebounce on its own"
+  description="The primitive inside useAutocomplete. Debounce the raw input and hand the settled value to whatever owns your fetch state — with React Query, put it in the queryKey; enabled: !!debouncedQuery is the React Query equivalent of useAutocomplete's empty-query early return."
+  source={debounceSrc}
+  render={<DebounceDemo />}
+/>
