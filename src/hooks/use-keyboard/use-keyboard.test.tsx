@@ -307,6 +307,14 @@ describe('useKeyboard — editable-target guard', () => {
     expect(onK).not.toHaveBeenCalled();
   });
 
+  it('suppresses in a select', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }));
+    const select = mount(document.createElement('select'));
+    press('k', {}, select);
+    expect(onK).not.toHaveBeenCalled();
+  });
+
   it('suppresses in contenteditable', () => {
     const onK = vi.fn();
     renderHook(() => useKeyboard({ k: onK }));
