@@ -427,6 +427,10 @@ export function useKeyboard(
       if (startingFresh) {
         for (const binding of parsed) {
           for (const seq of binding.sequences) {
+            // `sequenceTimeoutMs <= 0` disables sequences: multi-chord
+            // bindings never seed the cursor (a claimed-then-dropped first
+            // chord would be worse than an inert binding).
+            if (seq.length > 1 && sequenceTimeoutMs <= 0) continue;
             tryConsume(binding.handler, seq);
           }
         }

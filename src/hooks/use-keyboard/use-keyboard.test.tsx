@@ -209,3 +209,61 @@ describe('useKeyboard — chords', () => {
     expect(onK).not.toHaveBeenCalled();
   });
 });
+
+/* ------------------------------------------------------------------ */
+/*  Hook — sequences                                                   */
+/* ------------------------------------------------------------------ */
+
+describe('useKeyboard — sequences', () => {
+  it('completes a two-chord sequence and claims both keystrokes', () => {
+    const go = vi.fn();
+    renderHook(() => useKeyboard({ 'g i': go }));
+    const g = press('g');
+    expect(g.defaultPrevented).toBe(true);
+    expect(go).not.toHaveBeenCalled();
+    const i = press('i');
+    expect(i.defaultPrevented).toBe(true);
+    expect(go).toHaveBeenCalledTimes(1);
+  });
+
+  it('a mistype resets the sequence and is not claimed', () => {
+    const go = vi.fn();
+    renderHook(() => useKeyboard({ 'g i': go }));
+    press('g');
+    const x = press('x');
+    expect(x.defaultPrevented).toBe(false);
+    press('i'); // after the reset, a bare "i" matches nothing
+    expect(go).not.toHaveBeenCalled();
+  });
+
+  it('a bare modifier press does not reset an in-progress sequence', () => {
+    const go = vi.fn();
+    renderHook(() => useKeyboard({ 'g i': go }));
+    press('g');
+    press('Shift', { shiftKey: true });
+    press('i');
+    expect(go).toHaveBeenCalledTimes(1);
+  });
+
+  it('the sequence buffer times out after sequenceTimeoutMs', () => {
+    vi.useFakeTimers();
+    const go = vi.fn();
+    renderHook(() => useKeyboard({ 'g i': go }));
+    press('g');
+    vi.advanceTimersByTime(1001);
+    press('i');
+    expect(go).not.toHaveBeenCalled();
+  });
+
+  it('sequenceTimeoutMs: 0 disables sequences without claiming their first chord', () => {
+    const go = vi.fn();
+    const onJ = vi.fn();
+    renderHook(() => useKeyboard({ 'g i': go, j: onJ }, { sequenceTimeoutMs: 0 }));
+    const g = press('g');
+    expect(g.defaultPrevented).toBe(false); // the inert binding never seeds
+    press('i');
+    expect(go).not.toHaveBeenCalled();
+    press('j');
+    expect(onJ).toHaveBeenCalledTimes(1); // single chords are unaffected
+  });
+});
