@@ -1,0 +1,22 @@
+---
+title: useKeyboard
+group: Hooks
+order: 27
+blurb: Local keyboard bindings — chords, sequences, and an editable-target guard.
+description: >-
+  Registry-free keyboard bindings for one component: map shortcut strings
+  ("mod+k", "?", "g i") to handlers. The same battle-tested engine as the
+  keyboard-shortcuts drop-in — chords, multi-key sequences, platform mod
+  resolution — without the registry, scopes, or cheatsheet.
+dropInPath: src/hooks/use-keyboard
+---
+
+import { KeyboardDemo } from '~/components/demos/use-keyboard';
+import keyboardSrc from '~/components/demos/use-keyboard.tsx?shiki';
+
+<DemoCard
+  title="Task list with local bindings"
+  description="j/k move the selection, Enter toggles done, g g jumps to the top, mod+k focuses the filter. While you're typing in the filter, j/k don't move the selection — the editable-target guard is on by default; Escape (bound with allowInInput) blurs back out."
+  source={keyboardSrc}
+  render={<KeyboardDemo />}
+/>

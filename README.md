@@ -54,6 +54,13 @@ Each hook/utility is self-contained. Copy the file(s) you need into your project
   Don't mix with React Query — it's one or the other. No runtime
   dependencies.
 
+- **[use-keyboard](src/hooks/use-keyboard/README.md)** — drop-in local
+  keyboard bindings: map shortcut strings (`mod+k`, `?`, `g i`) to handlers
+  for one component's lifetime. Chords, multi-key sequences, platform `mod`
+  resolution, and an editable-target guard — the same engine that powers
+  keyboard-shortcuts, without the registry/scopes/cheatsheet. No runtime
+  dependencies.
+
 - **[action-registry](src/hooks/action-registry/README.md)** — drop-in shared
   registry for app actions (id + label + optional
   shortcut/group/keywords/icon). The primitive a keybinding hook and a
