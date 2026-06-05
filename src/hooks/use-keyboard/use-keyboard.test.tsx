@@ -54,6 +54,7 @@ describe('parseSequence', () => {
     ['esc', 'escape'],
     ['return', 'enter'],
     ['space', ' '],
+    ['spacebar', ' '],
     ['up', 'arrowup'],
     ['down', 'arrowdown'],
     ['left', 'arrowleft'],
@@ -68,8 +69,13 @@ describe('parseSequence', () => {
     expect(parseSequence('g i', false)).toEqual([chord('g'), chord('i')]);
   });
 
+  it('parses a multi-modifier chord', () => {
+    expect(parseSequence('mod+shift+k', true)).toEqual([chord('k', { meta: true, shift: true })]);
+    expect(parseSequence('mod+shift+k', false)).toEqual([chord('k', { ctrl: true, shift: true })]);
+  });
+
   it('throws on an empty string', () => {
-    expect(() => parseSequence('', false)).toThrow();
+    expect(() => parseSequence('', false)).toThrow(/use-keyboard:/);
   });
 
   it('throws on an unknown modifier', () => {
@@ -101,6 +107,8 @@ describe('chordMatches', () => {
 
   it('rejects an extra modifier', () => {
     expect(chordMatches(chord('k'), kbd('k', { ctrlKey: true }))).toBe(false);
+    expect(chordMatches(chord('k'), kbd('k', { metaKey: true }))).toBe(false);
+    expect(chordMatches(chord('k'), kbd('k', { altKey: true }))).toBe(false);
   });
 
   it('allows shift-produced punctuation: "?" matches Shift+/', () => {
