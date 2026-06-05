@@ -326,3 +326,85 @@ describe('useKeyboard — editable-target guard', () => {
     expect(onK).toHaveBeenCalledTimes(1);
   });
 });
+
+/* ------------------------------------------------------------------ */
+/*  Hook — lifecycle                                                   */
+/* ------------------------------------------------------------------ */
+
+describe('useKeyboard — lifecycle', () => {
+  it('enabled: false attaches no listener; toggling true attaches', () => {
+    const onK = vi.fn();
+    const { rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) => useKeyboard({ k: onK }, { enabled }),
+      { initialProps: { enabled: false } }
+    );
+    press('k');
+    expect(onK).not.toHaveBeenCalled();
+    rerender({ enabled: true });
+    press('k');
+    expect(onK).toHaveBeenCalledTimes(1);
+  });
+
+  it('toggling enabled off drops an in-progress sequence', () => {
+    const go = vi.fn();
+    const { rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) => useKeyboard({ 'g i': go }, { enabled }),
+      { initialProps: { enabled: true } }
+    );
+    press('g');
+    rerender({ enabled: false });
+    rerender({ enabled: true });
+    press('i');
+    expect(go).not.toHaveBeenCalled();
+  });
+
+  it('unmount removes the listener and clears the pending sequence timer', () => {
+    vi.useFakeTimers();
+    const go = vi.fn();
+    const onK = vi.fn();
+    const { unmount } = renderHook(() => useKeyboard({ 'g i': go, k: onK }));
+    press('g');
+    unmount();
+    press('k');
+    expect(onK).not.toHaveBeenCalled();
+    expect(() => vi.runAllTimers()).not.toThrow();
+  });
+
+  it('attaches once across re-renders with inline literals; the latest handler wins', () => {
+    const calls: number[] = [];
+    const addSpy = vi.spyOn(document, 'addEventListener');
+    const { rerender } = renderHook(
+      ({ n }: { n: number }) => useKeyboard({ k: () => { calls.push(n); } }),
+      { initialProps: { n: 1 } }
+    );
+    rerender({ n: 2 });
+    const keydownAdds = addSpy.mock.calls.filter(([type]) => type === 'keydown');
+    expect(keydownAdds).toHaveLength(1);
+    press('k');
+    expect(calls).toEqual([2]);
+  });
+
+  it('two instances binding the same chord BOTH fire', () => {
+    const a = vi.fn();
+    const b = vi.fn();
+    renderHook(() => {
+      useKeyboard({ k: a });
+      useKeyboard({ k: b });
+    });
+    press('k');
+    expect(a).toHaveBeenCalledTimes(1);
+    expect(b).toHaveBeenCalledTimes(1);
+  });
+
+  it('an element target only hears events dispatched within it', () => {
+    const onK = vi.fn();
+    const box = document.createElement('div');
+    document.body.appendChild(box);
+    renderHook(() => useKeyboard({ k: onK }, { target: box }));
+    press('k'); // dispatched on document — never reaches box
+    expect(onK).not.toHaveBeenCalled();
+    press('k', {}, box);
+    expect(onK).toHaveBeenCalledTimes(1);
+    box.remove();
+  });
+});
