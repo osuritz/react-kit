@@ -177,7 +177,7 @@ same author-bug policy as `collectBindings`.
 ## Stability & lifecycle
 
 - **Bindings/handlers are read through a ref** written in an effect each
-  render — the listener is *not* re-attached when the user passes inline
+  render — the listener is _not_ re-attached when the user passes inline
   object/arrow literals (they will, every render). Parsing runs per render
   into that ref; this is the provider's explicit trade ("parsing is cheap,
   the list is small") and avoids memoizing on identities that never hold.

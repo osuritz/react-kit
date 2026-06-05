@@ -10,13 +10,14 @@
 
 **Execution context:** Work happens in the existing worktree on branch `use-keyboard`. All commands run from the repo root unless a task says otherwise. This repo is **pnpm-only** — never `npm`/`yarn`.
 
-**A note on TDD shape:** Tasks 2–4 are classic red→green. Tasks 5–7 are *behavioral verification* of code lifted from the battle-tested `ShortcutsProvider` — their tests are expected to pass on first run because the engine already implements the behavior; they exist to pin it in this folder's own harness. If any of them fail, that's a real bug in the lift — stop and fix before moving on.
+**A note on TDD shape:** Tasks 2–4 are classic red→green. Tasks 5–7 are _behavioral verification_ of code lifted from the battle-tested `ShortcutsProvider` — their tests are expected to pass on first run because the engine already implements the behavior; they exist to pin it in this folder's own harness. If any of them fail, that's a real bug in the lift — stop and fix before moving on.
 
 ---
 
 ### Task 1: Scaffold the drop-in harness
 
 **Files:**
+
 - Create: `src/hooks/use-keyboard/package.json`
 - Create: `src/hooks/use-keyboard/tsconfig.json`
 - Create: `src/hooks/use-keyboard/vitest.config.ts`
@@ -128,6 +129,7 @@ git commit -m "chore(use-keyboard): scaffold drop-in harness"
 ### Task 2: Lifted parse/match core (grammar TDD)
 
 **Files:**
+
 - Create: `src/hooks/use-keyboard/use-keyboard.test.tsx` (grammar section)
 - Create: `src/hooks/use-keyboard/use-keyboard.ts` (lifted core only — the hook comes in Task 3)
 
@@ -505,6 +507,7 @@ git commit -m "feat(use-keyboard): lift parse/match core from keyboard-shortcuts
 ### Task 3: The hook — chord matching (TDD)
 
 **Files:**
+
 - Modify: `src/hooks/use-keyboard/use-keyboard.test.tsx` (append hook section)
 - Modify: `src/hooks/use-keyboard/use-keyboard.ts` (replace placeholder with the real hook)
 
@@ -727,7 +730,8 @@ export function useKeyboard(
   maybeOptions?: UseKeyboardOptions
 ): void {
   const sugar = typeof bindingsOrShortcut === 'string' || Array.isArray(bindingsOrShortcut);
-  const options = (sugar ? maybeOptions : (handlerOrOptions as UseKeyboardOptions | undefined)) ?? {};
+  const options =
+    (sugar ? maybeOptions : (handlerOrOptions as UseKeyboardOptions | undefined)) ?? {};
   const { target, enabled = true, allowInInput = false, sequenceTimeoutMs = 1000, mac } = options;
   const macResolved = mac ?? isMacLike();
 
@@ -748,7 +752,9 @@ export function useKeyboard(
       if (!warnedRef.current.has(key)) {
         warnedRef.current.add(key);
         if (typeof console !== 'undefined') {
-          console.warn(`use-keyboard: failed to parse shortcut "${key}": ${(err as Error).message}`);
+          console.warn(
+            `use-keyboard: failed to parse shortcut "${key}": ${(err as Error).message}`
+          );
         }
       }
     }
@@ -908,6 +914,7 @@ git commit -m "feat(use-keyboard): chord-map hook with sugar overload"
 ### Task 4: Sequences (TDD for the `sequenceTimeoutMs: 0` rule)
 
 **Files:**
+
 - Modify: `src/hooks/use-keyboard/use-keyboard.test.tsx` (append)
 - Modify: `src/hooks/use-keyboard/use-keyboard.ts` (two-line change)
 
@@ -1015,6 +1022,7 @@ git commit -m "feat(use-keyboard): sequence support with documented timeout-0 se
 ### Task 5: Editable-target guard (verification)
 
 **Files:**
+
 - Modify: `src/hooks/use-keyboard/use-keyboard.test.tsx` (append)
 
 - [ ] **Step 1: Append guard tests**
@@ -1105,6 +1113,7 @@ git commit -m "test(use-keyboard): pin editable-target guard behavior"
 ### Task 6: Lifecycle (verification)
 
 **Files:**
+
 - Modify: `src/hooks/use-keyboard/use-keyboard.test.tsx` (append)
 
 - [ ] **Step 1: Append lifecycle tests**
@@ -1210,6 +1219,7 @@ git commit -m "test(use-keyboard): pin lifecycle semantics (enabled, unmount, at
 ### Task 7: Robustness (verification)
 
 **Files:**
+
 - Modify: `src/hooks/use-keyboard/use-keyboard.test.tsx` (append)
 
 - [ ] **Step 1: Append robustness tests**
@@ -1282,11 +1292,12 @@ git commit -m "test(use-keyboard): pin warn-once parsing and handler error conta
 ### Task 8: Drop-in README
 
 **Files:**
+
 - Create: `src/hooks/use-keyboard/README.md`
 
 - [ ] **Step 1: Write the README**
 
-```markdown
+````markdown
 # use-keyboard
 
 Local, component-lifetime keyboard bindings: map shortcut strings to
@@ -1323,6 +1334,7 @@ function Drawer({ onClose }: { onClose: () => void }) {
   // ...
 }
 ```
+````
 
 One binding? There's a sugar overload — `string[]` means alternates:
 
@@ -1335,25 +1347,25 @@ useKeyboard(['mod+s', 'ctrl+s'], save); // both forms, even on a Mac
 
 Same grammar as the `keyboard-shortcuts` drop-in:
 
-| Form | Example | Meaning |
-| --- | --- | --- |
-| chord | `mod+shift+k` | modifiers + one key, all held together |
-| sequence | `g i` | chords typed one after another |
-| `mod` | `mod+k` | Cmd on macOS, Ctrl elsewhere |
-| aliases | `esc`, `return`, `space`, `up`, `plus` | normalized key spellings |
+| Form     | Example                                | Meaning                                |
+| -------- | -------------------------------------- | -------------------------------------- |
+| chord    | `mod+shift+k`                          | modifiers + one key, all held together |
+| sequence | `g i`                                  | chords typed one after another         |
+| `mod`    | `mod+k`                                | Cmd on macOS, Ctrl elsewhere           |
+| aliases  | `esc`, `return`, `space`, `up`, `plus` | normalized key spellings               |
 
 Punctuation that needs Shift just works: write `'?'`, not `'shift+/'`.
 Letters stay strict — `'k'` does not fire on Shift+K; write `'shift+k'`.
 
 ## Options
 
-| Option | Default | What it does |
-| --- | --- | --- |
-| `target` | `document` | DOM target the keydown listener attaches to. Pass an element to gate bindings by focus. |
-| `enabled` | `true` | When false, no listener is attached at all. Toggling drops any in-progress sequence. |
-| `allowInInput` | `false` | Fire even while typing in inputs/textareas/contenteditable. Hook-wide — call the hook twice for mixed needs. |
-| `sequenceTimeoutMs` | `1000` | Window for the next chord in a sequence. `0` disables sequences (multi-chord bindings become inert). |
-| `mac` | auto | Platform override for `mod` resolution. Tests only. |
+| Option              | Default    | What it does                                                                                                 |
+| ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| `target`            | `document` | DOM target the keydown listener attaches to. Pass an element to gate bindings by focus.                      |
+| `enabled`           | `true`     | When false, no listener is attached at all. Toggling drops any in-progress sequence.                         |
+| `allowInInput`      | `false`    | Fire even while typing in inputs/textareas/contenteditable. Hook-wide — call the hook twice for mixed needs. |
+| `sequenceTimeoutMs` | `1000`     | Window for the next chord in a sequence. `0` disables sequences (multi-chord bindings become inert).         |
+| `mac`               | auto       | Platform override for `mod` resolution. Tests only.                                                          |
 
 ## Behavior notes
 
@@ -1366,8 +1378,8 @@ Letters stay strict — `'k'` does not fire on Shift+K; write `'shift+k'`.
   `allowInInput` — e.g. an `escape` binding that should blur the field:
 
   ```tsx
-  useKeyboard({ j: down, k: up });                                  // guarded
-  useKeyboard('escape', blurFilter, { allowInInput: true });        // not
+  useKeyboard({ j: down, k: up }); // guarded
+  useKeyboard('escape', blurFilter, { allowInInput: true }); // not
   ```
 
 - **Auto-repeat is ignored.** Holding `mod+s` fires once.
@@ -1402,20 +1414,22 @@ From this folder: `pnpm install` once at the repo root, then
   letting a half-typed sequence claim keystrokes it can never complete.
 - No printable-character catch-all (`onKey`) in v1 — the options bag can
   grow one later without an API break.
-```
+
+````
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add src/hooks/use-keyboard/README.md
 git commit -m "docs(use-keyboard): drop-in README"
-```
+````
 
 ---
 
 ### Task 9: Demo page + catalog wiring
 
 **Files:**
+
 - Create: `app/components/demos/use-keyboard.tsx`
 - Create: `app/routes/use-keyboard.mdx`
 - Modify: `README.md` (root catalog — insert after the `use-autocomplete` entry, before `action-registry`)

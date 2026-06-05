@@ -386,7 +386,12 @@ describe('useKeyboard — lifecycle', () => {
     const calls: number[] = [];
     const addSpy = vi.spyOn(document, 'addEventListener');
     const { rerender } = renderHook(
-      ({ n }: { n: number }) => useKeyboard({ k: () => { calls.push(n); } }),
+      ({ n }: { n: number }) =>
+        useKeyboard({
+          k: () => {
+            calls.push(n);
+          },
+        }),
       { initialProps: { n: 1 } }
     );
     rerender({ n: 2 });
