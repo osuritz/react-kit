@@ -332,6 +332,10 @@ describe('useKeyboard — editable-target guard', () => {
 /* ------------------------------------------------------------------ */
 
 describe('useKeyboard — lifecycle', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('enabled: false attaches no listener; toggling true attaches', () => {
     const onK = vi.fn();
     const { rerender } = renderHook(
@@ -405,6 +409,5 @@ describe('useKeyboard — lifecycle', () => {
     expect(onK).not.toHaveBeenCalled();
     press('k', {}, box);
     expect(onK).toHaveBeenCalledTimes(1);
-    box.remove();
   });
 });
