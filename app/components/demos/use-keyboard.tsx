@@ -20,7 +20,10 @@ export function KeyboardDemo() {
     k: () => setCursor(Math.max(selected - 1, 0)),
     'g g': () => setCursor(0),
     'mod+k': () => filterRef.current?.focus(),
-    enter: () => {
+    // `x` (the Gmail/Linear toggle idiom), NOT bare `enter`: this listener is
+    // document-wide and claims what it matches — binding `enter` would hijack
+    // Enter-activation of any focused link or button on the page.
+    x: () => {
       const id = visible[selected]?.id;
       if (id === undefined) return;
       setDone((prev) => {
@@ -62,6 +65,7 @@ export function KeyboardDemo() {
             />
             <span className={done.has(id) ? 'text-muted-foreground line-through' : ''}>
               {label}
+              {done.has(id) ? <span className="sr-only"> (done)</span> : null}
             </span>
           </li>
         ))}
@@ -71,7 +75,7 @@ export function KeyboardDemo() {
       </ul>
       <p className="text-muted-foreground text-xs">
         <kbd className="font-mono">j</kbd>/<kbd className="font-mono">k</kbd> move ·{' '}
-        <kbd className="font-mono">Enter</kbd> toggle · <kbd className="font-mono">g g</kbd> top ·{' '}
+        <kbd className="font-mono">x</kbd> toggle · <kbd className="font-mono">g g</kbd> top ·{' '}
         <kbd className="font-mono">mod+k</kbd> filter · <kbd className="font-mono">Esc</kbd> leave
         the filter. While typing in the filter, <kbd className="font-mono">j</kbd>/
         <kbd className="font-mono">k</kbd> just type — the editable-target guard is on by default.
