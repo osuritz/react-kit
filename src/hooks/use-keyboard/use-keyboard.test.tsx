@@ -411,3 +411,47 @@ describe('useKeyboard — lifecycle', () => {
     expect(onK).toHaveBeenCalledTimes(1);
   });
 });
+
+/* ------------------------------------------------------------------ */
+/*  Hook — robustness                                                  */
+/* ------------------------------------------------------------------ */
+
+describe('useKeyboard — robustness', () => {
+  it('warns once per invalid shortcut and keeps other bindings working', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const onK = vi.fn();
+    const { rerender } = renderHook(() =>
+      useKeyboard({ 'bogus+x': vi.fn(), 'mod+k': onK }, { mac: false })
+    );
+    rerender();
+    rerender();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain('bogus+x');
+    press('k', { ctrlKey: true });
+    expect(onK).toHaveBeenCalledTimes(1);
+  });
+
+  it('contains a throwing handler and keeps working', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const onJ = vi.fn();
+    renderHook(() =>
+      useKeyboard({
+        k: () => {
+          throw new Error('boom');
+        },
+        j: onJ,
+      })
+    );
+    expect(() => press('k')).not.toThrow();
+    expect(error).toHaveBeenCalledTimes(1);
+    press('j');
+    expect(onJ).toHaveBeenCalledTimes(1);
+  });
+
+  it('contains a rejecting async handler', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderHook(() => useKeyboard({ k: () => Promise.reject(new Error('boom')) }));
+    press('k');
+    await vi.waitFor(() => expect(error).toHaveBeenCalledTimes(1));
+  });
+});
