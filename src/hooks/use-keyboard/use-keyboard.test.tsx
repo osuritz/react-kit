@@ -1,5 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { type Chord, chordMatches, parseSequence, parseShortcut } from './use-keyboard';
+import { describe, expect, it, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import {
+  type Chord,
+  chordMatches,
+  parseSequence,
+  parseShortcut,
+  useKeyboard,
+} from './use-keyboard';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -16,6 +23,17 @@ const chord = (key: string, mods: Partial<Chord> = {}): Chord => ({
 
 const kbd = (key: string, init: KeyboardEventInit = {}) =>
   new KeyboardEvent('keydown', { key, ...init });
+
+/** Dispatch a cancelable, bubbling keydown and return the event. */
+function press(
+  key: string,
+  init: KeyboardEventInit = {},
+  target: EventTarget = document
+): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+  target.dispatchEvent(event);
+  return event;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Grammar (pure helpers, lifted from keyboard-shortcuts)             */
@@ -121,5 +139,61 @@ describe('chordMatches', () => {
 
   it('"shift+k" matches Shift+K', () => {
     expect(chordMatches(chord('k', { shift: true }), kbd('K', { shiftKey: true }))).toBe(true);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Hook — chords                                                      */
+/* ------------------------------------------------------------------ */
+
+describe('useKeyboard — chords', () => {
+  it('fires the handler and claims the keystroke on a match (map form)', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ 'mod+k': onK }, { mac: false }));
+    const event = press('k', { ctrlKey: true });
+    expect(onK).toHaveBeenCalledTimes(1);
+    expect(onK).toHaveBeenCalledWith(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('does not claim keystrokes it did not bind', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ 'mod+k': onK }, { mac: false }));
+    const event = press('k'); // no modifier held
+    expect(onK).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('sugar overload: single string', () => {
+    const onEsc = vi.fn();
+    renderHook(() => useKeyboard('escape', onEsc));
+    press('Escape');
+    expect(onEsc).toHaveBeenCalledTimes(1);
+  });
+
+  it('sugar overload: string[] alternates both fire', () => {
+    const save = vi.fn();
+    renderHook(() => useKeyboard(['mod+s', 'ctrl+s'], save, { mac: true }));
+    press('s', { metaKey: true });
+    press('s', { ctrlKey: true });
+    expect(save).toHaveBeenCalledTimes(2);
+  });
+
+  it('first completed binding wins when two entries share a chord', () => {
+    const a = vi.fn();
+    const b = vi.fn();
+    // 'K' parses to the same chord as 'k' (keys are lowercased), giving two
+    // map entries for one chord without an object-literal key collision.
+    renderHook(() => useKeyboard({ k: a, K: b }));
+    press('k');
+    expect(a).toHaveBeenCalledTimes(1);
+    expect(b).not.toHaveBeenCalled();
+  });
+
+  it('ignores auto-repeat', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }));
+    press('k', { repeat: true });
+    expect(onK).not.toHaveBeenCalled();
   });
 });
