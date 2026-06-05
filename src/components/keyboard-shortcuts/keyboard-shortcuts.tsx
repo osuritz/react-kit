@@ -39,7 +39,8 @@ export interface ShortcutsProviderProps {
   /**
    * How long (ms) to wait for the next chord in a multi-key sequence before
    * resetting the buffer. Defaults to `1000`. Set to `0` to disable
-   * sequences entirely (every chord must match in one keystroke).
+   * sequences entirely (multi-chord bindings become inert; single chords
+   * are unaffected).
    */
   sequenceTimeoutMs?: number;
   /**
@@ -305,7 +306,13 @@ export function ShortcutsProvider({
           // Editable check applied per-action: actions that haven't opted
           // in are skipped when typing.
           if (editable && !b.action.allowInInput) continue;
-          for (const seq of b.parsed) tryConsume(b.action, seq);
+          for (const seq of b.parsed) {
+            // `sequenceTimeoutMs <= 0` disables sequences: multi-chord
+            // bindings never seed the cursor (a claimed-then-dropped first
+            // chord would be worse than an inert binding).
+            if (seq.length > 1 && sequenceTimeoutMs <= 0) continue;
+            tryConsume(b.action, seq);
+          }
         }
       } else {
         for (const cand of cursor.candidates) {
