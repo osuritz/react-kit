@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import {
   type Chord,
@@ -265,5 +265,64 @@ describe('useKeyboard — sequences', () => {
     expect(go).not.toHaveBeenCalled();
     press('j');
     expect(onJ).toHaveBeenCalledTimes(1); // single chords are unaffected
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Hook — editable-target guard                                       */
+/* ------------------------------------------------------------------ */
+
+describe('useKeyboard — editable-target guard', () => {
+  function mount<T extends HTMLElement>(el: T): T {
+    document.body.appendChild(el);
+    return el;
+  }
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('suppresses bindings while typing in a text input', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }));
+    const input = mount(document.createElement('input'));
+    press('k', {}, input);
+    expect(onK).not.toHaveBeenCalled();
+  });
+
+  it('still fires from pseudo-button inputs (checkbox)', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }));
+    const checkbox = mount(document.createElement('input'));
+    checkbox.type = 'checkbox';
+    press('k', {}, checkbox);
+    expect(onK).toHaveBeenCalledTimes(1);
+  });
+
+  it('suppresses in a textarea', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }));
+    const textarea = mount(document.createElement('textarea'));
+    press('k', {}, textarea);
+    expect(onK).not.toHaveBeenCalled();
+  });
+
+  it('suppresses in contenteditable', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }));
+    const div = mount(document.createElement('div'));
+    // jsdom doesn't implement isContentEditable — pin the property so we're
+    // testing OUR guard logic, not jsdom's gap.
+    Object.defineProperty(div, 'isContentEditable', { value: true });
+    press('k', {}, div);
+    expect(onK).not.toHaveBeenCalled();
+  });
+
+  it('allowInInput: true fires from a text input', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ k: onK }, { allowInInput: true }));
+    const input = mount(document.createElement('input'));
+    press('k', {}, input);
+    expect(onK).toHaveBeenCalledTimes(1);
   });
 });
