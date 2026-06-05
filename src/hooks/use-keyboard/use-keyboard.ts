@@ -331,34 +331,38 @@ export function useKeyboard(
   // Bindings are re-parsed on every render — the same trade ShortcutsProvider
   // makes: callers pass inline literals whose identity changes per render, so
   // memoizing would never hit; parsing is cheap and the list is small. Bad
-  // shortcut strings are author bugs — warn once per string, skip the binding.
-  const warnedRef = React.useRef<Set<string>>(new Set());
+  // shortcut strings are author bugs — warned once per string from the effect
+  // below (refs must not be written during render), and the binding is skipped.
   const entries: Array<[string | string[], KeyHandler]> = sugar
     ? [[bindingsOrShortcut as string | string[], handlerOrOptions as KeyHandler]]
     : Object.entries(bindingsOrShortcut as Record<string, KeyHandler>);
   const parsed: ParsedBinding[] = [];
+  const failures: Array<{ key: string; message: string }> = [];
   for (const [source, handler] of entries) {
     try {
       parsed.push({ handler, sequences: parseShortcut(source, macResolved) });
     } catch (err) {
       const key = Array.isArray(source) ? source.join(', ') : source;
-      if (!warnedRef.current.has(key)) {
-        warnedRef.current.add(key);
-        if (typeof console !== 'undefined') {
-          console.warn(
-            `use-keyboard: failed to parse shortcut "${key}": ${(err as Error).message}`
-          );
-        }
-      }
+      failures.push({ key, message: (err as Error).message });
     }
   }
 
   // Live values read by the long-lived listener — kept in a ref so the
   // listener doesn't re-attach when inline literals change identity (the
   // ref read picks the new bindings up immediately, no event is missed).
+  // Parse warnings are emitted here too: this effect runs after every
+  // render, and the Set dedupes so each bad string warns exactly once.
+  const warnedRef = React.useRef<Set<string>>(new Set());
   const latestRef = React.useRef({ parsed, allowInInput });
   React.useEffect(() => {
     latestRef.current = { parsed, allowInInput };
+    for (const { key, message } of failures) {
+      if (warnedRef.current.has(key)) continue;
+      warnedRef.current.add(key);
+      if (typeof console !== 'undefined') {
+        console.warn(`use-keyboard: failed to parse shortcut "${key}": ${message}`);
+      }
+    }
   });
 
   // In-progress sequence buffer.

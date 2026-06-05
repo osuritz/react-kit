@@ -164,6 +164,16 @@ describe('useKeyboard — chords', () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
+  it('does not fire when an extra modifier is held', () => {
+    const onK = vi.fn();
+    renderHook(() => useKeyboard({ 'mod+k': onK }, { mac: false }));
+    // alt is unambiguous here — shift has documented relaxation semantics
+    // that the chordMatches unit tests pin separately.
+    const event = press('k', { ctrlKey: true, altKey: true });
+    expect(onK).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('sugar overload: single string', () => {
     const onEsc = vi.fn();
     renderHook(() => useKeyboard('escape', onEsc));
@@ -174,9 +184,11 @@ describe('useKeyboard — chords', () => {
   it('sugar overload: string[] alternates both fire', () => {
     const save = vi.fn();
     renderHook(() => useKeyboard(['mod+s', 'ctrl+s'], save, { mac: true }));
-    press('s', { metaKey: true });
-    press('s', { ctrlKey: true });
+    const meta = press('s', { metaKey: true });
+    const ctrl = press('s', { ctrlKey: true });
     expect(save).toHaveBeenCalledTimes(2);
+    expect(meta.defaultPrevented).toBe(true);
+    expect(ctrl.defaultPrevented).toBe(true);
   });
 
   it('first completed binding wins when two entries share a chord', () => {
