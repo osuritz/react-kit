@@ -457,6 +457,29 @@ describe('ShortcutsProvider — sequences', () => {
     dispatchKey({ key: 'i' });
     expect(onRun).toHaveBeenCalledTimes(1);
   });
+
+  it('sequenceTimeoutMs={0} disables sequences without claiming their first chord', () => {
+    const onSeq = vi.fn();
+    const onSingle = vi.fn();
+    render(
+      <ActionsProvider>
+        <ShortcutsProvider mac={false} sequenceTimeoutMs={0}>
+          <Register id="goto-inbox" shortcut="g i" onRun={onSeq} />
+          <Register id="jump" shortcut="j" onRun={onSingle} />
+        </ShortcutsProvider>
+      </ActionsProvider>
+    );
+    // The multi-chord binding is inert: its first chord must not be claimed
+    // (a claimed-then-dropped `g` would be worse than no binding at all).
+    const g = new KeyboardEvent('keydown', { key: 'g', cancelable: true });
+    document.dispatchEvent(g);
+    expect(g.defaultPrevented).toBe(false);
+    dispatchKey({ key: 'i' });
+    expect(onSeq).not.toHaveBeenCalled();
+    // Single-chord bindings are unaffected.
+    dispatchKey({ key: 'j' });
+    expect(onSingle).toHaveBeenCalledTimes(1);
+  });
 });
 
 /* -------------------------------------------------------------------------- */
